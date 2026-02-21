@@ -71,9 +71,6 @@ User создаётся **только после** верификации email
 | freePointsAgi | Int, default 0 | Очки игрока в AGI |
 | freePointsSpi | Int, default 0 | Очки игрока в SPI |
 | **Текущее состояние** | | |
-| currentHp | Float | Текущее HP (может быть < максимума) |
-| currentMana | Float, default 0 | Текущая мана (для Mage) |
-| currentRage | Float, default 0 | Текущая ярость (для Warrior, 0..100) |
 | battleLockUntil | DateTime? | До какого времени персонаж выведен из строя (`incapacitated`) после поражения |
 | **Геолокация** | | |
 | lat | Float? | Широта |
@@ -133,15 +130,13 @@ manaRegen    = maxMana * regen_rate * (1 + total_spi * 0.02) // Mage
 #### Правила ресурса по классу
 
 - `class = WARRIOR`: используется `currentRage` (0..100), `currentMana = 0`
-- `class = MAGE`: используется `currentMana` (0..maxMana), `currentRage = 0`
-- `class = MAGE`: при каждом старте боя выполняется `currentMana = maxMana`
-- Вне боя у Warrior `currentRage` принудительно сбрасывается в `0`
+- `class = MAGE`: ресурс Mana, `class = WARRIOR`: ресурс Rage
+- HP, Mana, Rage — runtime state (не хранятся в БД), инициализируются с максимума при каждом старте боя
 
 Рекомендуемые `CHECK`-ограничения:
 
 ```sql
 CHECK (level BETWEEN 1 AND 30);
-CHECK (current_rage BETWEEN 0 AND 100);
 CHECK (exp >= 0 AND gold >= 0);
 ```
 
@@ -150,7 +145,7 @@ CHECK (exp >= 0 AND gold >= 0);
 - При `defeat` не меняем `lat/lng` (никакого респавна в другую точку)
 - Выставляем `battleLockUntil = now() + interval '60 seconds'`
 - Пока `now() < battleLockUntil`, бой для персонажа запрещён
-- После окончания lock-а сервер восстанавливает `HP/Mana` до 30% и сбрасывает `Rage` в 0
+- Восстановление HP/Mana не требуется — при следующем входе в бой всё инициализируется с максимума
 
 #### Ограничение: один активный персонаж
 
@@ -336,9 +331,6 @@ WHERE is_active = true;
 | goldDelta | Int | Изменение золота |
 | lootJson | Json? | Выпавший лут (null при defeat/escape) |
 | durationSec | Int | Длительность боя |
-| hpAfter | Float | HP персонажа после завершения боя |
-| manaAfter | Float, default 0 | Mana после завершения боя |
-| rageAfter | Float, default 0 | Rage после завершения боя |
 | createdAt | DateTime | |
 
 ---

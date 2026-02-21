@@ -69,9 +69,9 @@ troy-docs/
 ├── technical/                               # Техническая архитектура
 │   ├── architecture.md                      # [TODO] Сервисы, стек, схема взаимодействия
 │   ├── database-schema.md                   # Схема БД, таблицы, связи, PostGIS
-│   ├── api-contracts.md                     # REST/WebSocket эндпоинты, форматы
-│   ├── realtime.md                          # WebSocket события, формат сообщений
-│   └── auth.md                              # Регистрация, JWT, верификация
+│   ├── api-contracts.md                     # [TODO] REST/WebSocket эндпоинты, форматы
+│   ├── realtime.md                          # [TODO] WebSocket события, формат сообщений
+│   └── auth.md                              # [TODO] Регистрация, JWT, верификация
 │
 ├── client/                                  # [TODO] Flutter клиент
 │   ├── screens.md                           # Экраны, навигация
