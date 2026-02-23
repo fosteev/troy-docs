@@ -71,7 +71,7 @@ troy-docs/
 │   ├── database-schema.md                   # Схема БД, таблицы, связи, PostGIS
 │   ├── api-contracts.md                     # [TODO] REST/WebSocket эндпоинты, форматы
 │   ├── realtime.md                          # [TODO] WebSocket события, формат сообщений
-│   └── auth.md                              # [TODO] Регистрация, JWT, верификация
+│   └── auth.md                              # Регистрация, JWT, верификация, восстановление пароля
 │
 ├── client/                                  # [TODO] Flutter клиент
 │   ├── screens.md                           # Экраны, навигация
@@ -96,6 +96,7 @@ troy-docs/
 | [leveling.md](game-design/leveling.md) | Система уровней, XP, свободные очки, разблокировка скиллов |
 | [combat.md](game-design/combat.md) | Боевая система, автоатака, скиллы, расчёт урона |
 | [database-schema.md](technical/database-schema.md) | Схема БД: User, Character, Item, Monster, связи |
+| [auth.md](technical/auth.md) | Auth flows: регистрация, авторизация, восстановление пароля |
 
 ## Статус
 
