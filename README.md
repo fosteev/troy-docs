@@ -70,6 +70,7 @@ troy-docs/
 │   ├── architecture.md                      # [TODO] Сервисы, стек, схема взаимодействия
 │   ├── database-schema.md                   # Схема БД, таблицы, связи, PostGIS
 │   ├── api-contracts.md                     # [TODO] REST/WebSocket эндпоинты, форматы
+│   ├── geolocation.md                       # Геолокация, heading, определение движения
 │   ├── realtime.md                          # [TODO] WebSocket события, формат сообщений
 │   └── auth.md                              # Регистрация, JWT, верификация, восстановление пароля
 │
@@ -97,6 +98,7 @@ troy-docs/
 | [combat.md](game-design/combat.md) | Боевая система, автоатака, скиллы, расчёт урона |
 | [database-schema.md](technical/database-schema.md) | Схема БД: User, Character, Item, Monster, связи |
 | [auth.md](technical/auth.md) | Auth flows: регистрация, авторизация, восстановление пароля |
+| [geolocation.md](technical/geolocation.md) | Геолокация: позиция на User, heading, moving/idle, anti-cheat |
 
 ## Статус
 

@@ -20,7 +20,16 @@
 | email | String, unique | Адрес почты (уникален в системе) |
 | passwordHash | String | Хеш пароля |
 | createdAt | DateTime | |
+| **Геолокация** | | |
+| lat | Float? | Широта |
+| lng | Float? | Долгота |
+| heading | Float? | Направление 0-360, север = 0 |
+| lastMovedAt | DateTime? | Последнее перемещение |
 | updatedAt | DateTime | |
+
+Индекс: `@@index([lat, lng])`
+
+Геолокация привязана к User, а не к Character — физический человек ходит по миру, при смене персонажа координаты сохраняются. Подробнее — см. [geolocation.md](./geolocation.md).
 
 User создаётся **только после** верификации email. Если email подтверждён — можно задать пароль и создать аккаунт.
 
@@ -72,10 +81,6 @@ User создаётся **только после** верификации email
 | freePointsSpi | Int, default 0 | Очки игрока в SPI |
 | **Текущее состояние** | | |
 | battleLockUntil | DateTime? | До какого времени персонаж выведен из строя (`incapacitated`) после поражения |
-| **Геолокация** | | |
-| lat | Float? | Широта |
-| lng | Float? | Долгота |
-| lastMovedAt | DateTime? | Последнее перемещение |
 | createdAt | DateTime | |
 | updatedAt | DateTime | |
 
