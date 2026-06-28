@@ -79,8 +79,14 @@ troy-docs/
 │   ├── map-ui.md                            # Карта: отображение мобов, игрока
 │   └── battle-ui.md                         # UI боя: панель скиллов, HP + классовый ресурс (Rage/Mana)
 │
-└── roadmap/                                 # [TODO] Планирование
-    └── mvp.md                               # Что входит в MVP, фазы, приоритеты
+└── roadmap/                                 # Планирование MVP
+    ├── mvp.md                               # Индекс MVP: scope, фазы, Definition of Done
+    ├── current-flow.md                      # MVP-0: auth → character → map
+    ├── playable-map.md                      # MVP-1: игровая карта
+    ├── battle-loop.md                       # MVP-2: полный battle loop
+    ├── inventory-profile.md                 # MVP-3: профиль, инвентарь, экипировка
+    ├── content-balance.md                   # MVP-4: контент и баланс
+    └── hardening.md                         # MVP-5: стабилизация для тестирования
 ```
 
 > **Правило**: файлы с пометкой `[TODO]` ещё не созданы. При добавлении нового документа — обновить эту структуру и таблицу ниже.
@@ -99,7 +105,8 @@ troy-docs/
 | [database-schema.md](technical/database-schema.md) | Схема БД: User, Character, Item, Monster, связи |
 | [auth.md](technical/auth.md) | Auth flows: регистрация, авторизация, восстановление пароля |
 | [geolocation.md](technical/geolocation.md) | Геолокация: позиция на User, heading, moving/idle, anti-cheat |
+| [mvp.md](roadmap/mvp.md) | MVP roadmap: scope, фазы, критерии готовности |
 
 ## Статус
 
-Проект на этапе проектирования. Код будет написан на основе этих документов.
+Проект перешёл из проектирования в MVP implementation. Документы остаются источником требований, roadmap фиксирует порядок доведения до playable MVP.
