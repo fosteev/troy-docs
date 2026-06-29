@@ -84,7 +84,7 @@ User создаётся **только после** верификации email
 | createdAt | DateTime | |
 | updatedAt | DateTime | |
 
-Связи: `inventory[]`, `battleLogs[]`
+Связи: `inventory[]`, `battleLogs[]`, `kills[]` (CharacterKill)
 
 #### Стартовые атрибуты по классу
 
@@ -366,7 +366,29 @@ WHERE is_active = true;
 | spawn_zone_id | UUID, FK → SpawnZone | |
 | location | GEOGRAPHY(POINT, 4326) | Координаты на карте |
 | spawned_at | TIMESTAMPTZ | Время спавна |
-| alive | Boolean, default true | Жив ли |
+| alive | Boolean, default true | Существует ли спавн в мире (деспавн системой/при недельной регенерации). **Не** отражает «кто-то убил» — убийства персональны, см. `CharacterKill` |
+
+---
+
+### CharacterKill (персональные убийства)
+
+Кто из персонажей какой спавн уже убил. Моб исчезает с карты **только для того
+персонажа**, кто его убил; для остальных остаётся. `spawnId` — это `active_spawns.id`
+(конкретный экземпляр на карте, не шаблон `Monster`), хранится как UUID без FK, т.к.
+`active_spawns` живёт вне ORM.
+
+Недельный сброс: запись учитывается только если `killedAt >= начала текущей недели`
+(**среда 00:00 UTC**). Старые записи естественно перестают влиять — отдельный
+TRUNCATE-cron не нужен (опциональная чистка старья — позже).
+
+| Поле | Тип | Описание |
+|---|---|---|
+| id | UUID, PK | |
+| characterId | UUID, FK → Character | onDelete: Cascade |
+| spawnId | UUID | = `active_spawns.id`, без FK (active_spawns вне ORM) |
+| killedAt | DateTime, default now() | Время убийства (для недельного окна) |
+
+Индексы: `@@unique([characterId, spawnId])`, `@@index([characterId, killedAt])`
 
 ---
 
@@ -399,6 +421,7 @@ ClassSkill (standalone справочник по CharacterClass)
 
 Character 1──N CharacterInventory
 Character 1──N BattleLog
+Character 1──N CharacterKill   (spawnId → active_spawns.id, без FK)
 
 Item 1──N CharacterInventory
 Item 1──N DropTable

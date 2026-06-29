@@ -398,8 +398,9 @@ if (hours <= 0) return Infinity;
 
 | Параметр | Значение | Описание |
 |---|---|---|
+| INTERACTION_RADIUS_M | 50 | Радиус взаимодействия (`canInteract`); конфигурируется через env, дефолт 50 |
 | NEARBY_BROADCAST_RADIUS_M | 500 | Радиус real-time broadcast player:moved |
-| NEARBY_REQUEST_MAX_RADIUS_M | 1000 | Максимальный радиус для map:request |
+| NEARBY_REQUEST_MAX_RADIUS_M | 5000 | Максимальный радиус для map:request (выровнен с REST `/map/entities`) |
 
 ### Оптимизация broadcast
 

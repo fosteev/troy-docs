@@ -26,7 +26,10 @@
   - XP;
   - level progression;
   - loot roll;
-  - удаление или деактивация моба.
+  - запись персонального убийства: НЕ глобальный `alive=FALSE`, а INSERT
+    `CharacterKill (characterId, spawnId=active_spawns.id, killedAt)` — моб
+    исчезает только для этого персонажа, для других остаётся (read-фильтр уже
+    в /map/entities, см. playable-map.md). Недельный сброс — среда 00:00 UTC.
 - Реализовать поражение:
   - результат боя;
   - безопасный возврат на карту.
