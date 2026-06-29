@@ -40,7 +40,7 @@ Backend (troy-backend) — стек **Jest + @nestjs/testing** (`npx nx test gam
 - [x] `auth` → Clean Architecture, эталон (коммит `383cf02`)
 - [x] **Шаг 1** — `character` → Clean Architecture + финал MVP-0
 - [x] **Шаг 1Б** — Backend: тест-фундамент (Jest + 6 suites/16 тестов; влито в `main`)
-- [ ] **Шаг 2** — MVP-1: playable map
+- [x] **Шаг 2** — MVP-1: playable map
 - [ ] **Шаг 3** — MVP-2: battle loop
 - [ ] **Шаг 4** — MVP-3: profile + inventory
 - [ ] **Шаг 5** — MVP-4: контент и баланс
@@ -123,11 +123,18 @@ DoD: `npx nx test game-core` зелёный; покрыты battle/auth/characte
 - "Architecture rules" в troy-flutter/CLAUDE.md и эталон lib/features/auth/**;
 - текущую заглушку lib/features/map/** (там пока только presentation-виджеты, без data-слоя).
 
-Backend (troy-backend) — проверить/стабилизировать map endpoints:
-- nearby entities (PostGIS ST_DWithin), nearby zones, дистанция, interaction radius;
-- не отдавать мёртвых/занятых чужим боем мобов;
-- DTO клиенту: id, type, name, level, lat, lng, distance, canInteract;
-- Redis-кэш с коротким TTL.
+Backend (troy-backend) — map endpoints + персональная видимость мобов:
+- nearby entities (PostGIS ST_DWithin + ST_Distance), nearby zones;
+- DTO клиенту: id, type('monster'), name, level, lat, lng, distance, canInteract;
+- canInteract = distance <= INTERACTION_RADIUS_M (env, дефолт 50); добавить в .env.example;
+- Prisma-модель CharacterKill (characterId FK, spawnId=active_spawns.id без FK, killedAt;
+  @@unique([characterId, spawnId])) + миграция;
+- getEntities фильтрует мобов: alive=TRUE И NOT EXISTS убийство этим активным
+  персонажем с killedAt >= начала недели (среда 00:00 UTC); хелпер weekStart();
+- Redis-кэш короткий TTL, ключ ПЕР-ПЕРСОНАЖНЫЙ (map:entities:{characterId}:{lat}:{lng}:{radius});
+- WS map:request: верхний предел radius = 5000 (как REST);
+- запись убийства (отмена глобального alive=FALSE → INSERT CharacterKill) — это Шаг 3;
+- обновить Swagger-DTO и перегенерить packages/troy_backend_api для Flutter.
 
 Flutter — построить фичу map ПО СТАНДАРТУ (domain/data/presentation):
 - domain: entities (MapEntity, SpawnZone), repository-интерфейс (Either);
