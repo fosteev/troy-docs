@@ -153,6 +153,8 @@ DoD: позиция игрока обновляется на устройств�
 
 **Цель:** server-driven бой, меняющий состояние персонажа. См. [battle-loop.md](./battle-loop.md), [combat.md](../game-design/combat.md).
 
+> Бой — **real-time, server-authoritative**. Техническая архитектура — [battle-session.md](../technical/battle-session.md). Для делегирования слабым моделям шаг разбит на мелкие самодостаточные промты (ядро/стора/сервис/WS/seed + Flutter) — **пошаговый playbook в [step3-battle-prompts.md](./step3-battle-prompts.md)**. Промт ниже — высокоуровневый обзор шага.
+
 ```
 Работаем в /Users/fost/Projects/troy (Flutter + backend).
 

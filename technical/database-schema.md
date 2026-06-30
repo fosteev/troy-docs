@@ -305,9 +305,14 @@ WHERE is_active = true;
 | effectType | Enum: NONE, STUN, SLOW, DOT, BUFF, ABSORB, HEAL | Тип эффекта |
 | effectValue | Float, default 0 | Величина эффекта |
 | effectDurationSec | Float, default 0 | Длительность эффекта |
-| sortOrder | Int, default 0 | Приоритет в ротации |
+| sortOrder | Int, default 0 | Приоритет оценки в боевом алгоритме (меньше — раньше) |
+| condition | String, default "always" | Условие применения: `always` / `opener` / `self_hp_below` / `target_hp_below` (см. combat.md) |
+| conditionValue | Float? | Порог % для `*_hp_below` (иначе null) |
 
 Уникальный ключ: `(monsterId, code)`
+
+> Боевой алгоритм моба хранится прямо на его скиллах: `sortOrder` = приоритет, `condition` +
+> `conditionValue` гейтят применение. Эвалюатор — в движке (`applyMonsterSkill`), описание — combat.md.
 
 ---
 

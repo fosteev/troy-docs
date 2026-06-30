@@ -49,6 +49,7 @@
 
 ## Связанные документы
 
+- [battle-session.md](../technical/battle-session.md) — техническая архитектура: real-time tick-движок, BattleSession в Redis, gateway↔game-core, WS/NATS контракты
 - [combat.md](../game-design/combat.md)
 - [classes.md](../game-design/classes.md)
 - [stats-and-formulas.md](../game-design/stats-and-formulas.md)
