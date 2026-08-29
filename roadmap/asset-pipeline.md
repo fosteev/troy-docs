@@ -59,7 +59,7 @@ troy-assets/
 
 ## Статус
 
-- [ ] **Шаг 0** — ключи и проба стиля (гейт)
+- [~] **Шаг 0** — сгенерировано (`troy-assets/out/probe`, итоги в `troy-assets/styles/README.md`); ждёт проверки на устройстве и 4 решений
 - [ ] **Шаг 1** — инструментарий: репо, манифесты, `gen`/`pack`/`publish`
 - [ ] **Шаг 2** — классы: ключевая поза → 4 анимации → скиллы → иконка
 - [ ] **Шаг 3** — мобы: иконка карты → idle/attack → скиллы
@@ -74,7 +74,8 @@ troy-assets/
 **Цель:** за $2–3 понять, в каком нативном размере и стиле спрайты выглядят
 правильно на телефоне, и зафиксировать параметры до массовой генерации.
 
-1. Завести ключ Retro Diffusion (`retrodiffusion.ai/app/devtools`), пополнить $20.
+1. Завести ключ Retro Diffusion (`retrodiffusion.ai/app/devtools`), пополнить **$10** —
+   хватит на Шаги 0–1 и 1–2 класса (Шаг 0 ≈ $2); остальное докидывать после гейта.
    Подключить их MCP в Claude Code (`https://mcp.retrodiffusion.ai/mcp`, Bearer key) —
    дальше всё до Шага 1 можно делать прямо из сессии.
 2. Завести Gemini API key (AI Studio) — понадобится только в Шаге 5, но сразу.
@@ -84,7 +85,7 @@ troy-assets/
      «on a plain white background», `input_palette` = наша палитра, seed фикс;
    - `rd_pro__default` те же размеры — сравнить, какой стиль ближе к
      Octopath/Darkest Dungeon;
-   - иконку класса `rd_plus__skill_icon` 64px и портрет `rd_fast__portrait` 96px.
+   - иконку класса `rd_plus__skill_icon` 64px и портрет `portrait:rd_flux` 96px (id из `GET /v1/styles/selector`).
 4. Один кадр прогнать через `rd_advanced_animation__idle` (frames 8) и
    `rd_advanced_animation__attack` (frames 6) — проверить, что анимация не
    разваливает персонажа.
@@ -218,3 +219,67 @@ Nano Banana не отдаёт альфу — для этих ассетов он
   тоже лучше слать webp.
 - Анимации в RD падают чаще стиллов: `async: true`, один retry с теми же параметрами.
 - `check_cost: true` перед любой пачкой; `GET /v1/status` перед bulk-прогоном.
+- Async: POST отвечает `{ status: "accepted", task_id }`, результат — `GET /v1/inferences/tasks/{id}` → `{ status: "succeeded", result: { base64_images, balance_cost } }`; список задач — `GET /v1/inferences/tasks` (спасает, если потерял id). Ретраить по таймауту поллинга нельзя — это дубль и двойная оплата.
+- Анимации приходят уже сеткой (8 → 4×2, 6 → 3×2, кадр = размер запроса) — ложатся в `ClassSpriteSheet` без перепаковки.
+
+---
+
+## Промт для запуска Шага 0 (свежая сессия)
+
+```
+Работаем в /Users/fost/Projects/troy (multi-root: troy-backend, troy-flutter, admin, troy-docs).
+Задача — Шаг 0 из troy-docs/roadmap/asset-pipeline.md: проба стиля для конвейера
+пиксель-арта на Retro Diffusion. Это гейт: по итогу пользователь глазами на телефоне
+выбирает размер/стиль, массовую генерацию НЕ начинать.
+
+Прочитай перед работой:
+- troy-docs/roadmap/asset-pipeline.md целиком (решения, Шаг 0, раздел «Грабли»);
+- troy-docs/game-design/content-generation.md §5–6 и character-generation-prompt.md
+  (описание воина, negative prompt — в RD он не работает, описываем что хотим);
+- troy-docs/game-design/pixel-art-design.md — палитра (hex в таблице);
+- troy-backend/libs/shared/contracts/src/lib/contracts.ts → ClassSpriteSheet;
+- troy-backend/apps/api-gateway/src/app/storage/storage.service.ts → uploadSprite/uploadIcon;
+- справочник RD API: `gh api repos/Retro-Diffusion/api-examples/contents/llms.txt --jq .content | base64 -d`
+  (сайт доков может отдавать 403 — бери из репо).
+
+Предусловия — проверь и остановись, если нет:
+- RD_API_KEY в окружении (или MCP retrodiffusion подключён в Claude Code);
+- баланс RD ≥ $5 (GET /v1/inferences/credits).
+Бюджет шага — $3. Перед КАЖДЫМ запросом check_cost: true; веди сумму, при $3 — стоп.
+
+Сделай:
+1. Создай сиблинг troy/troy-assets (git init, ветка main) со структурой из roadmap —
+   только то, что нужно для пробы: palette/, styles/, assets/classes/, out/probe/, tools/.
+2. palette/troy-dark-gold.png — палитра из pixel-art-design.md (фон, акценты, HP/mana/rage,
+   редкости), сгенерируй скриптом (sharp/ImageMagick), не руками.
+3. Воин по описанию из character-generation-prompt.md, промт БЕЗ слов «pixel art» и
+   «transparent», фон в промте «on a plain white background», remove_bg: true,
+   input_palette — палитра, seed фиксированный (один на все варианты):
+   - rd_pro__fantasy в 64, 96, 128 px;
+   - rd_pro__default в 96 px;
+   - иконка класса rd_plus__skill_icon 64 px, портрет portrait:rd_flux 96 px.
+4. Лучший на твой взгляд кадр (обоснуй) → rd_advanced_animation__idle (frames 8) и
+   rd_advanced_animation__attack (frames 6), return_spritesheet: true, async: true,
+   один retry при фейле. Стартовый кадр — нативный размер, паддинг до опаковых
+   пикселей ≥ 3px от края.
+5. Каждый выход проверь кодом, не глазами: альфа-канал есть, размеры совпадают с
+   запросом, у листа columns×frameWidth = width.
+6. Листы idle/attack собери в контракт ClassSpriteSheet (4 колонки, кадры слева
+   направо/сверху вниз) и закодируй в lossless webp с альфой сам (uploadSprite готовый
+   webp кладёт как есть, png может перекодировать в lossy). Рядом положи JSON
+   { columns, rows, frameCount, fps: 10 } для админки.
+7. Манифест assets/classes/warrior.yaml: промты, style id, seed, размеры, стоимость
+   каждого запроса, пути к файлам.
+8. Заливка: если в env есть ADMIN_API_URL и ADMIN_TOKEN — POST /admin/uploads/sprite и
+   /admin/uploads/icon, затем PUT /admin/classes/:id с JSON спрайтов у класса warrior.
+   Иначе — не заливай, просто укажи в отчёте, какие файлы куда загрузить через админку.
+9. Коммит в troy-assets (main).
+
+Правила: бэкенд/фронт не запускать и не перезапускать — только давать команды.
+Молчи между tool-call, текст — только если проблема или смена курса.
+
+Отчёт в конце (коротко): таблица вариантов (стиль × размер × файл × цена), итоговая
+сумма, что проверить на устройстве и какие 4 решения из Шага 0 нужно принять
+(нативный размер, upscale_output_factor, style id по типам, палитра строгая/референс).
+Дальше Шага 0 не идти.
+```
