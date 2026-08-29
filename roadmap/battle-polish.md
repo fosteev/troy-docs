@@ -9,9 +9,9 @@
 ## Диагноз (аудит 2026-08-29)
 
 1. **Задержка реакции.** Тап → сервер → снапшот → анимация: 300–500 мс мёртвой
-   паузы. Ack `battle:action {accepted, reason}` на клиенте выброшен, а на
-   бэке единственная причина — `not_active`: недоступный скилл (кулдаун, нет
-   ресурса, стан, каст) молча отбрасывается движком — игрок не видит отказа.
+   паузы. Ack `battle:action {accepted, reason}` бэкенд отдаёт
+   (`on_cooldown | no_resource | stunned | not_active`, `validateSkill` в
+   battle.service), но клиент его выбрасывает — игрок не видит отказа.
 2. **Контракт событий теряет данные.** `kind:'skill'` не несёт crit/miss
    (крит скиллом не трясёт экран, промах скиллом рисует «0»); `kind:'effect'`
    не несёт тип эффекта (клиент трактует `amount>0` как хил → SLOW от frost bolt
@@ -54,9 +54,8 @@
   поглощает `value` урона до истечения), BUFF (пока `value` к STR/INT — уточнить
   в combat.md). HEAL/BUFF/ABSORB применяются к **source**, не к target.
 - Прокинуть в `BattleStateDto.log` и `BattleEndDto.log`; Swagger/контракты обновить.
-- Ack `battle:action`: `battle.service.useSkill` проверяет `canUseSkill` до
-  постановки intent и отвечает `reason`: `unknown_skill` | `on_cooldown` |
-  `not_enough_resource` | `stunned` | `casting` (сейчас только `not_active`).
+- Ack `battle:action`: добавить `reason: 'casting'` (сейчас активный каст
+  отдаётся как `on_cooldown`).
 - Сид: мобам сильным скиллам дать `castTimeSec` 1.0–1.5 (`mob_stun_slam`,
   `mob_finisher_bolt`) — появляется окно для интеррапта.
 
@@ -75,7 +74,7 @@ SLOW/ABSORB/BUFF, self-target у HEAL, `cast_start`/`cast_interrupted`/
   `castTimeSec == 0`; сервер подтверждает снапшотом (если ack `accepted:false` —
   откат в idle).
 - Ack `{accepted, reason}` довести до UI: дрожь кнопки + короткий тост по
-  `reason` из P0 (`not_enough_resource`, `stunned`, `on_cooldown`, `casting`).
+  `reason` (`no_resource`, `stunned`, `on_cooldown`, `casting`, `not_active`).
 - Очередь событий вместо параллельного запуска: события одного снапшота
   проигрываются последовательно (`source` игрока → моба), с hit-stop ~60 мс
   на попадании и минимальным зазором 120 мс между ударами.
