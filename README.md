@@ -84,6 +84,7 @@ troy-docs/
     ├── current-flow.md                      # MVP-0: auth → character → map
     ├── playable-map.md                      # MVP-1: игровая карта
     ├── battle-loop.md                       # MVP-2: полный battle loop
+    ├── battle-polish.md                     # Шаг 3Б: отзывчивость/звук/VFX/результат боя, аудит + фазы P0–P3
     ├── inventory-profile.md                 # MVP-3: профиль, инвентарь, экипировка
     ├── content-balance.md                   # MVP-4: контент и баланс
     └── hardening.md                         # MVP-5: стабилизация для тестирования
