@@ -218,9 +218,21 @@ Ack на каждое: `{ accepted: boolean; reason?: 'on_cooldown' | 'no_resour
   expDelta: number;
   goldDelta: number;
   leveledUpBy: number;
-  loot: { itemId: string; quantity: number }[];
+  // лут резолвится на сервере — клиент не ходит за именем предмета по UUID
+  loot: {
+    itemId: string; quantity: number;
+    name: string; rarity: ItemRarity; iconUrl: string | null;
+  }[];
   battleLockUntil: string | null;   // ISO, при поражении
-  character: { level: number; exp: number; gold: number; /* атрибуты */ };
+  character: {
+    level: number; exp: number; gold: number;
+    expToNextLevel: number;                        // вся шкала уровня, не остаток
+    attributeGains: {                              // null, если апа не было
+      strength: number; intelligence: number; stamina: number;
+      agility: number; spirit: number;
+    } | null;
+  };
+  log: BattleLogEntryDto[];         // полный лог боя, не окно
 }
 ```
 
