@@ -42,7 +42,7 @@ Backend (troy-backend) — стек **Jest + @nestjs/testing** (`npx nx test gam
 - [x] **Шаг 1Б** — Backend: тест-фундамент (Jest + 6 suites/16 тестов; влито в `main`)
 - [x] **Шаг 2** — MVP-1: playable map
 - [ ] **Шаг 3** — MVP-2: battle loop
-- [ ] **Шаг 3Б** — Battle polish: отзывчивость и «живость» боя — см. [battle-polish.md](./battle-polish.md) — **P0+P1 done** (контракт событий + отзывчивость/читаемость/устойчивость клиента); дальше P4 — перекладка экрана по прототипу [design/prototypes/](../design/prototypes/), затем P2+P3 (ждут ассетов) и P5 — лента намерений моба
+- [ ] **Шаг 3Б** — Battle polish: отзывчивость и «живость» боя — см. [battle-polish.md](./battle-polish.md) — **P0, P1, P4, P3 done** (контракт событий; отзывчивость/читаемость/устойчивость; перекладка экрана в «Арену»; старт/результат/level-up). Осталось: **P5** — лента намерений моба (нужен контракт `BattleMonsterDto.skills`) и **P2** — звук/VFX/фоны арен/спрайты смерти мобов, заблокирован ассетами (нет ни одного SFX, нет полей `Monster.spriteHit`/`spriteDeath` и `SpawnZone.arenaBackground`)
 - [ ] **Шаг 4** — MVP-3: profile + inventory
 - [ ] **Шаг 5** — MVP-4: контент и баланс
 - [ ] **Шаг 6** — MVP-5: hardening
