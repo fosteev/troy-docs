@@ -40,6 +40,10 @@
 
 * { box-sizing: border-box; }
 
+/* Must outrank the display: grid/flex rules below — otherwise every element
+   toggled with the `hidden` attribute stays permanently on screen. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   background: var(--stage);
@@ -302,21 +306,6 @@ body {
   box-shadow: 0 6px 20px rgba(0,0,0,.6);
 }
 
-/* --- system back dialog (AlertDialog) --- */
-.scrim { position: absolute; inset: 0; background: rgba(0,0,0,.55); display: grid; place-items: center; }
-.dialog {
-  width: 280px; padding: 20px 24px 12px; border-radius: 28px;
-  background: var(--surface); color: #fff; font-family: var(--app);
-}
-.dialog h4 { margin: 0 0 12px; font-size: 20px; font-weight: 500; }
-.dialog p { margin: 0 0 8px; font-size: 14px; color: var(--muted-fg); }
-.dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
-.dialog button {
-  background: none; border: 0; padding: 10px 12px; border-radius: 20px;
-  color: var(--primary); font-family: var(--app); font-size: 14px; font-weight: 700; cursor: pointer;
-}
-.dialog button:hover { background: rgb(233 182 85 / .12); }
-
 .safe-area {
   position: absolute; left: 0; right: 0; pointer-events: none;
   border: 1px dashed rgb(233 182 85 / .35);
@@ -472,16 +461,6 @@ body {
           <div class="reconnect" id="reconnect" hidden>
             <div class="box"><span class="spinner"></span> Переподключение…</div>
           </div>
-          <div class="scrim" id="dialog" hidden>
-            <div class="dialog">
-              <h4>Сбежать из боя?</h4>
-              <p>Побег нужно удержать несколько секунд — и урон его срывает.</p>
-              <div class="row">
-                <button type="button" data-close>Остаться</button>
-                <button type="button" data-close>Сбежать</button>
-              </div>
-            </div>
-          </div>
 
           <div class="safe-area safe-top" id="sa1" hidden>safe area 44</div>
           <div class="safe-area safe-bottom" id="sa2" hidden>safe area 34</div>
@@ -519,7 +498,6 @@ body {
         <button type="button" id="a-seq">Очередь событий</button>
         <button type="button" id="a-reject">Отказ ack</button>
         <button type="button" id="a-flee">Канал побега</button>
-        <button type="button" id="a-back">Системный «назад»</button>
       </div>
       <p class="lede" style="margin-top:10px">«Очередь событий» проигрывает один снапшот так, как его
         раскладывает <code>BattleChoreographer</code>: крит игрока на 700 мс, удар моба на 950,
@@ -687,11 +665,6 @@ body {
       }
       label.textContent = 'Побег… ' + left.toFixed(1) + 'с';
     }, 250);
-  });
-
-  $('a-back').addEventListener('click', function () { $('dialog').hidden = false; });
-  Array.prototype.forEach.call(document.querySelectorAll('[data-close]'), function (b) {
-    b.addEventListener('click', function () { $('dialog').hidden = true; });
   });
 
   /* skill taps show the optimistic swing the client starts before the server answers */
