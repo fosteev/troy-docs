@@ -221,12 +221,18 @@ body {
   border: 2px solid var(--border); border-radius: 6px;
   background: var(--surface); color: #fff;
   font-family: var(--app); font-size: 12px; font-weight: 700; line-height: 1.33;
-  display: grid; place-items: center; padding: 0 6px; text-align: center;
+  display: grid; place-items: center; text-align: center;
   overflow: hidden; cursor: pointer;
   transition: scale 90ms ease-out, border-color 120ms, box-shadow 120ms;
 }
 .skill:active { scale: .92; border-color: var(--warning); box-shadow: 0 0 12px rgb(208 137 46 / .45); }
 .skill[data-cooldown] { color: var(--disabled); background: var(--disabled-surf); border-color: var(--panel-border); cursor: default; }
+.skill .pad { position: absolute; inset: 0 6px; display: grid; place-items: center; }
+.skill .ico {
+  max-width: 100%; max-height: 100%; object-fit: contain;
+  image-rendering: pixelated;              /* filterQuality: FilterQuality.none */
+}
+.skill[data-cooldown] .ico { opacity: .75; }
 .skill .sweep {
   position: absolute; inset: 0; pointer-events: none;
   background: conic-gradient(rgba(0,0,0,.55) 0turn var(--p, 0turn), transparent var(--p, 0turn) 1turn);
@@ -431,7 +437,7 @@ body {
           <div class="controls">
             <div class="log" id="log">
               <div class="log-line foe">Гоблин: атака — 7</div>
-              <div class="log-line me">Вы: Тяжёлый удар — 31 (крит)</div>
+              <div class="log-line me">Вы: Heavy Strike — 31 (крит)</div>
               <div class="log-line foe">Гоблин: Замедление</div>
             </div>
             <div class="resource">
@@ -440,12 +446,12 @@ body {
             </div>
             <div class="skills">
               <button class="skill" id="sk1" type="button">
-                Тяжёлый удар
+                <span class="pad"><img class="ico" src="data:image/webp;base64,UklGRooRAABXRUJQVlA4IH4RAAAQOgCdASpwAHAAPkkaikQioaEZfT+YKASEtQBgMQms/0IzT8PXsR967Wf59GPmAeN16oPMB9gHu+f8P9jPdR/g/UA/on/A60D0AP1Z9Nv92vg9/sX/T/dH2uuoAzr+9PxcexP2rzrP7XvrdM+ZX8s+9/7bzJ74fi9qEfkn9H/0HiW7JnSf9X6Avsl9h/5vhv6jWQB/N/6d/vfXXvffuf/A9gP+h/4H/sfdH9Mn9L/6/9V52fzz/J/+j/TfAP/Of7F/1/Xk9nP7kezL+4ItT/14/YV/7X4IZJF6uUv9VCSZ/PAePli7r+Q+ELn7A1f33CINoHhByL3ufLljWzcMgbV6Il1W+sqg+b0YAn75EtMFW8VBXMF/rjX8hDb6J5SFipt7lCBlMMfrbSklc0UFVHzwxczOA2ms8+RinXCDKSQr2HdPITu6F2zM7z40UBR3lDCK7Es7JZvdoFb5vJklPbGcsy3453PcPhZgP4dOkfsqcTe9W/PgVODkjCJY2nsXaxtEyFmJ5C5K9zMbePjqInud6xIJM0gPFR52+dxmBi3B4/rsYSSt89rsl8aUHkAfYsGr55Utrl28Bz61Kto+kaFU/GLFw6y7/hdyJCHTEu6nwlo480RCtmCQAAD+/zn9AYs1Xhf/HCObEmrMwcIcXePyaPVxb7cbNDxeLJO4xZUUnHHSpBMTvRxn5bZPmpbCbq+U7WKU88Gk6MmafLCOpPZczDSijgBcPyO57Il96JJNB535XsO2M58O18OV97rLQveH7PA/2jsJ9x9khFst9gKYjPkRZqzpa13889Ir+aNkkXtwXGd3Wf5nFCYqQMYn2OsI3u45/aRFiwneG+8PdIQY/+o1hED6vEzU66OqKOa1BV+7dWYreP3CsxVjPwAhA8dElbz+hxXClH0G//CWthG0rPo2b4/2fkupLZvpR48F8YelQhdpnDK/ISsxv4B0kgrSQrnQ2P2JPH02I6I0WgISx5mZ67i5EHXxi0Jh2b3aa5RIHpXX0C0Sk6iQkA7Gbj/qupH4V1IBfHs9L5Dcdwe/hyK+/iCfrBf35nP39vS37rL063dwN2E3BYwDqMOE8iOKOkcdWcK7PwQe9LGFasys/Rx/R8kVJ99ZitCCWA7ngUU040/aUk/KtMesYAfWaENORwOJEEozKsPn1V2WvcD5b7V/z7Ssxx/+DqsbsQb/yTogoqGqxVaqg/ssBRZbFN/JYhPzUfx2PhRolV3sJDI9bgegYeTf62PXekYqsP8RcELysb5D8GKKAs06eTtQhLHavx19rHmcAiKPly97GIRRoxX2N9usT66+zG+R6EswsY9SLSyLMXALIXU1RK+oIn+Nr1j0Q54TsyLa4k00m0ibFD9dqsR57Pren1NcjPamqoYQYnVS+175WW4ELAOWddTSWPiO26s5FTSjcttBFr3T3Z0oIyYdHTm13Q4jptNhYhYCc1qaA6fizcRwr8HMoLAycII+loVWBZhv/knHZhf5aeE/BUePuqfPpnqxwVdcndfzIQfhEnSzjmaqZUo2KUuF1HRrwvjNNmIslEpF0vCGj3DAhOO8yoqgGUCr8ivJ/2MWsxP9Qt5U+6bHCUoUZ3KBOO5vK7lQsChpSzWiDWNHFFz7jOrvBH7QWf9fAYpuCAG3Oo52xrS3++uc/RpEtI7KT1EfxHj+UOedB8RACi7q5ok8i3QZFlxbGRR5bbo/L+AAANdlXghI8fdG8MkeZ1RNrk6Jgr4HS5d8tOs38hv5HFXzEkJw54INbjUKedhU0ua54PBUATV3l1I4jE6EAfp5UgJBpfMLu08GHCZOJAnyNeIpXjwS0TvBIEDnnYdLWnTLIvdhAd5QASSJa/h1XS5z1FyYGPyuAFnQm42fAsJTSFpWCeEVkoZjByDd1AKYRqbsatNczosutoqPoJBfEmFXh0N2Z+Rlh+S4a70QofDD4zhkPcZ/WTlRLHvyBbaiEf+OvfY9dGmt3ADe0+z731PXCmbr65V/5YB9lf1/0lYTeT6tF3OLHpjxsKi3VKs/iCkotw63DDTj14SbIKOWAYpPDhSOHByZplcifSEKHUVTca1ZNqMK0gaGS2wYQOjg68PBYEzEEoxgyybXbHUYMRgegkkNSxxwa5oDDP/QrJhQMpxsgfpE2JP1G6OBhRwu18lczpZ2SifMF+39w3pvh4t/Ytd+qAafH2YqQh5vslSbWmFYpVBtVd8BGn+kBBmYiYdlm3yYM/GlJCD7xMvZu7guLKLbM697l50B0HqwXcE5M2xHzYAJyzyZ0GcBL3yqBm6RAjiIG/kz5SN0UghRgsAQNPNJooruPL1/sepSE669zuafq4QA4PP65n6N1AUCOui1b1BvwFstuKA3E9L4jNrmc/9XMAaS7KEK8O/aBrJe9OBF08ExWNEU9waCiO4Bt9ttpg42JwwbhotZkt0/l8hVrV4RCr3rRHwrX9WzS8mO6gUC0p6gExFothzeOxJIvMndMnIHV1ut1jezhlVMfEWOHg7g7JdTw0DZtc/fLfU7JeG/+mJ/QoJ/xm+RmVGIwbsYK5OU2LdLGdoxJ7yP/U0lsHyibplUnnTRKCvwQwp2BBbpYT/e/P3meY0+JuYghizx5tQ7TiNoZZhe976rx12IAoH2X7FtWG4tU0LATAVQupWpvEsAYgPkyDiSKR5nk94LQH8KAnDKLQha552ZFije9tDXm4/LM+AO95YEKBIBXINNc1840C4zdv7NGbWR5bjaeBy5C0yb3jgn7fXzns9WVCh+w5ucioIaAwgb0Jy7sPB9X/ZJw+PVZymUb9Sp30R+wPJfdZoxjHtNQ13/06IvByDGw3kq8tIbEL5IzIU4ClpbezlgI3kxxobsqOIeZIn5iL0+XiMzuGqiwnIom3EQ9jUFOepK7MRwVekb5aTZHSJ+3UYrByioV8uopnBUYNHvwtkLoAyFJXOQEoqsBUxepKMMnIn9V4abMHVW4/ozLSZKMfDGd5uEWwg+8bS2lTwJPrrMQhxWavjzdCxgm0HJF50fPyas7qdMvtLLnJiqo4zenG92Z6uwPRApm0b8beEFU8UDTLui2H2DnWi1AfQjExDYIEZSzGadKCrcsbqYWpHR5SmRs8X1voS1ArRv8vHOhsHDxdmk7ZHZe0NyzrX2wVQPQsxiZCsAY/VU5xZzdlwlpZ5KULRnYitfrfF23l8re6EfuF//hxFg+vSQtFU1iKX2XqM/fWnnqC/OcbhXJBQJ+mFwvAvQU86RhVT4UMx3R2LiAcspfkXypBJtMByX/Gb4pGoWoX0iZRdtWN0/TYbGFtoOJ24E/Na0av6u3u3KZsKlruvAKPQbYP5WMpQ2W07Hf7OVcciBx96zVFlHYzCgrx6A4Y5uoWk8nO0Yq2DtXVvhKcD8vf7Hpo/tD48Ok4hlmk6Tmm+2sMiPopc+IcTds0CfmGOLbiT1j7I6SaVLIjPcTwAeHI1uqOnHVK9vMe/lSLG3tHIjxqvBgzG+QaGtGgD4IUsiGVf94oG/kdxUyrn4lMguuN1eU7A9bRN/kVVFiPLH1F0/EJIEg2opb74KotTLwpkGfbfeG5VQYA+SxhnSNTsea97eWpm1MdoTA+tKvZ1uOMfR6XZmG0D1vv/h1R9sxqNXG6YJUj5krrwJKBOT/COoUCZ/CGT2nfBylRvG0kyA8K7x8ybU1Ck7OrT/fxXVo4CV74yoBcCQe4XC5c482cQfvzolMGCbOKJh8BXu89ZWgzZrYMTXaDzTADwUsMzr28RXxxnXEtd49MT8ytY4EAjSL1Nkq20w713vQnfenou5BfLVM2uP1hElD4l2xz0nEPXjxBKVETTEndv9GQkXYh6cKk9s0hfporf21Nz9yXeN4CC9fIVGQaVOeZMK43aFAXle1djuMAbiaVMim9jKxZbfU58Ewo7GnYsOl7bFZxUrc7rKS3R+uK9nFHTuuTjJtVwoTu6gjuTXpeZlg39W57l8BKD5dXLd7IjXkXngUfTfy372np+Zo+8kpp77k1KDrP7msPZz4CAV3Tetg0RyTStbctUpmTOXPsvoPkg1X7T3psX2O1v+US3vEMii4xiIDe902mQiDic9bkDhOaDS2P7tQUi9tRgm90hhzonwScWlN9C/0rldaezBO+DdsXILMayflMq8HDUWGdPcWqnu9vneY3NaYMhQYrfGbh2ZQ5nf4UF+nezIAb+VFDVzp3VO4NUH5E33JIeJSiy3D9SwZ24ZUkixNjRH3F/Qf/AT+c+/W6ZxnGJ5l+sHYZKUfWspYe+bDeooxCYf9sX3K8DboIrqpk6Px56BKNhsy60lCX1fO17569KVyepkMjzUFwaQi7kOU0tja0N6d7/5JH8qsecrMZ2J33GmrrOMZv5A3B5bSCzJI/LGKh8M8jwTUz5KiyLFHqnW0km0xUYSSiwgXVLf1oPg8wtV+Apwz9KGp4dxoS/V491hNk79faMIW7x3rrsnckLoBHj2WwRFEM6Az1C/0EIUOBw+bxzbHhGkjNhBEBMvuslPYgaHS0S7le8zQOBRRDvHCzKuIiM3MEXGpTu24pzPTFKYyJTl4cTGEcnr1CGzPIsc5Wtm3b+1/1TWLIO8q26Xtc/D7mS2p3vBVJYOPivqriBn9TR9acR4ZMgw04bhTWuIKmaspAnSV60Rljsnqh7NGAMcjWQt2WDjbJoBIAJemfI6Sz0ASNOasgSS39tQrMpSF7mYcuTKl77P3LnB6gkHGxwnj3ufaB9t30ICHzjjT2m+h9thjJ2JkEsQmdFmQGjXlJ6LFwuuZ8W2VepQQm+Dr6Ru48qHz2fe05pU/XqEB5FX7yrO39TNAJ9lGQPk2rFljj/0AeMtlze8TjK94DecZUBbKurB+hjvV0blrZhvDr7+PUtPN9d49PH4096hRH7vGD8KrIEF92GDgvt2CrazU7mSCLmn6se8tOQKdUru3FeKqdilau9mKcNU9GJr5n9T05YKvBDFOetyNiqbifB0NfFGSDTh2tscP9mJRDCg68ldo7pje4NsLvwm0vDaicjhO8oV3DqvMfu4pkoahmT80mKd4Q9iNW44piP4az+yAlhJ3Cn62ftcPBfTboFwC30dr4sdCFfI4vEePz6WP0nGUEyIKB5M0JPL1QOD5jPjBF84up/3+behyALjs4u6hLpFmJBhBQIYNbmw/vV4hQG29dPwUljFiw8KTFaPNYN08SC9yNTVYWzgblWGW/uOES9MAIbaNfwaK5sjr+3wfbPldj3d7nTnlvOn02ICyClSqXBRrUOmkmC1+qSHT3xJLayEwKJ0jn/tw1JG6FBc/hH5Xl1LHLMY4JsB3j+y07PfU4osNP643ZsXI2sq3GfMQgSefKNNzxeq2VMxUXQgo8fmqmUCckgSF8sHulHM5y+yAlzhMGonPhs0geVkM/J1OI+P4j+XfgExs34Gfv+kVYuESzf66M48kJ0SG5u1SO3XnfSY6534nF9ipahKyPz7epXUMdWd2K18mMXfm5x32+ZomWQleeznpmZHCL6RpHoi8MuFPPYxOhiNjQOLMzHaD7Ysc8/ymeNCl1Wf61t9t33iOitR9kMKdoi8bQOx/i+W+5Li62zYRy0a7w4AWdEPb0vK+xEg6kkNE5jBKSKRsbI6yvaBlwwQm6cX6fNMETq6CxT7Dztocn6PV+9ZuQh+sHlYQNTTc4LQS4nEoe+1Z4Oj4LzbHIm0q5wq1IVd99Y6OdAvB+La3rYIB3X5sAmJKAQVH+b5mw03j323myU55qtUvsoi4GXG1yVGuyw8eN52DN3uwydR7yvWTlZdmr23NjxxfLp6E21VcxhSenCMk6PFTB8jwxqsuF8YD5yRzP2erpkNezdOo4pJ9Frdvh0oEI6CSrYWZzdaY+wzQeN4rbRRItO2d9xHPnle8hW2iE1iICCFM2+vl5TXYV9eiJkbv3to49pQyRps30OCt+o3czYKaaPQQiZrjHrEeMjEcHlkz/hF/4w6EzEfHGlTGgoGhMAAAA==" alt="Heavy Strike"></span>
                 <span class="sweep"></span>
-                <span class="cost">20</span>
+                <span class="cost">25</span>
               </button>
               <button class="skill" id="sk2" type="button">
-                Рассечение
+                <span class="pad"><img class="ico" src="data:image/webp;base64,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" alt="Shield Slam"></span>
                 <span class="sweep"></span>
                 <span class="cost">35</span>
               </button>
@@ -485,7 +491,7 @@ body {
         <label class="sw"><input type="checkbox" id="t-cast"><span class="box"></span> Каст моба<span class="note">телеграф + «!»</span></label>
         <label class="sw"><input type="checkbox" id="t-low"><span class="box"></span> HP &lt; 25 %<span class="note">пульс + виньетка</span></label>
         <label class="sw"><input type="checkbox" id="t-cd"><span class="box"></span> Скилл на кулдауне<span class="note">радиальный сектор</span></label>
-        <label class="sw"><input type="checkbox" id="t-poor"><span class="box"></span> Не хватает ярости<span class="note">красная стоимость</span></label>
+        <label class="sw"><input type="checkbox" id="t-poor"><span class="box"></span> Ярости хватает на один<span class="note">30 из 25 / 35</span></label>
         <label class="sw"><input type="checkbox" id="t-shield"><span class="box"></span> Щит на игроке<span class="note">чип ABSORB</span></label>
         <label class="sw"><input type="checkbox" id="t-recon"><span class="box"></span> Обрыв сокета<span class="note">оверлей</span></label>
         <label class="sw"><input type="checkbox" id="t-safe"><span class="box"></span> Показать safe area</label>
@@ -526,8 +532,11 @@ body {
           отдельный атак-лист на скилл.</li>
         <li>Фон арены — статичный кадр анимации логина (29 кадров), он же пока служит ареной.</li>
         <li>Hit-stop не виден: он замораживает спрайт-анимацию, а тут кадр и так один.</li>
-        <li>Иконки скиллов приходят с бэкенда (<code>ClassSkillInfo.icon</code>); без них
-          рисуется имя — этот случай и показан.</li>
+        <li>Иконки скиллов приходят с бэкенда (<code>ClassSkillInfo.iconUrl</code>); здесь
+          взяты исходники из <code>troy-docs/assets/war1/</code>. Если иконки нет, кнопка
+          рисует имя скилла — этот фолбэк тут не показан.</li>
+        <li>Имена скиллов в сиде английские, поэтому строка лога смешанная — это
+          состояние контента, а не вёрстки.</li>
       </ul>
     </div>
   </div>
@@ -570,8 +579,8 @@ body {
 
   bind('t-poor', function (on) {
     $('sk2').classList.toggle('poor', on);
-    $('res').style.width = on ? '12%' : '45%';
-    $('res-v').textContent = on ? '12 / 100' : '45 / 100';
+    $('res').style.width = on ? '30%' : '45%';
+    $('res-v').textContent = on ? '30 / 100' : '45 / 100';
   });
 
   bind('t-shield', function (on) { $('p-chips').hidden = !on; });
@@ -619,7 +628,7 @@ body {
     lunge('player-card', 18);
     at(700, function () {
       damage('monster-card', '62', 'var(--dmg-crit)', 'crit');
-      pushLog('me', 'Вы: Тяжёлый удар — 62 (крит)');
+      pushLog('me', 'Вы: Heavy Strike — 62 (крит)');
       $('m-hp').style.width = '45%'; $('m-hp-v').textContent = '146 / 320';
     });
     at(760, function () { lunge('monster-card', -18); });
