@@ -59,7 +59,7 @@ troy-assets/
 
 ## Статус
 
-- [~] **Шаг 0** — сгенерировано (`troy-assets/out/probe`, итоги в `troy-assets/styles/README.md`); ждёт проверки на устройстве и 4 решений
+- [~] **Шаг 0** — сгенерировано и залито в dev как класс `knight` (иконка + idle/walk/attack/attackIdle, `troy-assets/tools/publish-class.mjs`); итоги в `troy-assets/styles/README.md`; ждёт проверки на устройстве и 4 решений
 - [ ] **Шаг 1** — инструментарий: репо, манифесты, `gen`/`pack`/`publish`
 - [ ] **Шаг 2** — классы: ключевая поза → 4 анимации → скиллы → иконка
 - [ ] **Шаг 3** — мобы: иконка карты → idle/attack → скиллы
