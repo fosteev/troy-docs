@@ -39,7 +39,7 @@
 Порядок жёсткий: P0 → P1 (текущий релиз), P2 → P3 (следующий, ждут ассетов).
 Клиентская хореография строится на событиях, поэтому контракт чинится первым.
 
-### P0 — Контракт событий (backend) — текущий релиз
+### P0 — Контракт событий (backend) — [x] сделано
 
 Работаем в `troy-backend/apps/game-core/src/app/battle/engine/**`,
 `battle.service.ts` (`toStateDto`/`appendLog`), `libs/shared/contracts`.
@@ -64,7 +64,16 @@ SLOW/ABSORB/BUFF, self-target у HEAL, `cast_start`/`cast_interrupted`/
 `effect_expired`; `npx nx test game-core` зелёный; Flutter-маппер терпит новые
 поля (unknown kind → пропуск, не падение). Коммит в troy-backend.
 
-### P1 — Отзывчивость и читаемость (Flutter) — текущий релиз
+**Сделано** (troy-backend `a76d8b1`, troy-flutter `0e29e1e`): контракт расширен,
+SLOW/ABSORB/BUFF реализованы, HEAL/BUFF/ABSORB — на кастера, ack отдаёт
+`casting`, сид получил касты мобам. Тесты: 174 backend, `npm run build` зелёный.
+Замечания по ходу: `Combatant.shield` и `ActiveEffect.source/damageType`
+сделаны опциональными — сессии в Redis переживают деплой; ABSORB не
+стакается (новый щит заменяет старый, снимается при истечении последнего);
+`amount` у урон-события — то, что реально дошло до HP (щит вычтен). Swagger
+DTO лога в api-gateway нет (лог идёт только через WS) — правки не потребовалось.
+
+### P1 — Отзывчивость и читаемость (Flutter) — [x] сделано
 
 Работаем в `troy-flutter/lib/features/battle/**`.
 
@@ -104,6 +113,17 @@ SLOW/ABSORB/BUFF, self-target у HEAL, `cast_start`/`cast_interrupted`/
 DoD: widget-тесты — ack-отказ показывает причину, очередь проигрывает события
 последовательно (fake clock), кулдаун/стоимость рендерятся, `PopScope`
 перехватывает back; `flutter analyze` чисто, `flutter test` зелёный. Коммит.
+
+**Сделано** (troy-flutter `8de7350`, `d4c06e3`, `fcd85c2`, `aa38ca7`, `a58a773`):
+хореограф событий (`presentation/logic/battle_choreographer.dart`) + один
+таймер-планировщик вместо параллельных, ack → дрожь кнопки и тост, кнопка
+скилла с иконкой/стоимостью/радиальным кулдауном, имена скиллов и эффектов,
+живой лог, виньетка и пульс на низком HP, цифры урона по боксу спрайта,
+прогресс побега, `PopScope` и оверлей переподключения. 192 теста, analyze чисто.
+Отклонения от плана: `SocketService` в `lib/core/socket` не существует —
+поток статуса добавлен в `SocketClient` и проброшен через datasource/репозиторий;
+числа HP/ресурса уже рисовал `StatBar` (`showValue`); wind-up игрока ограничен
+700 мс, иначе последовательная очередь растягивала один снапшот на 1.6 с.
 
 ### P2 — Звук, VFX, арена, спрайты мобов — следующий релиз
 
