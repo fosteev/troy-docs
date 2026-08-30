@@ -102,10 +102,10 @@ Attack Speed = 0.8 * (1 + AGI*0.01)     Crit         = AGI*0.15 %
 
 | Слот | Ур. | code | Название | Cast | CD | Rage | Base | Scaling | Эффект | Статус |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 1 | `heavy_strike` | Heavy Strike / Тяжёлый удар | 0s | 4s | 25 | 20 | STR × 1.2 | NONE | в БД |
-| 2 | 3 | `shield_slam` | Shield Slam / Удар щитом | 0s | 8s | 35 | 10 | STR × 0.6 | STUN 1.5s | в БД |
-| 3 | 6 | `battle_cry` | Battle Cry / Боевой клич | 0s | 20s | 25 | 0 | — | BUFF +20% ATK, 8s | план |
-| 4 | 10 | `whirlwind` | Whirlwind / Вихрь | 1s | 12s | 40 | 40 | STR × 1.2 | NONE | план |
+| 1 | 1 | `heavy_strike` | Heavy Strike / Тяжёлый удар | 0s | 4s | 25 | 20 | STR × 1.2 | NONE | в БД (seed) |
+| 2 | 3 | `shield_slam` | Shield Slam / Удар щитом | 0s | 8s | 35 | 10 | STR × 0.6 | STUN 1.5s | в БД (seed) |
+| 3 | 6 | `battle_cry` | Battle Cry / Боевой клич | 0s | 20s | 25 | 0 | — | BUFF +20% ATK, 8s | seed + манифест `db:` |
+| 4 | 10 | `whirlwind` | Whirlwind / Вихрь | 1s | 12s | 40 | 40 | STR × 1.2 | NONE | seed + манифест `db:` |
 
 Экономика ярости на 10 ур.: 5.75/автоатака при интервале 1.12с ≈ 5.1 rage/с без учёта входящего урона → Heavy Strike каждые ~5с (упирается в CD 4с), Shield Slam каждые ~8с (CD), Whirlwind — раз в ~12–15с.
 
@@ -125,21 +125,25 @@ whirlwind:  { slot: 4, unlockLevel: 10, castTimeSec: 1, cooldownSec: 12, resourc
 Поля `icon` / `cast` вставляются в шаблоны `troy-assets/styles/class.yaml` → `skill.icon` / `skill.anim` (к ним автоматически добавляется «Skill icon: …, vivid readable silhouette, warm gold frame accents, medieval dark fantasy, on a plain white background» и «…, facing right, clear wind-up then the action with follow-through»). Каст-анимация — 8 кадров 12 fps от бокового ключевого кадра, холст 144. Иконка — `rd_plus__skill_icon` 64 → ×2.
 
 **Heavy Strike** — «Обрушивает меч двумя руками. Просто, тяжело, больно.»
+- `description` (в игре, RU): Обрушивает меч двумя руками со всей силы. Простой и надёжный удар — основа арсенала воина.
 - `icon`: `a broad steel sword slamming down with a red-orange impact flash`
 - `cast`: `Heavy Strike — lifts the sword with both hands high above the head and smashes it down with a massive impact, dust burst at the point of impact`
 - ✅ сгенерировано (knight), в state: `skill:heavy_strike`
 
 **Shield Slam** — «Таран щитом. Оглушает на 1.5 с — шанс сбить каст.»
+- `description` (в игре, RU): Таранит противника щитом и оглушает на 1,5 с: цель не атакует, не кастует, а начатый каст срывается.
 - `icon`: `a round steel shield with a gold rim smashing forward, yellow stun stars around the rim`
 - `cast`: `Shield Slam — lunges forward and rams the round shield into the enemy, a short stun shockwave ring bursts from the shield`
 - ✅ сгенерировано (knight), в state: `skill:shield_slam`
 
 **Battle Cry** — «Рёв, от которого крепче хват. +20% к атаке на 8 с.»
+- `description` (в игре, RU): Боевой клич: атака воина растёт на 20 % на 8 с. Урона не наносит — усиливает всё, что будет дальше.
 - `icon`: `an open shouting helmeted head in profile with three red-orange sound waves bursting from the mouth`
 - `cast`: `Battle Cry — plants both feet, throws the head back and roars with the sword thrust up to the sky, a red-orange shockwave ring pulses outward from the body`
 - ⬜ не сгенерировано
 
 **Whirlwind** — «Разворот на пятке с мечом на вытянутой руке. Секунда замаха — и всё вокруг в стали.»
+- `description` (в игре, RU): Секунда замаха — и воин разворачивается с мечом на вытянутой руке. Самый сильный удар класса.
 - `icon`: `a steel sword blade sweeping in a full circle leaving a curved silver-white motion trail`
 - `cast`: `Whirlwind — spins a full 360 degrees on the spot with the sword held out at arm's length, the blade leaves a silver motion trail, shield tucked in, ends in the guard stance`
 - ⬜ не сгенерировано
@@ -199,7 +203,7 @@ Color scheme: dark steel gray, deep crimson red, warm gold accents, muted dark m
 |---|---|---|---|---|
 | `keyframeFront` | экран персонажа, старт idle | `rd_pro__fantasy` | 128 | `{subject} Front-facing full body, feet visible, small margin to the canvas edge, centered, on a plain white background.` |
 | `keyframeSide` | старт боевых анимаций | `rd_pro__edit`, input = front | 128 | `Redraw this exact character rotated 90 degrees into a strict side view in profile, facing to the RIGHT, full body, feet visible, calm guard stance with the sword tip lowered and the shield resting at the side, same armor, colors and proportions, small margin to the canvas edge, centered, on a plain white background.` |
-| `keyframeTop` | старт walk (карта) | `rd_pro__edit`, input = front, 128 → 64 | 64 | `Redraw this exact character seen from directly above, a steep top-down camera angle like a classic top-down city game: the top of the helmet and the shoulders dominate, the body is foreshortened, crimson plume on the helmet, round shield on the left, sword on the right, standing, facing up, same armor and colors. The whole small figure including feet fits in the middle of the canvas with wide empty white margins around it, on a plain white background.` |
+| `keyframeTop` | старт walk (карта) | `rd_pro__topdown`, refs = front, 96 → 64 (`fix-top.mjs`) | 64 | `{subject} Top-down view from high above and slightly behind, like a classic top-down city game: the character walks away from the viewer toward the top edge, we see the top of the helmet with the crimson plume, the shoulder plates and the back; the face is not visible; {topdownDetail}; small full figure with feet visible, wide empty white margins around it, centered, on a plain white background.` |
 | `icon` → `iconUrl` | выбор класса, HUD боя (портрет-иконка), 512 px | `rd_plus__skill_icon` ×4 | 128→512 | `Class emblem icon: a crossed steel sword and a round shield with a gold rim and a crimson plume above, warm gold accents on dark steel, medieval dark fantasy, bold readable silhouette, on a plain white background.` |
 | `portrait` | резерв: диалоги/результат боя (в БД слота пока нет) | `portrait:rd_flux` | 128 | `Bust portrait of a grim human warrior in a dark steel helmet with the visor raised, crimson plume, scarred face, stern eyes, gold-trimmed gorget, dark moody lighting, warm gold rim light, on a plain white background.` |
 
@@ -219,11 +223,11 @@ Color scheme: dark steel gray, deep crimson red, warm gold accents, muted dark m
 
 ### Чек-лист готовности арта
 
-- [x] keyframeFront, keyframeSide, keyframeTop (30.08 вечер: перегенерирован на север — спина, затылок; 128→64 + `fix-top.mjs`, т.к. edit синил сталь)
+- [x] keyframeFront, keyframeSide, keyframeTop (30.08: 3 попытки через `rd_pro__edit` дали вид сбоку/со спины и синюю сталь; рабочий — `rd_pro__topdown` текст + reference, 96 → 64)
 - [x] icon 512, portrait
 - [x] spriteIdle, spriteWalk, spriteAttackIdle, spriteAttack
 - [x] heavy_strike (icon + cast), shield_slam (icon + cast)
-- [ ] battle_cry (icon + cast), whirlwind (icon + cast) — после заведения скиллов в БД
+- [x] battle_cry (icon + cast), whirlwind (icon + cast) — сгенерированы 30.08; в БД создаются `publish.mjs` из блока `db:` манифеста
 - [ ] проверка на устройстве: карта (маркер), бой (стойка/атака/касты), выбор персонажа (иконка 512)
 - [ ] перенос с `knight` на `warrior` (`publish.mjs` по `code: warrior`), удаление `knight`
 
@@ -242,4 +246,4 @@ Color scheme: dark steel gray, deep crimson red, warm gold accents, muted dark m
 
 1. `classes.md` раньше описывал Heavy Strike на 3 ур. (CD 3, 15 ярости, 25 + STR×1.0) и Shield Bash на 6 ур. — **приведено к БД** (1 ур. / 3 ур., `shield_slam`).
 2. В `troy-assets/assets/classes/warrior.yaml` лежит старый манифест пробы Шага 0 — источник правды теперь `knight.yaml` до переноса.
-3. Слоты 3–4 (`battle_cry`, `whirlwind`) в БД отсутствуют — завести через админку/seed до генерации арта.
+3. Слоты 3–4 (`battle_cry`, `whirlwind`) добавлены в seed и в манифест (`db:`) — на dev создаёт `publish.mjs`; seed на dev не гоняем (чистит kills/inventory).

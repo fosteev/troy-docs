@@ -15,7 +15,7 @@
 
 **Роль:** {дистанция (мили/дальний) · функция (танк/дамагер/контроль) · темп (разгон/фронтлоад)} — одна строка.
 
-**Лор (экран выбора, ≤ 220 символов):**
+**Описание класса — `CharacterClass.description` (в игре, экран выбора, ≤ 220 символов; RU, EN — этап локализации):**
 > {2–3 предложения от третьего лица: кто, во что верит, как ведёт бой. Без чисел.}
 
 **Короткое (карточка, ≤ 60 символов):** «{…}».
@@ -101,7 +101,7 @@ Attack Speed = baseAS * (1 + AGI*0.01)      Crit = AGI*0.15 %
 
 Экономика ресурса на 10 ур.: {сколько ресурса в секунду → как часто каждый скилл}.
 
-Поля `ClassSkill`:
+Поля `ClassSkill` (те же — в блок `db:` манифеста `troy-assets`, чтобы `publish.mjs` создал скилл, если его нет в БД; `description` — рядом):
 
 ```yaml
 {code}: { slot: 1, unlockLevel: 1,  castTimeSec: 0, cooldownSec: 4, resourceType: {RAGE|MANA}, resourceCost: 25,
@@ -115,6 +115,7 @@ Attack Speed = baseAS * (1 + AGI*0.01)      Crit = AGI*0.15 %
 💡 `icon` — **предмет/символ**, не персонаж: одна вещь + один цветовой акцент эффекта (impact flash, stun stars, frost, …), читается в 32 px. `cast` — «{Name} — что делает тело, что делает оружие, какой VFX», глаголы действия, ≤ 30 слов, без ракурса и фона (их добавит шаблон `styles/class.yaml`: «…, facing right, clear wind-up then the action with follow-through»).
 
 **{Skill 1}** — «{одна фраза для тултипа}»
+- `description` (в игре, RU; поле `ClassSkill.description`, ≤ 500): {1–2 предложения: что делает + число эффекта, без формул}
 - `icon`: `{…}`
 - `cast`: `{Name} — {…}`
 - ⬜ не сгенерировано
@@ -163,7 +164,7 @@ Color scheme: {цвет 1}, {цвет 2}, warm gold accents, muted dark medieval
 |---|---|---|---|
 | `keyframeFront` | `rd_pro__fantasy` | 128 | → из state |
 | `keyframeSide` | `rd_pro__edit` (input = front) | 128 | → из state |
-| `keyframeTop` | `rd_pro__edit` (input = front) | 64 | → из state |
+| `keyframeTop` | `rd_pro__topdown` текст + refs = front, 96 → 64 (`downscale`, при синей стали — `fix-top.mjs`) | 64 | → из state |
 | `icon` → `iconUrl` | `rd_plus__skill_icon` ×4 | 512 | → из state |
 | `portrait` | `portrait:rd_flux` | 128 | → из state |
 | `spriteIdle` | `rd_advanced_animation__idle` | 8 / 5 fps | → из state |

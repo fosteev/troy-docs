@@ -67,3 +67,15 @@ DevOps: docker compose поднимает рабочий dev backend; seed од�
 
 DoD: backend проходит build и тесты (unit+integration); flutter analyze чисто и flutter test зелёный; docker compose поднимает рабочий backend; снят перф-baseline горячих путей (p50/p95/RPS); MVP можно поставить на устройство и пройти core loop без ручных SQL/API вмешательств. Коммит. Отметить фазу [x] в troy-docs/roadmap/README.md.
 ```
+
+
+## Локализация (последний этап MVP-5)
+
+Сейчас все игровые тексты — RU и лежат прямо в БД: `CharacterClass.description`, `ClassSkill.description`
+(+ `name` скиллов на EN, названия классов на RU). Источник текстов — карточки `troy-docs/classes/*.md`.
+
+- [ ] Схема: тексты класса/скилла/моба/предмета → `{ ru, en }` (JSONB-словарь или таблица `Translation(entity, id, field, lang)`), API отдаёт по `Accept-Language`, дефолт EN.
+- [ ] Админка: поля RU/EN рядом (вкладки языков в формах класса, скилла, моба, предмета).
+- [ ] Перевести на EN описания классов и всех скиллов из `troy-docs/classes/` (воин, маг, далее по мере добавления), названия классов.
+- [ ] Клиент: локаль устройства → `Accept-Language`; тексты UI Flutter — через `intl`/ARB.
+- [ ] Seed: оба языка.

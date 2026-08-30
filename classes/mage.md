@@ -14,7 +14,7 @@
 
 **Роль:** дальний бой · дамагер-кастер · фронтлоад (сильный старт, потом экономит).
 
-**Лор (экран выбора, ≤ 220 символов):**
+**Описание класса — `CharacterClass.description` (в игре, экран выбора; RU, локализация — последний этап roadmap):**
 > Ушёл из башни, не дописав диссертацию: решил, что руны лучше проверять на живых. Начинает бой с полным запасом маны и не стесняется тратить её сразу — главное, чтобы противник кончился раньше.
 
 **Короткое (карточка, ≤ 60 символов):** «Огонь и лёд. Бьёт первым — и очень больно».
@@ -102,8 +102,8 @@ Attack Speed = 0.5 * (1 + AGI*0.01)      Crit = AGI*0.15 %
 |---|---|---|---|---|---|---|---|---|---|---|
 | 1 | 1 | `fireball` | Fireball / Огненный шар | 1.5s | 3s | 25 | 30 | INT × 1.2 | NONE | в БД |
 | 2 | 3 | `frost_bolt` | Frost Bolt / Ледяная стрела | 1s | 5s | 30 | 18 | INT × 0.8 | SLOW 30 %, 3s | в БД (unlock 2 → 3) |
-| 3 | 6 | `arcane_shield` | Arcane Shield / Чародейский щит | 0s | 18s | 25 | 0 | INT × 0.5 (щит) | ABSORB 30 + INT×0.5, 10s | план |
-| 4 | 10 | `meteor` | Meteor / Метеор | 2.5s | 15s | 40 | 80 | INT × 1.8 | NONE | план |
+| 3 | 6 | `arcane_shield` | Arcane Shield / Чародейский щит | 0s | 18s | 25 | 0 | INT × 0.5 (щит) | ABSORB 30 + INT×0.5, 10s | seed + манифест `db:` |
+| 4 | 10 | `meteor` | Meteor / Метеор | 2.5s | 15s | 40 | 80 | INT × 1.8 | NONE | seed + манифест `db:` |
 
 Экономика маны: 1 ур. — 64 маны = Fireball ×2 и всё, дальше автоатака и 0.7/с. 10 ур. — 244 маны, реген 3.12/с: открытие Meteor (40) + Frost Bolt (30) + Fireball ×5 за первые ~15с, потом Fireball раз в ~8с на регене. Класс обязан «выиграть первые 20 секунд».
 
@@ -123,21 +123,25 @@ meteor:        { slot: 4, unlockLevel: 10, castTimeSec: 2.5, cooldownSec: 15, re
 Поля `icon` / `cast` — в `troy-assets/styles/class.yaml` → `skill.icon` / `skill.anim` (ракурс «facing right», фон и стиль добавляет шаблон).
 
 **Fireball** — «Сгусток огня с кристалла посоха. Хлеб мага.»
+- `description` (в игре, RU): Сгусток огня с кристалла посоха. Хлеб мага: дешёвый и стабильный магический урон.
 - `icon`: `a blazing orange fireball with a trailing tail of embers, flying to the right`
 - `cast`: `Fireball — sweeps the staff forward with both hands, the crystal flares and a blazing orange fireball with a trail of embers shoots forward from its tip`
 - ✅ сгенерировано (state `skill:*`)
 
 **Frost Bolt** — «Ледяной осколок. Замедляет цель на 30 % на 3 с.»
+- `description` (в игре, RU): Ледяной осколок замедляет цель: на 3 с её скорость атаки падает на 30 %.
 - `icon`: `a jagged pale-blue ice shard with frost crystals and a cold white mist trail`
 - `cast`: `Frost Bolt — raises the staff, the crystal turns icy blue, a jagged ice shard with a cold mist trail launches forward, frost flakes scatter`
 - ✅ сгенерировано (state `skill:*`)
 
 **Arcane Shield** — «Купол из рун. Поглощает урон, пока не лопнет.»
+- `description` (в игре, RU): Купол из рун поглощает урон, пока не лопнет. Прочность щита растёт от интеллекта.
 - `icon`: `a translucent violet hexagonal arcane barrier with glowing cyan runes along its edge`
 - `cast`: `Arcane Shield — slams the staff butt into the ground, a translucent violet dome of glowing cyan runes rises around the body and settles as a shimmering barrier`
 - ✅ сгенерировано (state `skill:*`)
 
 **Meteor** — «Долгий каст — и с неба падает камень в огне.»
+- `description` (в игре, RU): Долгий каст — и с неба падает горящий камень. Самый мощный удар мага; оглушение срывает каст.
 - `icon`: `a burning meteor rock with a long orange fire tail falling diagonally, cracks glowing red`
 - `cast`: `Meteor — lifts the staff high overhead with both hands while chanting, the crystal blazes, then a burning rock crashes down from above in front of the mage with a fiery explosion and smoke`
 - ✅ сгенерировано (state `skill:*`)
@@ -199,7 +203,7 @@ Color scheme: deep navy blue, dark purple, cyan-blue glow, warm gold accents, mu
 - [x] keyframeFront, keyframeSide (чистый профиль вправо), keyframeTop
 - [x] icon 512, portrait
 - [x] spriteIdle, spriteWalk, spriteAttackIdle, spriteAttack
-- [x] fireball, frost_bolt, arcane_shield, meteor (icon + cast) — иконки/касты `arcane_shield`, `meteor` в БД не заведены → не залиты, publish предупредил
+- [x] fireball, frost_bolt, arcane_shield, meteor (icon + cast); `arcane_shield`/`meteor` в БД создаёт `publish.mjs` из блока `db:` манифеста
 - [ ] проверка на устройстве: карта, бой, выбор персонажа
 - [x] залито `publish.mjs` под `code: mage` (класс + fireball/frost_bolt)
 
@@ -218,7 +222,7 @@ Color scheme: deep navy blue, dark purple, cyan-blue glow, warm gold accents, mu
 
 ### Расхождения код ↔ документы (решить)
 
-1. `frost_bolt.unlockLevel` в seed = **2**, по сетке слотов должно быть **3** — поправить seed.
+1. `frost_bolt.unlockLevel` в seed исправлен 2 → 3; на dev значение обновит `publish.mjs`? — нет, publish не трогает unlockLevel существующих: поправить в админке.
 2. `classes.md` раньше: Fireball 15 маны / 35 base, CD 4; Frost **Nova** 20 маны без каста. В БД: Fireball 25 / 30 / CD 3, Frost **Bolt** 30 / 18 / каст 1с / slow 30 % — карточка и `classes.md` приведены к БД.
 3. Авто-рост мага в сумме **5.8**, норматив `content-generation.md` — 6.5. Либо поднять AGI +0.8 → +1.5 (скорость атаки/крит), либо признать норматив мягким. Предложение: AGI +1.5.
 4. ABSORB: как движок считает размер щита (effectValue vs baseDamage+scaling) — проверить в `battle` до заведения `arcane_shield`; в карточке принято `effectValue + INT×scalingRatio`.
