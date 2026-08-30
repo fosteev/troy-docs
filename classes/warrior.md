@@ -215,7 +215,7 @@ Color scheme: dark steel gray, deep crimson red, warm gold accents, muted dark m
 | `spriteAttack` | профиль вправо, автоатака | side | `rd_advanced_animation__custom_action` | 8 / 12 | `Raises the sword high overhead with the whole body, then a heavy downward slash with full weight behind it, shield braced, facing right, clear wind-up then a fast powerful strike with follow-through` |
 | `ClassSkill.spriteAttack` ×4 | профиль вправо, каст | side | `rd_advanced_animation__custom_action` | 8 / 12 | см. раздел 5 |
 
-Требования к анимациям (из ревью 30.08): idle — дыхание едва заметное; attackIdle — стоит, оружием не машет; attack — явный замах → удар, не «меч туда-сюда»; walk — вид сверху как в GTA 2.
+Требования к анимациям (из ревью 30.08): idle — дыхание едва заметное; attackIdle — стоит, оружием не машет; attack — явный замах → удар, не «меч туда-сюда»; walk — вид сверху как в GTA 2, **строго вверх (север), голова у верхнего края** — один лист на все направления, клиент поворачивает по heading (см. `_template.md`). Текущий лист канону соответствует.
 
 ### Чек-лист готовности арта
 

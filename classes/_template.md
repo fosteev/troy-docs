@@ -167,12 +167,14 @@ Color scheme: {цвет 1}, {цвет 2}, warm gold accents, muted dark medieval
 | `icon` → `iconUrl` | `rd_plus__skill_icon` ×4 | 512 | → из state |
 | `portrait` | `portrait:rd_flux` | 128 | → из state |
 | `spriteIdle` | `rd_advanced_animation__idle` | 8 / 5 fps | → из state |
-| `spriteWalk` | `rd_advanced_animation__walking` (от top) | 8 / 10 fps | → из state |
+| `spriteWalk` | `rd_advanced_animation__walking` (от top) | 8 / 10 fps | → из state. **Канон: идёт строго вверх (север), голова у верхнего края** |
 | `spriteAttackIdle` | `custom_action` (от side) | 8 / 5 fps | → из state |
 | `spriteAttack` | `custom_action` (от side) | 8 / 12 fps | → из state |
 | `ClassSkill.spriteAttack` ×4 | `custom_action` (от side) | 8 / 12 fps | раздел 5 |
 
 Требования: idle — едва заметное дыхание; attackIdle — стоит, не машет; attack — замах → удар; walk — вид сверху (GTA 2).
+
+**Канон направления для карты (обязателен для всех классов):** `keyframeTop` и `spriteWalk` — персонаж смотрит и шагает **строго вверх (север)**: голова у верхнего края холста, ноги у нижнего, корпус не повёрнут и не наклонён. Один лист на все направления — клиент поворачивает маркер на угол heading (0° = север, по часовой). Приёмка: положить лист рядом с `knight`/`mage` — головы у всех наверху; лист, где персонаж идёт вбок/вниз или «в камеру», — брак, перегенерировать. Ходьбу с проездом по карте синхронизируем позже (fps ↔ скорость), поэтому у всех классов walk — 8 кадров, 10 fps, один полный цикл шага.
 
 ### Чек-лист готовности арта
 

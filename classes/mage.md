@@ -192,7 +192,7 @@ Color scheme: deep navy blue, dark purple, cyan-blue glow, warm gold accents, mu
 | `spriteAttack` | `custom_action (от side)` | 8 / 12 fps | `Thrusts the staff forward with both hands, the crystal flares and fires a bolt of cyan arcane energy forward, facing right, clear wind-up then a fast powerful strike with follow-through` |
 | `ClassSkill.spriteAttack` ×4 | `custom_action` (от side) | 8 / 12 fps | раздел 5 |
 
-Особенности мага против воина: «замах → удар» для кастера = «жест/подъём посоха → выброс снаряда»; в attackIdle посох стоит, свечение статично; при ходьбе сверху ног не видно — движение читается по покачиванию посоха и капюшона.
+Особенности мага против воина: «замах → удар» для кастера = «жест/подъём посоха → выброс снаряда»; в attackIdle посох стоит, свечение статично; при ходьбе сверху ног не видно — движение читается по покачиванию посоха и капюшона. Канон направления карты — **строго вверх (север)**, голова у верхнего края, один лист на все направления (см. `_template.md`); текущий лист соответствует.
 
 ### Чек-лист готовности арта
 
