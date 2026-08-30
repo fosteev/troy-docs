@@ -8,7 +8,7 @@
 |---|---|
 | `code` | `mage` |
 | Название (RU / EN) | Маг / Mage |
-| Дев-двойник | нет — арт генерируется сразу под `mage` (`isActive` уже true, спрайты сейчас пустые/бандл) |
+| Дев-двойник | нет — арт залит прямо в `mage` (dev MinIO), 30.08 |
 
 ## 2. Описание
 
@@ -125,22 +125,22 @@ meteor:        { slot: 4, unlockLevel: 10, castTimeSec: 2.5, cooldownSec: 15, re
 **Fireball** — «Сгусток огня с кристалла посоха. Хлеб мага.»
 - `icon`: `a blazing orange fireball with a trailing tail of embers, flying to the right`
 - `cast`: `Fireball — sweeps the staff forward with both hands, the crystal flares and a blazing orange fireball with a trail of embers shoots forward from its tip`
-- ⬜ не сгенерировано
+- ✅ сгенерировано (state `skill:*`)
 
 **Frost Bolt** — «Ледяной осколок. Замедляет цель на 30 % на 3 с.»
 - `icon`: `a jagged pale-blue ice shard with frost crystals and a cold white mist trail`
 - `cast`: `Frost Bolt — raises the staff, the crystal turns icy blue, a jagged ice shard with a cold mist trail launches forward, frost flakes scatter`
-- ⬜ не сгенерировано
+- ✅ сгенерировано (state `skill:*`)
 
 **Arcane Shield** — «Купол из рун. Поглощает урон, пока не лопнет.»
 - `icon`: `a translucent violet hexagonal arcane barrier with glowing cyan runes along its edge`
 - `cast`: `Arcane Shield — slams the staff butt into the ground, a translucent violet dome of glowing cyan runes rises around the body and settles as a shimmering barrier`
-- ⬜ не сгенерировано
+- ✅ сгенерировано (state `skill:*`)
 
 **Meteor** — «Долгий каст — и с неба падает камень в огне.»
 - `icon`: `a burning meteor rock with a long orange fire tail falling diagonally, cracks glowing red`
 - `cast`: `Meteor — lifts the staff high overhead with both hands while chanting, the crystal blazes, then a burning rock crashes down from above in front of the mage with a fiery explosion and smoke`
-- ⬜ не сгенерировано
+- ✅ сгенерировано (state `skill:*`)
 
 ## 6. Максимальный уровень
 
@@ -177,33 +177,35 @@ Color scheme: deep navy blue, dark purple, cyan-blue glow, warm gold accents, mu
 
 ### Ключевые кадры и анимации
 
-Промты собираются шаблоном `styles/class.yaml`; после генерации сюда копируются итоговые строки из `mage.state.json`.
+Итоговые строки из `mage.state.json` (сгенерировано 30.08, ≈ $3.05 с двумя переделками top).
 
 | Слот | Style | Размер / кадры | Промт |
 |---|---|---|---|
-| `keyframeFront` | `rd_pro__fantasy` | 128 | → из state |
-| `keyframeSide` | `rd_pro__edit` (input = front) | 128 | → из state |
-| `keyframeTop` | `rd_pro__edit` (input = front) | 64 | → из state |
-| `icon` → `iconUrl` | `rd_plus__skill_icon` ×4 | 512 | → из state |
-| `portrait` | `portrait:rd_flux` | 128 | → из state |
-| `spriteIdle` | `rd_advanced_animation__idle` | 8 / 5 fps | → из state (шаблон: едва заметное дыхание, кристалл может мягко пульсировать) |
-| `spriteWalk` | `rd_advanced_animation__walking` (от top) | 8 / 10 fps | → из state |
-| `spriteAttackIdle` | `custom_action` (от side) | 8 / 5 fps | → из state |
-| `spriteAttack` | `custom_action` (от side) | 8 / 12 fps | → из state |
+| `keyframeFront` | `rd_pro__fantasy` | 128 | `A tall slender human mage, long dark navy blue robe with dark purple panels and faintly glowing cyan runes along the hem and sleeves, worn gold trim, a tall gnarled wooden staff taller than the mage held in the right hand with a glowing cyan crystal on top, the left hand open with a faint cyan magical glow, a deep hood drawn over the head with glowing cyan eyes in the shadow, a gold clasp at the collar, simple leather boots. Color scheme: deep navy blue, dark purple, cyan-blue glow, warm gold accents, muted dark medieval fantasy. Front-facing full body, feet visible, small margin to the canvas edge, centered, on a plain white background.` |
+| `keyframeSide` | `rd_pro__edit (input = front)` | 128 | `Redraw this exact character rotated 90 degrees into a strict side view in profile, facing to the RIGHT, full body, feet visible, calm guard stance with the staff planted upright on the ground beside the body, the crystal glowing softly, same armor, colors and proportions, small margin to the canvas edge, centered, on a plain white background.` |
+| `keyframeTop` | `rd_pro__edit (input = front)` | 64 | `Redraw this exact character seen from directly above, a steep top-down camera angle like a classic top-down city game: the top of the helmet and the shoulders dominate, the body is foreshortened, the deep hood with a glowing cyan crystal on the staff to the right, the long robe spreading around the feet, standing, facing up, same armor and colors. The whole small figure including feet fits in the middle of the canvas with wide empty white margins around it, on a plain white background.` |
+| `icon` → `iconUrl` | `rd_plus__skill_icon ×4` | 512 | `Class emblem icon: a tall wooden staff with a glowing cyan crystal crossed with an open spellbook, three cyan runes floating above, warm gold accents on dark steel, medieval dark fantasy, bold readable silhouette, on a plain white background.` |
+| `portrait` | `portrait:rd_flux` | 128 | `Bust portrait of a gaunt hooded human mage, the hood drawn low, glowing cyan eyes in the shadow of the hood, sharp thin face, a gold clasp at the collar, faint cyan rune light on the cheek, dark moody lighting, warm gold rim light, on a plain white background.` |
+| `spriteIdle` | `rd_advanced_animation__idle` | 8 / 5 fps | `Standing completely still, extremely subtle and slow breathing, almost no movement, the staff planted upright on the ground beside the body, the crystal glowing softly, no weapon motion` |
+| `spriteWalk` | `rd_advanced_animation__walking (от top)` | 8 / 10 fps | `Walking straight ahead seen from above, legs alternating, slight shoulder sway, the tall staff in the right hand, the long robe trailing` |
+| `spriteAttackIdle` | `custom_action (от side)` | 8 / 5 fps | `Stands calmly in a guard stance facing right, feet planted, weapon held still, only a faint slow breathing motion, no swinging` |
+| `spriteAttack` | `custom_action (от side)` | 8 / 12 fps | `Thrusts the staff forward with both hands, the crystal flares and fires a bolt of cyan arcane energy forward, facing right, clear wind-up then a fast powerful strike with follow-through` |
 | `ClassSkill.spriteAttack` ×4 | `custom_action` (от side) | 8 / 12 fps | раздел 5 |
 
 Особенности мага против воина: «замах → удар» для кастера = «жест/подъём посоха → выброс снаряда»; в attackIdle посох стоит, свечение статично; при ходьбе сверху ног не видно — движение читается по покачиванию посоха и капюшона.
 
 ### Чек-лист готовности арта
 
-- [ ] keyframeFront, keyframeSide, keyframeTop
-- [ ] icon 512, portrait
-- [ ] spriteIdle, spriteWalk, spriteAttackIdle, spriteAttack
-- [ ] fireball, frost_bolt, arcane_shield, meteor (icon + cast)
+- [x] keyframeFront, keyframeSide (чистый профиль вправо), keyframeTop
+- [x] icon 512, portrait
+- [x] spriteIdle, spriteWalk, spriteAttackIdle, spriteAttack
+- [x] fireball, frost_bolt, arcane_shield, meteor (icon + cast) — иконки/касты `arcane_shield`, `meteor` в БД не заведены → не залиты, publish предупредил
 - [ ] проверка на устройстве: карта, бой, выбор персонажа
-- [ ] залито `publish.mjs` под `code: mage`
+- [x] залито `publish.mjs` под `code: mage` (класс + fireball/frost_bolt)
 
-Ориентировочная стоимость полного набора — ≈ $2.3 (как у воина + 2 скилла).
+Замечания по результату: иконка Arcane Shield вышла «коробкой», а не куполом — кандидат на перегенерацию; top через `rd_pro__edit` нестабилен (одна попытка дала рыцаря в шлеме, другая — крупный план лица) — рабочий вариант получен исходным промтом при seed 4242, промт top **не трогать без нужды**.
+
+Фактическая стоимость — ≈ $3.05 (план $2.51 + две переделки top). Баланс RD после: $3.10.
 
 ## 8. Реализация
 

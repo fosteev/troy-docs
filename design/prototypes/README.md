@@ -7,8 +7,8 @@
 | Файл | Что | Куда ведёт |
 |---|---|---|
 | [battle-screen-current.html](./battle-screen-current.html) | Реплика текущего боевого экрана | — |
-| [battle-screen-arena.html](./battle-screen-arena.html) | Вариант композиции боя «Арена» | [battle-polish.md](../../roadmap/battle-polish.md), фазы P4/P5 |
-| [inventory-redesign.html](./inventory-redesign.html) | Аудит текущего инвентаря + интерактивный прототип нового | [execution-plan.md](../../roadmap/execution-plan.md), Шаг 4Б |
+| [battle-screen-arena.html](./battle-screen-arena.html) | Вариант композиции боя «Арена» | [polish/README.md](../../roadmap/mvp-2-battle-loop/polish/README.md), фазы P4/P5 |
+| [inventory-redesign.html](./inventory-redesign.html) | Аудит текущего инвентаря + интерактивный прототип нового | [redesign.md](../../roadmap/mvp-3-inventory/redesign.md) |
 
 ## inventory-redesign.html
 
@@ -19,13 +19,13 @@
 предмета с дельтой против надетого, slot sheet со «Swap for», расходник с Use,
 пустой мешок. Фильтры, сорт, слоты, Equip/Unequip/Use — кликабельны, каждый телефон
 держит своё состояние. Внизу таблица «What it costs»: что делается на клиенте, что
-упирается в бэкенд ([inventory-backend-gaps.md](../../roadmap/inventory-backend-gaps.md)).
+упирается в бэкенд ([backend-gaps.md](../../roadmap/mvp-3-inventory/backend-gaps.md)).
 
 Снято с кода: цвета — токены `RealmWalkerTheme` и `RarityColors`, шрифт — Jersey 10,
 11 пиксельных глифов — порт карт из `item_glyph_icon.dart` на canvas.
 Рамки — sharp по [redesign-prompt.md](../redesign-prompt.md); в приложении пока
 остаются `tokens.radius*` (см. решения в
-[inventory-profile.md](../../roadmap/inventory-profile.md), раздел «Редизайн»).
+[redesign.md](../../roadmap/mvp-3-inventory/redesign.md)).
 
 Зафиксировано: без empty-state текста (пустой мешок = dashed-сетка), без Sell;
 Discard/Use нарисованы пунктиром с меткой NEEDS API — в приложение попадают только
@@ -57,7 +57,7 @@ Discard/Use нарисованы пунктиром с меткой NEEDS API �
 ## battle-screen-arena.html
 
 Вариант композиции, а не реализация. Отвечает на диагноз из
-[battle-polish.md](../../roadmap/battle-polish.md) — «бой ощущается как таблица
+[polish/README.md](../../roadmap/mvp-2-battle-loop/polish/README.md) — «бой ощущается как таблица
 с двумя картинками»: панели с рамками вокруг бойцов и есть эта таблица.
 
 Что предлагается:
@@ -75,7 +75,7 @@ Discard/Use нарисованы пунктиром с меткой NEEDS API �
    условием заперт наверху с бейджем.
 
 Раскладка заведена в roadmap как фаза **P4**, лента — как **P5** (см.
-[battle-polish.md](../../roadmap/battle-polish.md)): P4 не ждёт ассетов, P5
+[polish/README.md](../../roadmap/mvp-2-battle-loop/polish/README.md)): P4 не ждёт ассетов, P5
 требует новых полей в `BattleMonsterDto` и иконок мобовых скиллов.
 
 Итог по вертикали: низ экрана 222 → 170 px, плюс сняты обе рамки — сцена

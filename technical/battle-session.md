@@ -2,7 +2,7 @@
 
 ## Обзор
 
-Бой — **real-time, server-authoritative**. Сервер держит живую боевую сессию и сам тикает её во времени; клиент шлёт только намерения (использовать скилл, начать побег) и рисует состояние, которое прилетает с сервера. Никаких game-authoritative расчётов на клиенте — это пункт DoD ([battle-loop.md](../roadmap/battle-loop.md)).
+Бой — **real-time, server-authoritative**. Сервер держит живую боевую сессию и сам тикает её во времени; клиент шлёт только намерения (использовать скилл, начать побег) и рисует состояние, которое прилетает с сервера. Никаких game-authoritative расчётов на клиенте — это пункт DoD ([MVP-2](../roadmap/mvp-2-battle-loop/README.md)).
 
 Боевые правила (ресурсы, формулы, эффекты, тайм– автоатаки и касты) — в [combat.md](../game-design/combat.md). Этот документ описывает **инфраструктуру**: где живёт состояние боя, кто его тикает, как api-gateway и game-core общаются в реальном времени.
 
@@ -347,7 +347,7 @@ game-core / BattleService
 
 ## Связанные документы
 
-- [battle-loop.md](../roadmap/battle-loop.md) — scope и DoD шага MVP-2
+- [mvp-2-battle-loop/README.md](../roadmap/mvp-2-battle-loop/README.md) — scope и DoD фазы MVP-2
 - [combat.md](../game-design/combat.md) — боевые правила, формулы, ресурсы, эффекты
 - [stats-and-formulas.md](../game-design/stats-and-formulas.md) — computed stats
 - [leveling.md](../game-design/leveling.md) — XP/level progression

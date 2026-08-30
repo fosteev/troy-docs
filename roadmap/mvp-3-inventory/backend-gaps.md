@@ -37,7 +37,7 @@ Item-inspect sheet на клиенте показывает описание п�
 **Если нужна экономика:** `Item.sellPrice` + `POST /inventory/sell/:itemId` (золото персонажу).
 
 ### 4. Class restrictions на предметах
-inventory-profile.md упоминает проверку ограничений по классу. У Item нет
+README.md фазы упоминает проверку ограничений по классу. У Item нет
 `allowedClasses`, equip не проверяет. **Решить:** режем из MVP-3 или добавляем
 (колонка-массив + проверка в `InventoryService.equip`).
 

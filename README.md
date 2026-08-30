@@ -79,19 +79,15 @@ troy-docs/
 │   ├── map-ui.md                            # Карта: отображение мобов, игрока
 │   └── battle-ui.md                         # UI боя: панель скиллов, HP + классовый ресурс (Rage/Mana)
 │
-├── roadmap/                                 # Планирование MVP
-│   ├── mvp.md                               # Индекс MVP: scope, фазы, Definition of Done
-│   ├── execution-plan.md                    # Сквозной план шагов 1–6 с чек-боксами
-│   ├── current-flow.md                      # MVP-0: auth → character → map
-│   ├── playable-map.md                      # MVP-1: игровая карта
-│   ├── battle-loop.md                       # MVP-2: полный battle loop (Шаг 3)
-│   ├── battle-polish.md                     # Шаг 3Б: живость боя, статус-чеклист + фазы P0–P5
-│   ├── inventory-profile.md                 # MVP-3: профиль, инвентарь, экипировка
-│   ├── inventory-backend-gaps.md            # Пробелы бэкенда под MVP-3
-│   ├── content-balance.md                   # MVP-4: контент и баланс
-│   ├── hardening.md                         # MVP-5: стабилизация для тестирования
-│   ├── asset-pipeline.md                    # Как производятся спрайты/фоны/иконки
-│   └── monster-visuals-prompt.md            # Промт генерации спрайтов мобов
+├── roadmap/                                 # План MVP: одна папка на фазу, README внутри
+│   ├── README.md                            # Индекс: цикл, scope, статус фаз, общие правила
+│   ├── mvp-0-current-flow/                  # MVP-0: auth → character → map (+ backend-tests.md)
+│   ├── mvp-1-playable-map/                  # MVP-1: игровая карта
+│   ├── mvp-2-battle-loop/                   # MVP-2: battle loop; polish/ — фазы P0–P5 живости боя
+│   ├── mvp-3-inventory/                     # MVP-3: профиль, инвентарь (+ backend-gaps.md, redesign.md)
+│   ├── mvp-4-content-balance/               # MVP-4: контент и баланс
+│   ├── mvp-5-hardening/                     # MVP-5: стабилизация для тестирования
+│   └── assets/                              # Конвейер ассетов: README, steps, pitfalls, промт визуала мобов
 │
 └── design/                                  # Визуальные референсы и прототипы
     ├── redesign-prompt.md                   # Промт редизайна UI
@@ -99,7 +95,7 @@ troy-docs/
     └── prototypes/                          # HTML-прототипы экранов (индекс — prototypes/README.md)
         ├── battle-screen-current.html       # Реплика текущего боевого экрана
         ├── battle-screen-arena.html         # Вариант «Арена» (фазы P4/P5)
-        └── inventory-redesign.html          # Аудит + интерактивный прототип инвентаря (Шаг 4Б)
+        └── inventory-redesign.html          # Аудит + интерактивный прототип инвентаря (MVP-3 redesign)
 ```
 
 > **Правило**: файлы с пометкой `[TODO]` ещё не созданы. При добавлении нового документа — обновить эту структуру и таблицу ниже.
@@ -118,7 +114,7 @@ troy-docs/
 | [database-schema.md](technical/database-schema.md) | Схема БД: User, Character, Item, Monster, связи |
 | [auth.md](technical/auth.md) | Auth flows: регистрация, авторизация, восстановление пароля |
 | [geolocation.md](technical/geolocation.md) | Геолокация: позиция на User, heading, moving/idle, anti-cheat |
-| [mvp.md](roadmap/mvp.md) | MVP roadmap: scope, фазы, критерии готовности |
+| [roadmap/README.md](roadmap/README.md) | Roadmap MVP: цикл, scope, статус фаз, правила работы по фазам |
 
 ## Статус
 

@@ -1,73 +1,6 @@
-# Asset Pipeline — конвейер генерации картинок и спрайтов
+# Asset pipeline · шаги
 
-Roadmap по настройке воспроизводимого конвейера: промт → пиксель-арт → спрайт-лист →
-S3 → JSON в БД. Цель — чтобы новый класс/моб/предмет получал полный визуал за
-минуты скриптом, а не за вечер руками.
-
-Связанные документы: [content-generation.md](../game-design/content-generation.md)
-(секции 5–6 — промты и текущий ручной пайплайн), [pixel-art-design.md](../game-design/pixel-art-design.md)
-(палитра, арт-дирекшн), [monster-visuals-prompt.md](./monster-visuals-prompt.md).
-
----
-
-## Зафиксированные решения
-
-- **Инструменты.** Основной — **Retro Diffusion API** (честная пиксель-сетка, альфа
-  через `remove_bg`, палитра через `input_palette`, референсы для консистентности,
-  анимации по стартовому кадру, MCP для Claude Code). Вторичный — **Nano Banana 2**
-  (`gemini-3.1-flash-image`, прямой Gemini API) для hi-res: фоны арен, экраны
-  логина, концепты. OpenRouter / LM Studio / локальная диффузия — не используем
-  (анализ в чате 2026-08-29: OpenRouter не дешевле и без pixel-специфики, LM Studio
-  картинки не генерит, Draw Things + LoRA — часы настройки без API).
-- **Стиль.** Переход с hi-res «псевдо-пикселей» (текущие `war1`/`mage1`, кадры
-  784×448) на **нативный пиксель + целочисленный апскейл**. Это то, что описано в
-  `pixel-art-design.md` («visible clean pixels, no anti-aliasing»). Старые ассеты
-  перегенерируются, чтобы в игре не было двух стилей.
-- **Один источник правды на ассет — манифест** (`assets/<type>/<code>.yaml`):
-  промт, style id, seed, размер, референсы, пути к выходам, URL в S3. Ассет без
-  манифеста не считается сделанным — его нельзя воспроизвести.
-- **Клиент уже готов к пикселям**: батл рендерит спрайты с `FilterQuality.none`
-  (`battle_page.dart`), формат листа `ClassSpriteSheet { url, columns, rows,
-  frameCount, fps, skipFrames? }` не меняем.
-- **Бюджет.** Всё prepaid, без подписок. Ориентир на полный MVP-контент (5 классов,
-  10 мобов, ~50 иконок) — **$40–60** на RD + **<$10** на Nano Banana. Перед каждой
-  пачкой — `check_cost: true` (бесплатный dry-run).
-
-## Где живёт
-
-Новый сиблинг `troy/troy-assets/` (отдельный git-репо, как admin/):
-
-```
-troy-assets/
-├── palette/troy-dark-gold.png     # палитра из pixel-art-design.md для input_palette
-├── styles/                        # промт-префиксы и style id по типам ассетов
-├── assets/
-│   ├── classes/<code>.yaml        # манифесты
-│   ├── monsters/<code>.yaml
-│   └── items/<code>.yaml
-├── out/                           # сгенерённое (png native, sheets, webp) — в git
-└── tools/                         # CLI (Node/TS — стек как у бэкенда)
-    ├── gen.ts        # icon | keyframe | anim | scene   → out/
-    ├── pack.ts       # кадры → спрайт-лист по сетке контракта → lossless webp
-    └── publish.ts    # upload в admin API + PATCH JSON спрайта в сущность
-```
-
-`out/` коммитим: png небольшие (нативные 64–256px), а воспроизводимость важнее
-чистоты репо.
-
----
-
-## Статус
-
-- [x] **Шаг 0** — проба стиля warrior; итоги в `troy-assets/styles/README.md`
-- [x] **Шаг 1** — инструментарий: `styles/class.yaml` (референс промтов с плейсхолдерами), манифест `assets/classes/<code>.yaml`, `tools/gen.mjs` (state, бюджет, dry-run) + `tools/publish.mjs`
-- [~] **Шаг 2** — классы: `knight` полностью перегенерирован по замечаниям 30.08 (иконка 512, walk сверху, attackIdle без взмахов, attack замах→удар, спокойный idle, 2 скилла с иконкой+кастом) и залит в dev; ждёт проверки на устройстве, дальше — остальные классы по тому же манифесту
-- [ ] **Шаг 3** — мобы: иконка карты → idle/attack → скиллы
-- [ ] **Шаг 4** — предметы и оружие: иконки инвентаря
-- [ ] **Шаг 5** — hi-res: арены, фоны экранов, портреты (Nano Banana 2)
-- [ ] **Шаг 6** — замена старых ассетов, QA на устройстве, документация
-
----
+Часть [assets/README.md](./README.md) (решения, статус). Нумерация шагов — внутренняя для конвейера, к фазам MVP не привязана.
 
 ## Шаг 0 — ключи и проба стиля (гейт)
 
@@ -163,7 +96,7 @@ troy-assets/
 `isElite`: размер ×1.5–2 от обычного моба, стиль `rd_pro__horror`/`fantasy` по
 описанию.
 
-Пачкой: 10 мобов MVP из seed'а по `content-balance.md`. Сначала все ключевые позы
+Пачкой: 10 мобов MVP из seed'а по `mvp-4-content-balance/`. Сначала все ключевые позы
 (один проход ревью «выглядят как одна игра»), потом анимации.
 
 ## Шаг 4 — предметы и оружие
@@ -203,36 +136,16 @@ Nano Banana не отдаёт альфу — для этих ассетов он
 
 ---
 
-## Грабли (собраны из доков RD и нашего бэкенда)
-
-- В промт RD **никогда** не писать «pixel art» и «transparent background» — первое
-  делает стиль, второе — `remove_bg`. Фон в промте указывать всегда и контрастный
-  («plain white background»), иначе уезжает в серый и портит вырезку.
-- `input_image` для анимаций — **нативного размера** (не апскейл) и равен
-  width/height запроса; опаковые пиксели не ближе 3px к краю → сначала паддинг.
-- `input_image` для img2img — RGB без альфы; анимации наследуют фон стартового
-  кадра (прозрачный → прозрачный GIF/лист).
-- `uploadSprite`: png/webp, до 8192×8192 (`MAX_SPRITE_DIMENSION`), снимает сплошной **белый**
-  фон; готовый webp кладёт без перекодирования — поэтому шлём lossless webp сами.
-- `uploadIcon`: png/jpeg/webp, всегда перекодирует в webp — для пиксельных иконок
-  тоже лучше слать webp.
-- Анимации в RD падают чаще стиллов: `async: true`, один retry с теми же параметрами.
-- `check_cost: true` перед любой пачкой; `GET /v1/status` перед bulk-прогоном.
-- Async: POST отвечает `{ status: "accepted", task_id }`, результат — `GET /v1/inferences/tasks/{id}` → `{ status: "succeeded", result: { base64_images, balance_cost } }`; список задач — `GET /v1/inferences/tasks` (спасает, если потерял id). Ретраить по таймауту поллинга нельзя — это дубль и двойная оплата.
-- Анимации приходят уже сеткой (8 → 4×2, 6 → 3×2, кадр = размер запроса) — ложатся в `ClassSpriteSheet` без перепаковки.
-
----
-
 ## Промт для запуска Шага 0 (свежая сессия)
 
 ```
 Работаем в /Users/fost/Projects/troy (multi-root: troy-backend, troy-flutter, admin, troy-docs).
-Задача — Шаг 0 из troy-docs/roadmap/asset-pipeline.md: проба стиля для конвейера
+Задача — Шаг 0 из troy-docs/roadmap/assets/README.md: проба стиля для конвейера
 пиксель-арта на Retro Diffusion. Это гейт: по итогу пользователь глазами на телефоне
 выбирает размер/стиль, массовую генерацию НЕ начинать.
 
 Прочитай перед работой:
-- troy-docs/roadmap/asset-pipeline.md целиком (решения, Шаг 0, раздел «Грабли»);
+- troy-docs/roadmap/assets/README.md целиком (решения, Шаг 0, раздел «Грабли»);
 - troy-docs/game-design/content-generation.md §5–6 и character-generation-prompt.md
   (описание воина, negative prompt — в RD он не работает, описываем что хотим);
 - troy-docs/game-design/pixel-art-design.md — палитра (hex в таблице);

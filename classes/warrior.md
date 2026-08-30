@@ -164,7 +164,7 @@ whirlwind:  { slot: 4, unlockLevel: 10, castTimeSec: 1, cooldownSec: 12, resourc
 
 ## 7. Арт: промты на каждую картинку
 
-Конвейер — `troy-assets` (Retro Diffusion), правила и грабли — `roadmap/asset-pipeline.md`, что сработало — `troy-assets/styles/README.md`. **Промты ниже — итоговые строки, которые реально ушли в API** (state `knight`), собраны из `styles/class.yaml` + манифеста. Общие правила: без слов «pixel art» и «transparent», фон «on a plain white background» + `remove_bg`, палитра `palette/troy-dark-gold.png`, seed 4242.
+Конвейер — `troy-assets` (Retro Diffusion), правила и грабли — `roadmap/assets/` (README + pitfalls.md), что сработало — `troy-assets/styles/README.md`. **Промты ниже — итоговые строки, которые реально ушли в API** (state `knight`), собраны из `styles/class.yaml` + манифеста. Общие правила: без слов «pixel art» и «transparent», фон «on a plain white background» + `remove_bg`, палитра `palette/troy-dark-gold.png`, seed 4242.
 
 ### Визуальный бриф
 
