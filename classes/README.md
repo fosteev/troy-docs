@@ -13,5 +13,5 @@
 
 - [_template.md](_template.md) — шаблон с плейсхолдерами, бюджетами и скриптом таблицы статов
 - [warrior.md](warrior.md) — Воин (арт сгенерирован как dev-класс `knight`)
-- mage.md — Маг (TODO)
+- [mage.md](mage.md) — Маг (арт не сгенерирован; манифест `troy-assets/assets/classes/mage.yaml` готов)
 - rogue.md — Разбойник (PLANNED)

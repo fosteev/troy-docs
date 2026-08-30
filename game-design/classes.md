@@ -137,12 +137,12 @@ mana_regen = max_mana * 0.01 * (1 + SPI * 0.02) per second
 
 | # | Уровень | Скилл | Cast | CD | Mana Cost | Base Dmg | Scaling | Эффект |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 1 | Fireball | 1.5s | 3s | 15 | 30 | INT × 1.2 | — |
-| 2 | 3 | Frost Bolt | 1s | 5s | 20 | 18 | INT × 0.8 | slow 3s |
+| 1 | 1 | Fireball | 1.5s | 3s | 25 | 30 | INT × 1.2 | — |
+| 2 | 3 | Frost Bolt | 1s | 5s | 30 | 18 | INT × 0.8 | slow 30% 3s |
 | 3 | 6 | Arcane Shield | 0s | 18s | 25 | 0 | INT × 0.5 | absorb щит |
 | 4 | 10 | Meteor | 2.5s | 15s | 40 | 80 | INT × 1.8 | — |
 
-> Слоты 1–2 — как в БД (в seed Frost Bolt открыт на 2 уровне — привести к 3), 3–4 — план.
+> Слоты 1–2 — как в БД (в seed Frost Bolt открыт на 2 уровне — привести к 3), 3–4 — план. Полное описание: [classes/mage.md](../classes/mage.md).
 
 ---
 

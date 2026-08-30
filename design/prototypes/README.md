@@ -1,8 +1,35 @@
-# Прототипы боевого экрана
+# Прототипы экранов
 
 Одностраничные HTML-макеты для быстрого взгляда на вёрстку без сборки Flutter.
 Каждый файл самодостаточен: стили инлайном, картинки — data-URI, внешний только
 шрифт с Google Fonts. Открывается двойным кликом.
+
+| Файл | Что | Куда ведёт |
+|---|---|---|
+| [battle-screen-current.html](./battle-screen-current.html) | Реплика текущего боевого экрана | — |
+| [battle-screen-arena.html](./battle-screen-arena.html) | Вариант композиции боя «Арена» | [battle-polish.md](../../roadmap/battle-polish.md), фазы P4/P5 |
+| [inventory-redesign.html](./inventory-redesign.html) | Аудит текущего инвентаря + интерактивный прототип нового | [execution-plan.md](../../roadmap/execution-plan.md), Шаг 4Б |
+
+## inventory-redesign.html
+
+Две части на одной странице. **AS-IS** — реплика текущего Hero-экрана
+(`troy-flutter/lib/features/profile/**`: профиль, кукла, атрибуты, derived и мешок
+одним скроллом) и аудит карточками: данные, виджеты, поведение `HeroCubit`, чего нет.
+**PROTOTYPE** — пять интерактивных телефонов: мешок отдельным экраном, карточка
+предмета с дельтой против надетого, slot sheet со «Swap for», расходник с Use,
+пустой мешок. Фильтры, сорт, слоты, Equip/Unequip/Use — кликабельны, каждый телефон
+держит своё состояние. Внизу таблица «What it costs»: что делается на клиенте, что
+упирается в бэкенд ([inventory-backend-gaps.md](../../roadmap/inventory-backend-gaps.md)).
+
+Снято с кода: цвета — токены `RealmWalkerTheme` и `RarityColors`, шрифт — Jersey 10,
+11 пиксельных глифов — порт карт из `item_glyph_icon.dart` на canvas.
+Рамки — sharp по [redesign-prompt.md](../redesign-prompt.md); в приложении пока
+остаются `tokens.radius*` (см. решения в
+[inventory-profile.md](../../roadmap/inventory-profile.md), раздел «Редизайн»).
+
+Зафиксировано: без empty-state текста (пустой мешок = dashed-сетка), без Sell;
+Discard/Use нарисованы пунктиром с меткой NEEDS API — в приложение попадают только
+вместе с эндпоинтами.
 
 ## battle-screen-current.html
 

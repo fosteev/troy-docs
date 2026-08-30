@@ -44,6 +44,7 @@ Backend (troy-backend) — стек **Jest + @nestjs/testing** (`npx nx test gam
 - [x] **Шаг 3** — MVP-2: battle loop (real-time, server-authoritative; см. [battle-loop.md](./battle-loop.md))
 - [ ] **Шаг 3Б** — Battle polish — см. [battle-polish.md](./battle-polish.md), там же чек-лист остатка. P0/P1/P3/P4/P5 закрыты; в **P2** написан весь код (спрайты hit/death моба, фон арены по зоне), не хватает только файлов: SFX и пакет аудио, листы VFX и партиклы крита, сами спрайты hit/death, фоны арен, иконки мобовых скиллов
 - [ ] **Шаг 4** — MVP-3: profile + inventory
+- [ ] **Шаг 4Б** — Inventory redesign: мешок отдельным экраном по прототипу [design/prototypes/inventory-redesign.html](../design/prototypes/inventory-redesign.html); только клиент, бэкенд не трогаем
 - [ ] **Шаг 5** — MVP-4: контент и баланс
 - [ ] **Шаг 6** — MVP-5: hardening
 
@@ -204,6 +205,66 @@ Flutter — две фичи profile и inventory по стандарту (domain
 Тесты (по эталону auth): profile + inventory repository_impl, блоки, мапперы; backend — тест на equip/unequip и пересчёт computed stats.
 
 DoD: полученный в бою предмет появляется в инвентаре; equip/unequip работает; экипировка меняет computed stats; UI обновляется без рестарта; flutter analyze чисто; flutter test зелёный; backend тесты зелёные. Коммит. Отметить Шаг 4 [x].
+```
+
+---
+
+## Шаг 4Б — Inventory redesign
+
+**Цель:** мешок — отдельный экран, а не хвост Hero-скролла; экипировка из слота, сравнение с надетым, фидбэк по статам. Прототип (интерактивный, открыть в браузере): [design/prototypes/inventory-redesign.html](../design/prototypes/inventory-redesign.html). Контекст и решения — раздел «Редизайн (Шаг 4Б)» в [inventory-profile.md](./inventory-profile.md). Делается после Шага 4, **только Flutter** — новых эндпоинтов не требует.
+
+**Зафиксировано в прототипе:**
+- Нет empty-state текста — пустой мешок это просто dashed-сетка.
+- Нет Sell — экономика не в инвентаре.
+- Discard и Use — только когда появятся эндпоинты (gaps #2, #3 в [inventory-backend-gaps.md](./inventory-backend-gaps.md)); мёртвых кнопок в приложении не шипим.
+- Скругления: прототип рисует sharp pixel-рамки по redesign-prompt, приложение живёт на `tokens.radius*`. В этом шаге **используем токены приложения** — переход на sharp-углы это отдельный шаг по всей дизайн-системе, не по одному экрану.
+
+```
+Работаем в /Users/fost/Projects/troy/troy-flutter.
+
+Прочитай:
+- troy-docs/design/prototypes/inventory-redesign.html — открой в браузере, прокликай 5 экранов; заметки под каждым телефоном и таблица «What it costs» — это ТЗ;
+- troy-docs/roadmap/inventory-profile.md (раздел «Редизайн (Шаг 4Б)») и inventory-backend-gaps.md;
+- lib/features/profile/** — текущий Hero-экран (HeroCubit, HeroSnapshot, InventorySection, EquipmentPanel, ItemInspectSheet, ItemGlyphIcon);
+- lib/features/map/presentation/widgets/map_nav_bar.dart — текущий bottom nav (BACKPACK · MAP · MENU);
+- "Architecture rules" в troy-flutter/CLAUDE.md.
+
+Структура:
+- features/inventory/ — presentation-фича (InventoryPage + виджеты). Domain (InventoryItem, HeroSnapshot, HeroSlot) остаётся в features/profile/domain, InventoryPage работает поверх того же HeroCubit — это осознанно: один снапшот на оба экрана, без цикла зависимостей между фичами. Пустые .gitkeep в inventory/domain и inventory/data удалить.
+- Общие вещи (ItemGlyphIcon, RarityColors, EquipSlot, ItemCell, DashedBox) → lib/shared/widgets/ (или оставить в profile, если тянет только inventory — решить по факту использования).
+- HeroCubit — один инстанс на HomeShell (провайдить выше обоих экранов), load() один раз, оба экрана слушают.
+
+Навигация:
+- BACKPACK в nav bar → InventoryPage. Hero (профиль, полная кукла со спрайтом, атрибуты, derived) — четвёртый таб HERO по прототипу. Если четыре таба ломают текущий бар с большим центральным MAP — HERO действием в app bar инвентаря. Выбрать одно, зафиксировать в inventory-profile.md.
+- Из HeroPage секцию InventorySection убрать; EquipmentPanel там остаётся.
+
+InventoryPage (экран 1 прототипа):
+- App bar: заголовок + золото (справа). Футер с золотом убрать.
+- Полоса куклы: 6 EquipSlot ~48px с подписями слотов. Тап по слоту → slot sheet (ниже) + подсветка в сетке предметов, подходящих в этот слот (остальные dim, не скрывать).
+- Вместимость: сегментированный бар used/40 (capacity — константа HeroSnapshot.capacity), при >= 90% — tokens warning.
+- Чипы фильтра как сейчас + sort-чип: rarity ↓ (default) / newest / type. Accessory фильтруем по slot == ring.
+- Сетка 4 колонки, min 12 ячеек, добивка dashed (как сейчас). Бейджи ячейки: quantity (как сейчас), метка слота (3 буквы, низ-лево), NEW (верх-лево), ▲ апгрейд (низ-право, success) если slot != null и суммарный бонус > суммарного бонуса надетого в этот слот (или слот пуст).
+- NEW: локальный набор «виденных» itemId (SharedPreferences); предмет перестаёт быть NEW после открытия его карточки или equip. Бэкенд acquiredAt не ждём.
+- Пустой мешок — просто dashed-сетка, без текста и CTA. Loading — тот же каркас (dashed ячейки), без центрального спиннера.
+
+Item sheet (экраны 2 и 4):
+- Шапка как сейчас (glyph, имя цветом rarity, «Rarity · Type · Slot ×N»). Описание — только если item.description != null.
+- Бонусы — строками: label | значение | дельта против надетого в этот слот (▲ +N success / ▼ -N error / — muted). Строка «VS. EQUIPPED <имя>» над таблицей, если в слоте что-то есть. Для уже надетого — без дельты, кнопка UNEQUIP вместо EQUIP.
+- Consumable: строка эффекта и кнопка USE со степпером — ТОЛЬКО когда закрыт gap #2; до этого sheet информационный. Discard — ТОЛЬКО когда закрыт gap #3.
+- Equip/Unequip → закрыть sheet → тост с дифом computedStats старого и нового снапшота (например «PHYS ATK +7 · ARMOR -2»), а не суммой бонусов предмета. Тост — shared виджет, если его ещё нет.
+
+Slot sheet (экран 3):
+- Тап по слоту куклы (и в InventoryPage, и в EquipmentPanel на Hero) → sheet: что надето (glyph, имя, чипы бонусов) + UNEQUIP; ниже «SWAP FOR» — горизонтальный список предметов мешка с подходящим slot, отсортирован по rarity, с ▲ у апгрейдов; тап = equip (бэкенд сам снимает предыдущее). Пустой слот — без блока «Equipped», сразу список. Мгновенный unequip по тапу на слот убрать.
+- Во время мутации (HeroCubit._mutationInFlight) — кнопки sheet disabled, тап по ячейкам игнорируется; после ответа sheet закрывается.
+
+Тексты — в assets/translations/en.json и ru.json (ключи hero.* / inventory.*), без хардкода.
+
+Тесты (flutter_test + mocktail, по эталону auth):
+- unit: сортировка/фильтр/подсветка по слоту, эвристика апгрейда, диф computedStats для тоста, NEW-набор;
+- widget-smoke InventoryPage: сетка рендерит bag без надетых, чип фильтрует, тап по слоту открывает slot sheet со «SWAP FOR» только подходящих, тап по предмету открывает item sheet с дельтой;
+- HeroCubit: существующие тесты не ломаем; если cubit поднимается на уровень shell — тест на один load для обоих экранов.
+
+DoD: BACKPACK открывает отдельный экран инвентаря по прототипу; Hero без мешка; equip из slot sheet и из item sheet работает против реального бэкенда, после equip/unequip тост с дифом статов; NEW/▲/бейдж слота на ячейках; пустой мешок = dashed-сетка; нет кнопок без эндпоинта; flutter analyze чисто; flutter test зелёный. Коммит. Отметить Шаг 4Б [x] в execution-plan.md и обновить раздел «Редизайн (Шаг 4Б)» в inventory-profile.md (что реализовано, что отложено).
 ```
 
 ---
