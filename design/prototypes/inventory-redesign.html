@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troy — Inventory Redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jersey+10&family=Silkscreen&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root {
+    --page: #0B0B0E;
+    --bg: #0F1014;
+    --surface: #15161C;
+    --surface2: #1A1B23;
+    --border: #2A2B36;
+    --border2: #3A3C4A;
+    --fg: #FFFFFF;
+    --fg2: #E0DDD5;
+    --muted: #8B8E9B;
+    --gold: #E9B655;
+    --gold2: #B88A3B;
+    --ok: #55E98F;
+    --err: #E95555;
+    --warn: #D0892E;
+    --r-common: #6B7280;
+    --r-uncommon: #46C24C;
+    --r-rare: #3B82F6;
+    --r-epic: #9B59F6;
+    --r-legendary: #E0B34A;
+    --pixel: 'Jersey 10', 'VT323', monospace;
+    --micro: 'Silkscreen', 'Press Start 2P', monospace;
+    --sans: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--page); color: var(--fg2); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+  a { color: var(--gold); }
+  .wrap { max-width: 1480px; margin: 0 auto; padding: 40px 32px 96px; }
+
+  /* ---------- page chrome ---------- */
+  .eyebrow { font-family: var(--micro); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold2); }
+  h1 { font-family: var(--pixel); font-weight: 400; font-size: 64px; line-height: .95; margin: 8px 0 12px; color: var(--gold); text-shadow: 0 0 18px rgba(233,182,85,.25); text-wrap: balance; }
+  .lead { max-width: 68ch; color: var(--muted); margin: 0; }
+  .section { margin-top: 72px; }
+  .section-head { display: flex; align-items: baseline; gap: 18px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 28px; }
+  .section-head h2 { font-family: var(--pixel); font-weight: 400; font-size: 40px; margin: 0; color: var(--fg); line-height: 1; }
+  .section-head p { margin: 0; color: var(--muted); }
+  .divider-dot { flex: 1; height: 1px; background: var(--border); position: relative; }
+  .divider-dot::after { content: ''; position: absolute; left: 50%; top: -3px; width: 6px; height: 6px; background: var(--gold2); transform: rotate(45deg); }
+
+  .row { display: grid; grid-template-columns: 390px 1fr; gap: 40px; align-items: start; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); padding: 16px 18px; }
+  .card h3 { font-family: var(--micro); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); margin: 0 0 10px; }
+  .card ul { margin: 0; padding-left: 16px; color: var(--fg2); }
+  .card li { margin: 4px 0; }
+  .card li small, .note small { color: var(--muted); }
+  code { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 12.5px; background: var(--surface2); border: 1px solid var(--border); padding: 0 5px; color: var(--fg2); }
+  .tag { display: inline-block; font-family: var(--micro); font-size: 8px; letter-spacing: .08em; padding: 3px 6px 2px; border: 1px solid; vertical-align: middle; margin-left: 6px; }
+  .tag.ok { color: var(--ok); border-color: rgba(85,233,143,.4); }
+  .tag.api { color: var(--warn); border-color: rgba(208,137,46,.5); }
+  .tag.client { color: #7FB0FF; border-color: rgba(59,130,246,.5); }
+
+  .frames { display: grid; grid-template-columns: repeat(auto-fill, minmax(390px, 1fr)); gap: 40px 32px; }
+  .frame { display: grid; gap: 14px; }
+  .frame-cap { display: flex; align-items: baseline; gap: 10px; }
+  .frame-cap b { font-family: var(--pixel); font-weight: 400; font-size: 26px; color: var(--gold); line-height: 1; }
+  .frame-cap span { color: var(--muted); font-size: 13px; }
+  .note { margin: 0; padding-left: 18px; color: var(--fg2); font-size: 14px; }
+  .note li { margin: 5px 0; }
+  .note li::marker { color: var(--gold2); }
+
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th { text-align: left; font-family: var(--micro); font-size: 9px; letter-spacing: .1em; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--border2); }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .tbl { overflow-x: auto; }
+
+  /* ---------- phone frame ---------- */
+  .phone { width: 390px; height: 800px; background: var(--bg); border: 2px solid var(--border2); border-radius: 28px; position: relative; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,.6); font-family: var(--pixel); color: var(--fg); user-select: none; }
+  .p-status { position: absolute; top: 0; left: 0; right: 0; height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; font-family: var(--micro); font-size: 9px; color: var(--muted); }
+  .p-scroll { position: absolute; top: 44px; left: 0; right: 0; bottom: 64px; overflow-y: auto; overflow-x: hidden; padding: 0 16px 24px; scrollbar-width: none; }
+  .p-scroll::-webkit-scrollbar { display: none; }
+  .p-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 64px; background: var(--surface); border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(4, 1fr); align-items: center; }
+  .p-nav div { display: grid; justify-items: center; gap: 3px; font-family: var(--micro); font-size: 7px; letter-spacing: .08em; color: var(--muted); }
+  .p-nav div.on { color: var(--gold); }
+  .p-nav::after { content: ''; position: absolute; bottom: 6px; left: 50%; width: 120px; height: 4px; margin-left: -60px; background: var(--border2); border-radius: 2px; }
+
+  .p-appbar { display: flex; align-items: center; justify-content: space-between; height: 52px; }
+  .p-title { font-size: 30px; color: var(--gold); letter-spacing: .02em; line-height: 1; }
+  .p-gold { display: flex; align-items: center; gap: 6px; font-size: 22px; color: var(--gold); line-height: 1; }
+  .p-coin { width: 12px; height: 12px; background: var(--gold); box-shadow: 0 0 6px rgba(233,182,85,.6); }
+  .p-coin::after { content: ''; display: block; width: 4px; height: 4px; margin: 2px; background: #fff6d6; }
+
+  .p-label { font-family: var(--micro); font-size: 8px; letter-spacing: .12em; color: var(--muted); margin: 14px 0 8px; display: flex; justify-content: space-between; align-items: center; }
+  .p-label b { color: var(--gold); font-weight: 400; }
+
+  .p-doll { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .p-doll .p-slot { display: grid; justify-items: center; gap: 4px; }
+  .p-doll .p-slot span { font-family: var(--micro); font-size: 6px; letter-spacing: .06em; color: var(--muted); }
+  .p-cell { position: relative; width: 100%; aspect-ratio: 1; background: var(--bg); border: 2px solid var(--border); display: grid; place-items: center; cursor: pointer; }
+  .p-cell.empty { border-style: dashed; }
+  .p-cell.empty small { font-family: var(--micro); font-size: 6px; color: var(--muted); opacity: .8; }
+  .p-cell.filled { border-color: var(--rc); box-shadow: 0 0 8px color-mix(in srgb, var(--rc) 28%, transparent); }
+  .p-cell.filled.sel, .p-cell.active { border-color: var(--gold); box-shadow: 0 0 12px rgba(233,182,85,.5); }
+  .p-cell.active.empty { border-style: solid; }
+  .p-cell.dim { opacity: .35; }
+  .p-cell canvas { image-rendering: pixelated; }
+  .p-qty { position: absolute; top: 3px; right: 3px; background: var(--gold); color: var(--bg); font-family: var(--micro); font-size: 7px; padding: 2px 3px 1px; line-height: 1; }
+  .p-new { position: absolute; top: 3px; left: 3px; color: var(--gold); font-family: var(--micro); font-size: 6px; letter-spacing: .05em; text-shadow: 0 0 6px rgba(233,182,85,.8); }
+  .p-up { position: absolute; bottom: 2px; right: 4px; color: var(--ok); font-family: var(--micro); font-size: 8px; text-shadow: 0 0 6px rgba(85,233,143,.7); }
+  .p-slotmark { position: absolute; bottom: 2px; left: 4px; font-family: var(--micro); font-size: 6px; color: var(--muted); }
+
+  .p-cap { display: grid; gap: 6px; }
+  .p-bar { height: 8px; border: 1px solid var(--border2); background: var(--surface2); position: relative; }
+  .p-bar i { position: absolute; inset: 1px; width: calc(var(--pct) - 2px); background: repeating-linear-gradient(90deg, var(--gold) 0 5px, var(--gold2) 5px 6px); }
+  .p-bar.warn i { background: repeating-linear-gradient(90deg, var(--warn) 0 5px, #8a4d10 5px 6px); }
+
+  .p-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-top: 12px; }
+  .p-chips::-webkit-scrollbar { display: none; }
+  .p-chip { flex: 0 0 auto; padding: 5px 10px 3px; border: 1px solid var(--border); background: var(--surface); font-family: var(--micro); font-size: 7px; letter-spacing: .08em; color: var(--muted); cursor: pointer; }
+  .p-chip.on { color: var(--gold); border-color: var(--gold); background: rgba(233,182,85,.12); }
+  .p-chip.sort { margin-left: auto; border-style: dashed; }
+
+  .p-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px; }
+  .p-hint { font-family: var(--micro); font-size: 6px; color: var(--muted); text-align: center; margin-top: 14px; letter-spacing: .06em; }
+
+
+  .p-btn { display: grid; place-items: center; height: 46px; border: 2px solid var(--gold); background: linear-gradient(180deg, #d9a54a, #b88a3b); color: #1b1404; font-family: var(--micro); font-size: 9px; letter-spacing: .12em; cursor: pointer; box-shadow: inset 0 -3px 0 rgba(0,0,0,.25); }
+  .p-btn.sec { background: transparent; color: var(--gold); border-color: var(--gold2); box-shadow: none; }
+  .p-btn.danger { background: transparent; color: var(--err); border-color: rgba(233,85,85,.45); box-shadow: none; }
+  .p-btn.pending { position: relative; border-style: dashed; opacity: .75; }
+  .p-btn.pending::after { content: 'NEEDS API'; position: absolute; top: -7px; right: 6px; background: var(--bg); color: var(--warn); font-size: 6px; padding: 0 4px; }
+
+  .p-toast { position: absolute; top: 52px; left: 16px; right: 16px; padding: 8px 12px; background: var(--surface); border: 1px solid var(--ok); color: var(--ok); font-family: var(--micro); font-size: 8px; letter-spacing: .06em; z-index: 5; animation: toast 2.4s forwards; }
+  .p-toast.gold { border-color: var(--gold); color: var(--gold); }
+  @keyframes toast { 0% { opacity: 0; transform: translateY(-6px);} 10% { opacity: 1; transform: none;} 80% { opacity: 1;} 100% { opacity: 0;} }
+
+  /* sheet */
+  .p-scrim { position: absolute; inset: 0; background: rgba(5,5,8,.62); z-index: 4; display: flex; align-items: flex-end; }
+  .p-sheet { width: 100%; max-height: 82%; overflow-y: auto; background: var(--surface); border: 2px solid var(--rc, var(--gold2)); margin: 0 10px 12px; padding: 16px; scrollbar-width: none; }
+  .p-sheet::-webkit-scrollbar { display: none; }
+  .p-sheet-head { display: flex; gap: 12px; align-items: center; }
+  .p-sheet-head .p-cell { width: 58px; flex: 0 0 58px; cursor: default; }
+  .p-name { font-size: 26px; line-height: 1; color: var(--rc, var(--fg)); }
+  .p-meta { font-family: var(--micro); font-size: 7px; letter-spacing: .06em; color: var(--muted); margin-top: 6px; }
+  .p-desc { font-size: 18px; line-height: 1.1; color: rgba(255,255,255,.75); margin: 12px 0 0; font-style: italic; }
+  .p-stats { margin-top: 12px; border-top: 1px solid var(--border); }
+  .p-stat { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .p-stat .k { font-family: var(--micro); font-size: 7px; letter-spacing: .08em; color: var(--muted); }
+  .p-stat .v { font-size: 22px; line-height: 1; color: var(--fg); min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
+  .p-stat .d { font-family: var(--micro); font-size: 8px; min-width: 40px; text-align: right; }
+  .p-stat .d.up { color: var(--ok); } .p-stat .d.down { color: var(--err); } .p-stat .d.same { color: var(--muted); }
+  .p-vs { font-family: var(--micro); font-size: 6px; letter-spacing: .08em; color: var(--muted); margin-top: 10px; display: flex; justify-content: space-between; }
+  .p-vs b { color: var(--fg2); font-weight: 400; }
+  .p-actions { margin-top: 16px; display: grid; gap: 8px; }
+  .p-swap { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .p-swap .p-cell { flex: 0 0 64px; width: 64px; }
+  .p-swapcard { display: grid; gap: 4px; justify-items: center; }
+  .p-swapcard span { font-family: var(--micro); font-size: 6px; color: var(--muted); letter-spacing: .04em; white-space: nowrap; max-width: 64px; overflow: hidden; text-overflow: ellipsis; }
+  .p-stepper { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .p-stepper button { width: 44px; height: 40px; background: var(--bg); border: 1px solid var(--border2); color: var(--gold); font-family: var(--pixel); font-size: 26px; cursor: pointer; }
+  .p-stepper .n { font-size: 28px; color: var(--fg); min-width: 40px; text-align: center; }
+  .p-stepper .of { font-family: var(--micro); font-size: 7px; color: var(--muted); }
+  .p-chipset { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .p-bchip { padding: 4px 8px 2px; border: 1px solid var(--border); background: var(--bg); font-family: var(--micro); font-size: 7px; color: var(--gold); }
+
+  /* ---------- as-is replica (rounded, current app) ---------- */
+  .asis .p-card { background: var(--surface); border: 1px solid rgba(233,182,85,.35); border-radius: 14px; padding: 12px; display: flex; gap: 12px; }
+  .asis .p-portrait { width: 64px; height: 64px; border-radius: 10px; background: var(--bg); border: 2px solid var(--gold); display: grid; place-items: center; }
+  .asis .p-hname { font-size: 26px; line-height: 1; }
+  .asis .p-hsub { font-family: var(--micro); font-size: 7px; color: var(--muted); margin: 4px 0 8px; }
+  .asis .xp { height: 8px; border-radius: 4px; background: var(--surface2); border: 1px solid var(--border); overflow: hidden; }
+  .asis .xp i { display: block; height: 100%; width: 67%; background: #55E98F; }
+  .asis .sect { display: flex; align-items: center; gap: 8px; margin: 18px 0 10px; }
+  .asis .sect::before, .asis .sect::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .asis .sect b { font-family: var(--micro); font-size: 7px; letter-spacing: .14em; color: var(--muted); font-weight: 400; }
+  .asis .banner { border-radius: 10px; border: 1px solid var(--gold); background: rgba(233,182,85,.08); padding: 8px 12px; font-size: 20px; color: var(--gold); line-height: 1; display: flex; justify-content: space-between; align-items: baseline; }
+  .asis .banner small { font-family: var(--micro); font-size: 6px; color: var(--muted); }
+  .asis .equip { display: grid; grid-template-columns: 58px 1fr 58px; gap: 10px; align-items: center; }
+  .asis .col { display: grid; gap: 10px; }
+  .asis .p-cell { border-radius: 10px; }
+  .asis .preview { aspect-ratio: .82; border-radius: 14px; border: 2px solid rgba(233,182,85,.55); background: #14161E; display: grid; grid-template-rows: 1fr auto; place-items: center; padding: 8px; }
+  .asis .preview small { font-family: var(--micro); font-size: 6px; color: var(--muted); }
+  .asis .attrs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .asis .attr { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px 4px 6px; text-align: center; }
+  .asis .attr b { display: block; font-family: var(--micro); font-size: 6px; color: var(--muted); font-weight: 400; }
+  .asis .attr span { font-size: 26px; line-height: 1; }
+  .asis .attr i { display: block; margin: 4px auto 0; width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--gold); color: var(--gold); font-style: normal; font-size: 20px; line-height: 20px; }
+  .asis .derived { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .asis .derived div { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px 6px; }
+  .asis .derived b { display: block; font-family: var(--micro); font-size: 6px; color: var(--muted); font-weight: 400; }
+  .asis .derived span { font-size: 24px; line-height: 1; }
+  .asis .p-chip { border-radius: 6px; }
+  .asis .foot { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
+  .asis .foot .p-coin { border-radius: 50%; }
+  .asis .foot .p-coin::after { display: none; }
+  .asis .foot .g { font-size: 22px; color: var(--gold); }
+  .asis .foot small { margin-left: auto; font-family: var(--micro); font-size: 6px; color: var(--muted); }
+
+  .kbd-hint { font-size: 13px; color: var(--muted); margin: -8px 0 20px; }
+  @media (prefers-reduced-motion: reduce) { .p-toast { animation: none; } }
+  @media (max-width: 900px) { .row { grid-template-columns: 1fr; } h1 { font-size: 48px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">troy-flutter · features/profile · hero_page → inventory</div>
+  <h1>Inventory Redesign</h1>
+  <p class="lead">Аудит того, что уже собрано в мобильном клиенте, и интерактивный прототип того, как инвентарь может выглядеть отдельным экраном. Копия в макетах — английская (как в redesign-prompt), заметки — по-русски. Кликабельно: фильтры, слоты, предметы, Equip/Unequip/Use.</p>
+
+  <!-- ================= AS IS ================= -->
+  <section class="section">
+    <div class="section-head">
+      <h2>AS-IS</h2>
+      <p>Что сейчас есть в приложении</p>
+      <div class="divider-dot"></div>
+    </div>
+
+    <div class="row">
+      <div class="frame">
+        <div class="frame-cap"><b>Hero page</b><span>один длинный скролл, инвентарь в самом низу</span></div>
+        <div class="phone asis" id="asis"></div>
+        <ul class="note">
+          <li>Профиль, экипировка, атрибуты, derived-статы и мешок — один <code>ListView</code>. До мешка ~3 экрана скролла.</li>
+          <li>Папка <code>features/inventory/</code> пустая (<code>.gitkeep</code>) — всё живёт в <code>features/profile/</code>.</li>
+        </ul>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <h3>Данные (domain)</h3>
+          <ul>
+            <li><code>InventoryItem</code>: id (catalog Item.id), name, type, rarity, glyph, slot?, quantity, 9 бонусов (str/int/sta/agi/spi/armor/mResist/physDmg/magicDmg), description? <small>(бэкенд пока не отдаёт)</small></li>
+            <li><code>HeroSnapshot</code>: profile + items + <code>equipped: Map&lt;HeroSlot, itemId&gt;</code>; <code>bag</code> = всё, что не надето; <code>capacity = 40</code> (константа на клиенте)</li>
+            <li>Слоты: head, body, weapon, shield, boots, ring <small>(ring ↔ backend ACCESSORY)</small></li>
+            <li>Rarity 5 ступеней, цвета захардкожены в <code>RarityColors</code></li>
+            <li>Фильтры: all / weapon / armor / accessory / consumable <small>(accessory — по type, у бэкенда такого type нет)</small></li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Виджеты (presentation)</h3>
+          <ul>
+            <li><code>EquipmentPanel</code> — 3 слота | анимированный спрайт класса | 3 слота; тап по заполненному слоту = unequip без подтверждения</li>
+            <li><code>EquipSlot</code> — 58px, рамка цвета rarity + glow; пустой — dashed с названием слота</li>
+            <li><code>InventorySection</code> — заголовок + «12 / 40 slots», чипы-фильтры, сетка 4 колонки (мин. 12 ячеек, добивка dashed), футер с золотом</li>
+            <li><code>ItemCell</code> — glyph + бейдж количества; selected = толще рамка и ярче glow</li>
+            <li><code>ItemGlyphIcon</code> — 11 пиксельных глифов на <code>CustomPainter</code> (sword, axe, hammer, shield, helmet, armor, boots, ring, gem, potion, scroll)</li>
+            <li><code>showItemInspectSheet</code> — bottom sheet: иконка, имя (цвет rarity), «Rarity · Type ×N», описание, чипы бонусов, кнопка Equip (если есть slot)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Поведение (HeroCubit)</h3>
+          <ul>
+            <li><code>load</code> → один снапшот <code>GET /character/me</code></li>
+            <li><code>setFilter</code>, <code>toggleInspect</code> / <code>clearInspect</code> (selectedItemId открывает sheet через BlocConsumer-listener)</li>
+            <li><code>equip(itemId)</code>, <code>unequip(slot)</code>, <code>allocate(attr)</code> — без optimistic UI, ждём свежий снапшот с бэкенда</li>
+            <li><code>_mutationInFlight</code> — защита от даблтапа, но UI никак не показывает «в полёте»</li>
+            <li>Ошибка → snackbar, снапшот не трогаем</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Чего нет</h3>
+          <ul>
+            <li>Сравнения с надетым предметом (дельта статов)</li>
+            <li>Use для расходников, Discard <small>— и на бэкенде тоже (gaps #2, #3)</small></li>
+            <li>Сортировки, пометки «новое», индикатора апгрейда</li>
+            <li>Skeleton при загрузке, состояния «запрос в полёте» <small>(пустой мешок — просто dashed-сетка, это ок)</small></li>
+            <li>Equip из слота (слот → выбрать из подходящих)</li>
+            <li>Подтверждения при unequip; после equip — только новый снапшот, без «+7 ATK»-фидбэка (DoD MVP-3: «визуальная обратная связь после изменения статов»)</li>
+            <li>Стак экипируемых: «Rusty Blade ×3 (equipped)» — неопределённое поведение (gap #5)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PROTOTYPE ================= -->
+  <section class="section">
+    <div class="section-head">
+      <h2>PROTOTYPE</h2>
+      <p>Инвентарь как отдельная вкладка · sharp pixel-frames по redesign-prompt</p>
+      <div class="divider-dot"></div>
+    </div>
+    <p class="kbd-hint">Каждый телефон — независимая копия состояния. Тап по предмету → карточка со сравнением; тап по слоту → что надето + чем заменить; чипы и сорт работают.</p>
+
+    <div class="frames">
+
+      <div class="frame">
+        <div class="frame-cap"><b>1 · Bag</b><span>главный экран инвентаря</span></div>
+        <div class="phone" data-proto='{}'></div>
+        <ul class="note">
+          <li>Золото — в app bar, а не в футере: это валюта, ей место рядом с заголовком.</li>
+          <li>Кукла из 6 слотов сжата в одну полосу над мешком. Тап по слоту = фильтр «что подходит сюда» + карточка слота (экран 3). Полная кукла с анимированным спрайтом остаётся на вкладке Hero.</li>
+          <li>Вместимость — сегментированный бар, не текст. При ≥90% — оранжевый.</li>
+          <li>Ячейка: rarity-рамка (как сейчас) + метка слота внизу слева, <b style="color:var(--gold)">NEW</b> для свежего лута, <b style="color:var(--ok)">▲</b> если лучше надетого в свой слот (считается на клиенте: сумма бонусов). Количество — как сейчас.</li>
+          <li>Сорт: rarity ↓ / newest / type. Фильтр по слоту подсвечивает, а не прячет — контекст сохраняется.</li>
+          <li>Навбар: сейчас три таба (BACKPACK · MAP · MENU), и BACKPACK ведёт на Hero. Здесь BACKPACK → BAG (только мешок), а профиль/кукла/статы — отдельный HERO. Если четыре таба не хочется — HERO можно спрятать в MENU или в app bar мешка.</li>
+        </ul>
+      </div>
+
+      <div class="frame">
+        <div class="frame-cap"><b>2 · Inspect</b><span>карточка предмета со сравнением</span></div>
+        <div class="phone" data-proto='{"sheet":{"kind":"item","id":"dragonfang"}}'></div>
+        <ul class="note">
+          <li>Те же данные, что в текущем sheet, но бонусы — строками, а не чипами: третья колонка — дельта против того, что сейчас в этом слоте (Iron Sword). Это и есть «обратная связь по статам» из DoD, только <em>до</em> нажатия.</li>
+          <li>Equip → sheet закрывается, тост «Equipped · PHYS DMG +7», предмет уезжает в куклу. Тост — обещание; реальные цифры пересчитает бэкенд.</li>
+          <li>Discard — пунктиром: эндпоинта нет (gap #3). Убрать пунктир, когда появится. Продажи в инвентаре нет — экономика не здесь.</li>
+          <li>Описание — из <code>Item.description</code>, которого ещё нет (gap #1). До него — не показывать блок вовсе, без «Lorem».</li>
+        </ul>
+      </div>
+
+      <div class="frame">
+        <div class="frame-cap"><b>3 · Slot</b><span>тап по надетому — снять или заменить</span></div>
+        <div class="phone" data-proto='{"sheet":{"kind":"slot","slot":"weapon"}}'></div>
+        <ul class="note">
+          <li>Сейчас тап по слоту = мгновенный unequip. Здесь — карточка: что надето, Unequip, и «Swap for» — только подходящие в этот слот, с ▲ у апгрейдов. Тап по кандидату = equip (бэкенд сам снимает старое).</li>
+          <li>Пустой слот → та же карточка без блока «Equipped», сразу список кандидатов. Убирает сценарий «скроллю мешок, ищу, что надеть на голову».</li>
+        </ul>
+      </div>
+
+      <div class="frame">
+        <div class="frame-cap"><b>4 · Consumable</b><span>расходник — Use с количеством</span></div>
+        <div class="phone" data-proto='{"filter":"consumable","sheet":{"kind":"item","id":"potion-minor"}}'></div>
+        <ul class="note">
+          <li>Для type = consumable вместо Equip — Use со степпером (1…N). Эффект — строкой («Restores 50 HP»). Эндпоинт <code>POST /inventory/use/:itemId</code> и поля эффекта — gap #2; блокер — нет persistent HP между боями.</li>
+          <li>Если зелья режем из MVP-3 — фильтр consumable остаётся, кнопка Use уходит, sheet просто информационный.</li>
+        </ul>
+      </div>
+
+      <div class="frame">
+        <div class="frame-cap"><b>5 · Empty</b><span>мешок пуст</span></div>
+        <div class="phone" data-proto='{"empty":true}'></div>
+        <ul class="note">
+          <li>Никакого «Your bag is empty» — просто пустая dashed-сетка, бар 3 / 40 и кукла с надетым. Пустой мешок ≠ голый герой.</li>
+          <li>Тот же каркас использовать под skeleton при загрузке: dashed ячейки + shimmer, без спиннера в центре.</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= BACKEND ================= -->
+  <section class="section">
+    <div class="section-head">
+      <h2>WHAT IT COSTS</h2>
+      <p>Что из прототипа делается на клиенте, а что упирается в бэкенд</p>
+      <div class="divider-dot"></div>
+    </div>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Фича</th><th>Где</th><th>Что нужно</th></tr></thead>
+      <tbody>
+        <tr><td>Отдельная вкладка Inventory, кукла-полоса, бар вместимости</td><td><span class="tag client">CLIENT</span></td><td>Разнести <code>HeroPage</code> на два экрана над одним <code>HeroCubit</code>/снапшотом. Capacity — оставить константой или отдавать с бэкенда.</td></tr>
+        <tr><td>Дельта статов в карточке, ▲ апгрейд, сорт, NEW</td><td><span class="tag client">CLIENT</span></td><td>Всё есть в снапшоте (9 бонусов + equipped map). NEW — локально хранить «виденные» id или ждать <code>acquiredAt</code>.</td></tr>
+        <tr><td>Slot sheet со «Swap for»</td><td><span class="tag client">CLIENT</span></td><td>Фильтр bag по <code>slot</code>; equip уже автоснимает предыдущее.</td></tr>
+        <tr><td>Тост после equip («PHYS DMG +7»)</td><td><span class="tag client">CLIENT</span></td><td>Диф старого и нового <code>computedStats</code> из снапшота — точнее, чем сумма бонусов предмета.</td></tr>
+        <tr><td>Описание предмета</td><td><span class="tag api">API</span></td><td>gap #1: <code>Item.description</code> + seed.</td></tr>
+        <tr><td>Use для расходников</td><td><span class="tag api">API</span></td><td>gap #2: поля эффекта + <code>POST /inventory/use/:itemId</code>; решить про persistent HP.</td></tr>
+        <tr><td>Discard</td><td><span class="tag api">API</span></td><td>gap #3: <code>DELETE /inventory/:itemId?quantity=</code>. Sell из скоупа инвентаря убран.</td></tr>
+        <tr><td>Иконки вместо глифов</td><td><span class="tag api">API</span></td><td>gap #6: <code>Item.iconUrl</code> пустой; прототип рисует те же 11 глифов, что и клиент — визуально ничего не ломается.</td></tr>
+        <tr><td>Стак экипируемого («×3 equipped»)</td><td><span class="tag api">API</span></td><td>gap #5: решить модель до того, как лут начнёт дропать дубли; UI прототипа считает, что экипируемое не стакается.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ---------- pixel glyphs — 1:1 port of item_glyph_icon.dart ---------- */
+const GLYPHS = {
+  sword: ['    *','   ***','   #*#','   #*#','   #*#','   #*#','  #####','   ###','   #*#','  #####'],
+  axe: ['     ##','   #####','  ######',' ###  ##',' ##   ##','      #','      #','      #','      #'],
+  hammer: [' #######',' #*****#',' #*****#',' #######','    ##','    ##','    ##','    ##','    ##'],
+  shield: [' #######',' #*****#',' #*****#',' #*****#','  #***#','  #***#','   #*#','    #'],
+  helmet: ['   ####','  ######',' #*####*#',' #*####*#',' #*####*#',' ########','  # ## #'],
+  armor: [' ##    ##',' ###  ###',' ########',' #******#',' #******#',' #******#',' ##****##','  ######'],
+  boots: ['  ##','  ##','  ##','  ##  ##','  ##  ##','  #######',' ########',' ########'],
+  ring: ['    #','   ***','    #','  #####',' ##   ##',' #     #',' ##   ##','  #####'],
+  gem: ['  #####',' #*****#','#*******#',' #*****#','  #***#','   #*#','    #'],
+  potion: ['   ###','   # #','  ##*##',' ##***##',' #*****#',' #*****#',' ##***##','  #####'],
+  scroll: [' #######',' #-----#',' #*###*#',' #-----#',' #*###*#',' #-----#',' #######'],
+  // nav icons
+  nav_map: ['  ###  ',' ##### ',' ##*## ',' ##### ','  ###  ','   #   ','   #   '],
+  nav_bag: ['  ###  ',' #   # ','#######','#*****#','#*****#','#*****#',' ##### '],
+  nav_gear: ['  # #  ',' ##### ','##* *##',' #   # ','##* *##',' ##### ','  # #  '],
+  hero: ['   ####','  ######',' #*####*#',' #*####*#',' #*####*#',' ########','  # ## #'],
+};
+function mix(hex, to, t) {
+  const p = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+  const a = p(hex), b = p(to);
+  return `rgb(${a.map((v,i)=>Math.round(v+(b[i]-v)*t)).join(',')})`;
+}
+function drawGlyph(canvas, name, color, size) {
+  const map = GLYPHS[name]; const dpr = window.devicePixelRatio || 1;
+  canvas.width = size*dpr; canvas.height = size*dpr; canvas.style.width = size+'px'; canvas.style.height = size+'px';
+  const ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr); ctx.imageSmoothingEnabled = false;
+  const cols = Math.max(...map.map(r=>r.length)), rows = map.length;
+  const cell = Math.min(size/cols, size/rows);
+  const ox = (size-cell*cols)/2, oy = (size-cell*rows)/2;
+  const paints = { '#': color, '*': mix(color,'#FFFFFF',.4), '-': mix(color,'#000000',.45) };
+  map.forEach((row,y)=>[...row].forEach((ch,x)=>{ if(!paints[ch]) return; ctx.fillStyle = paints[ch]; ctx.fillRect(ox+x*cell, oy+y*cell, cell+.5, cell+.5); }));
+}
+
+/* ---------- data ---------- */
+const RARITY = { common:'#6B7280', uncommon:'#46C24C', rare:'#3B82F6', epic:'#9B59F6', legendary:'#E0B34A' };
+const RANK = { common:0, uncommon:1, rare:2, epic:3, legendary:4 };
+const SLOTS = ['head','body','weapon','shield','boots','ring'];
+const BONUS = [['physDmg','PHYS DMG'],['magicDmg','MAGIC DMG'],['armor','ARMOR'],['mResist','M.RES'],['str','STR'],['sta','STA'],['agi','AGI'],['int','INT'],['spi','SPI']];
+const ITEMS = [
+  { id:'iron-sword', name:'Iron Sword', type:'weapon', slot:'weapon', rarity:'common', glyph:'sword', physDmg:5, desc:'Standard issue. Reliable, unremarkable.' },
+  { id:'rusty-blade', name:'Rusty Blade', type:'weapon', slot:'weapon', rarity:'common', glyph:'sword', physDmg:3, desc:'It has seen better centuries.' },
+  { id:'dragonfang', name:'Dragonfang Axe', type:'weapon', slot:'weapon', rarity:'epic', glyph:'axe', physDmg:12, str:4, desc:'Carved from a fang the size of a man. Still warm.', isNew:true },
+  { id:'sunforged', name:'Sunforged Hammer', type:'weapon', slot:'weapon', rarity:'legendary', glyph:'hammer', physDmg:18, str:6, sta:3, desc:'Forged at noon, quenched at dusk. It hums.', isNew:true },
+  { id:'forest-cloak', name:'Forest Cloak', type:'armor', slot:'body', rarity:'uncommon', glyph:'armor', armor:3, sta:2, desc:'Smells of moss and rain.' },
+  { id:'warden-helm', name:'Warden Helm', type:'armor', slot:'head', rarity:'rare', glyph:'helmet', armor:6, sta:2, desc:'Worn by the gate wardens of old Troy.' },
+  { id:'oak-shield', name:'Oak Shield', type:'armor', slot:'shield', rarity:'common', glyph:'shield', armor:4, desc:'Heavy. Dependable.' },
+  { id:'wolfhide-boots', name:'Wolfhide Boots', type:'armor', slot:'boots', rarity:'uncommon', glyph:'boots', agi:3, armor:2, desc:'Quiet on stone, quieter on grass.' },
+  { id:'ember-ring', name:'Ember Ring', type:'accessory', slot:'ring', rarity:'rare', glyph:'ring', physDmg:4, agi:2, desc:'Warm to the touch, even in snow.' },
+  { id:'moonstone', name:'Moonstone Amulet', type:'accessory', slot:'ring', rarity:'rare', glyph:'gem', spi:4, mResist:3, desc:'Glows faintly under a full moon.' },
+  { id:'potion-minor', name:'Minor Healing Potion', type:'consumable', slot:null, rarity:'common', glyph:'potion', qty:5, effect:'Restores 50 HP' },
+  { id:'scroll-embers', name:'Scroll of Embers', type:'consumable', slot:null, rarity:'uncommon', glyph:'scroll', qty:2, effect:'Next attack deals +30% fire damage' },
+];
+const CAPACITY = 40;
+const byId = id => ITEMS.find(i => i.id === id);
+const score = it => it ? BONUS.reduce((s,[k]) => s + (it[k]||0), 0) : 0;
+const fmt = n => n.toLocaleString('en-US');
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+/* ---------- prototype phone ---------- */
+function makePhone(root, init) {
+  const st = Object.assign({
+    items: ITEMS.map(i => ({...i, qty: i.qty || 1})),
+    equipped: { weapon:'iron-sword', body:'forest-cloak', shield:'oak-shield' },
+    gold: 1240, filter:'all', slotFilter:null, sort:'rarity', sheet:null, toast:null, empty:false, useN:1,
+  }, init);
+  if (st.empty) { st.items = st.items.filter(i => Object.values(st.equipped).includes(i.id)); }
+
+  const equippedIn = slot => st.equipped[slot] ? st.items.find(i => i.id === st.equipped[slot]) : null;
+  const bag = () => st.items.filter(i => !Object.values(st.equipped).includes(i.id));
+  const isUpgrade = it => it.slot && score(it) > score(equippedIn(it.slot));
+  const matchesFilter = it => st.filter === 'all' || it.type === st.filter;
+  const sorted = list => {
+    const l = [...list];
+    if (st.sort === 'rarity') l.sort((a,b) => RANK[b.rarity]-RANK[a.rarity] || score(b)-score(a));
+    if (st.sort === 'newest') l.sort((a,b) => (b.isNew?1:0)-(a.isNew?1:0));
+    if (st.sort === 'type') l.sort((a,b) => a.type.localeCompare(b.type) || RANK[b.rarity]-RANK[a.rarity]);
+    return l;
+  };
+
+  function cell(it, opts = {}) {
+    const rc = RARITY[it.rarity];
+    const dim = opts.dim ? ' dim' : '';
+    return `<div class="p-cell filled${dim}" style="--rc:${rc}" data-item="${it.id}">
+      <canvas data-glyph="${it.glyph}" data-color="${rc}" data-size="${opts.size||36}"></canvas>
+      ${it.qty > 1 ? `<span class="p-qty">${it.qty}</span>` : ''}
+      ${it.isNew && !opts.noBadges ? `<span class="p-new">NEW</span>` : ''}
+      ${!opts.noBadges && isUpgrade(it) ? `<span class="p-up">▲</span>` : ''}
+      ${!opts.noBadges && it.slot ? `<span class="p-slotmark">${it.slot.slice(0,3).toUpperCase()}</span>` : ''}
+    </div>`;
+  }
+
+  function statRows(it, vs) {
+    const rows = BONUS.filter(([k]) => (it[k]||0) !== 0 || (vs && (vs[k]||0) !== 0));
+    if (!rows.length) return '';
+    return `<div class="p-stats">${rows.map(([k,label]) => {
+      const v = it[k]||0, d = vs ? v - (vs[k]||0) : null;
+      const dcls = d === null ? '' : d > 0 ? 'up' : d < 0 ? 'down' : 'same';
+      const dtxt = d === null ? '' : d > 0 ? `▲ +${d}` : d < 0 ? `▼ ${d}` : '—';
+      return `<div class="p-stat"><span class="k">${label}</span><span class="v">${v>0?'+':''}${v}</span><span class="d ${dcls}">${dtxt}</span></div>`;
+    }).join('')}</div>`;
+  }
+
+  function sheetItem(it) {
+    const rc = RARITY[it.rarity];
+    const current = it.slot ? equippedIn(it.slot) : null;
+    const isEquipped = it.slot && st.equipped[it.slot] === it.id;
+    const meta = [cap(it.rarity), cap(it.type), it.slot ? `${cap(it.slot)} slot` : null, it.qty > 1 ? `×${it.qty}` : null].filter(Boolean).join(' · ');
+    let body = '';
+    if (it.type === 'consumable') {
+      body = `<p class="p-desc">${it.effect}</p>
+        <div class="p-stepper"><button data-act="dec">−</button><span class="n">${st.useN}</span><span class="of">OF ${it.qty}</span><button data-act="inc">+</button></div>
+        <div class="p-actions">
+          <div class="p-btn pending" data-act="use">USE ${st.useN > 1 ? '×'+st.useN : ''}</div>
+          <div class="p-btn danger pending" data-act="discard">DISCARD ${st.useN > 1 ? '×'+st.useN : ''}</div>
+        </div>`;
+    } else {
+      body = `${it.desc ? `<p class="p-desc">${it.desc}</p>` : ''}
+        ${current && !isEquipped ? `<div class="p-vs"><span>VS. EQUIPPED</span><b>${current.name}</b></div>` : ''}
+        ${statRows(it, isEquipped ? null : current)}
+        <div class="p-actions">
+          ${isEquipped ? `<div class="p-btn sec" data-act="unequip" data-slot="${it.slot}">UNEQUIP</div>` : `<div class="p-btn" data-act="equip">EQUIP</div>`}
+          <div class="p-btn danger pending" data-act="discard">DISCARD</div>
+        </div>`;
+    }
+    return `<div class="p-sheet" style="--rc:${rc}" data-item-sheet="${it.id}">
+      <div class="p-sheet-head">${cell(it, {size:34, noBadges:true})}<div><div class="p-name">${it.name}</div><div class="p-meta">${meta}</div></div></div>
+      ${body}
+    </div>`;
+  }
+
+  function sheetSlot(slot) {
+    const cur = equippedIn(slot);
+    const cands = sorted(bag().filter(i => i.slot === slot));
+    const rc = cur ? RARITY[cur.rarity] : '#B88A3B';
+    return `<div class="p-sheet" style="--rc:${rc}">
+      <div class="p-label" style="margin-top:0"><span>${slot.toUpperCase()} SLOT</span><span>${cur ? 'EQUIPPED' : 'EMPTY'}</span></div>
+      ${cur ? `<div class="p-sheet-head">${cell(cur,{size:34,noBadges:true})}<div><div class="p-name">${cur.name}</div><div class="p-meta">${cap(cur.rarity)} · ${cap(cur.type)}</div>
+          <div class="p-chipset">${BONUS.filter(([k])=>cur[k]).map(([k,l])=>`<span class="p-bchip">${l} +${cur[k]}</span>`).join('')}</div></div></div>
+        <div class="p-actions"><div class="p-btn sec" data-act="unequip" data-slot="${slot}">UNEQUIP</div></div>`
+      : `<p class="p-desc" style="margin-top:4px">Nothing equipped here.</p>`}
+      <div class="p-label"><span>${cur ? 'SWAP FOR' : 'EQUIP FROM BAG'}</span><span>${cands.length} FIT</span></div>
+      ${cands.length ? `<div class="p-swap">${cands.map(c => `<div class="p-swapcard">${cell(c,{size:30})}<span>${c.name}</span></div>`).join('')}</div>`
+        : `<div class="p-hint" style="text-align:left">nothing in your bag fits this slot</div>`}
+    </div>`;
+  }
+
+  function render() {
+    if (st.sheet && st.sheet.kind === 'item' && !st.items.some(i => i.id === st.sheet.id)) st.sheet = null;
+    const used = st.items.length, pct = Math.round(used / CAPACITY * 100);
+    const list = sorted(bag());
+    const visible = list.filter(matchesFilter);
+    const minCells = 12; let n = Math.max(minCells, visible.length); if (n % 4) n += 4 - n % 4;
+    const grid = visible.map(i => cell(i, { dim: st.slotFilter && i.slot !== st.slotFilter })).join('')
+      + Array.from({length: n - visible.length}, () => `<div class="p-cell empty"></div>`).join('');
+
+    root.innerHTML = `
+      <div class="p-status"><span>9:41</span><span>▮▮▮ ◔</span></div>
+      ${st.toast ? `<div class="p-toast ${st.toast.kind||''}">${st.toast.text}</div>` : ''}
+      <div class="p-scroll">
+        <div class="p-appbar"><div class="p-title">INVENTORY</div><div class="p-gold"><i class="p-coin"></i>${fmt(st.gold)}</div></div>
+        <div class="p-label"><span>EQUIPPED</span><span>${Object.keys(st.equipped).length} / 6</span></div>
+        <div class="p-doll">${SLOTS.map(s => { const it = equippedIn(s); const act = st.slotFilter === s ? ' active' : '';
+          return `<div class="p-slot">${it ? cell(it,{size:26,noBadges:true}).replace('class="p-cell filled"', `class="p-cell filled${act}" data-slot="${s}"`).replace(`data-item="${it.id}"`,'')
+            : `<div class="p-cell empty${act}" data-slot="${s}"><small>+</small></div>`}<span>${s.toUpperCase()}</span></div>`; }).join('')}</div>
+        <div class="p-label"><span>BAG</span><span><b>${used}</b> / ${CAPACITY}</span></div>
+        <div class="p-cap"><div class="p-bar${pct >= 90 ? ' warn' : ''}"><i style="--pct:${pct}%"></i></div></div>
+        <div class="p-chips">${['all','weapon','armor','accessory','consumable'].map(f => `<div class="p-chip${st.filter===f?' on':''}" data-filter="${f}">${f.toUpperCase()}</div>`).join('')}
+          <div class="p-chip sort" data-sort>${st.sort.toUpperCase()} ▾</div></div>
+        <div class="p-grid">${grid}</div>
+        <div class="p-hint">TAP AN ITEM TO INSPECT · TAP A SLOT TO SWAP</div>
+      </div>
+      ${st.sheet ? `<div class="p-scrim">${st.sheet.kind === 'item' ? sheetItem(st.items.find(i => i.id === st.sheet.id)) : sheetSlot(st.sheet.slot)}</div>` : ''}
+      <div class="p-nav">
+        <div class="on"><canvas data-glyph="nav_bag" data-color="#E9B655" data-size="18"></canvas>BAG</div>
+        <div><canvas data-glyph="hero" data-color="#8B8E9B" data-size="18"></canvas>HERO</div>
+        <div><canvas data-glyph="nav_map" data-color="#8B8E9B" data-size="18"></canvas>MAP</div>
+        <div><canvas data-glyph="nav_gear" data-color="#8B8E9B" data-size="18"></canvas>MENU</div>
+      </div>`;
+    root.querySelectorAll('canvas[data-glyph]').forEach(c => drawGlyph(c, c.dataset.glyph, c.dataset.color, +c.dataset.size));
+  }
+
+  function toast(text, kind) { st.toast = { text, kind }; render(); setTimeout(() => { if (st.toast && st.toast.text === text) { st.toast = null; render(); } }, 2400); }
+
+  root.addEventListener('click', e => {
+    const t = e.target.closest('[data-filter],[data-sort],[data-slot],[data-item],[data-act],.p-scrim');
+    if (!t) return;
+    if (t.dataset.filter) { st.filter = t.dataset.filter; st.slotFilter = null; return render(); }
+    if (t.hasAttribute('data-sort')) { st.sort = { rarity:'newest', newest:'type', type:'rarity' }[st.sort]; return render(); }
+    if (t.dataset.act) {
+      const sheetEl = t.closest('[data-item-sheet]'); const it = sheetEl ? st.items.find(i => i.id === sheetEl.dataset.itemSheet) : null;
+      switch (t.dataset.act) {
+        case 'equip': { const prev = equippedIn(it.slot); st.equipped[it.slot] = it.id; st.sheet = null; st.slotFilter = null; it.isNew = false;
+          const d = score(it) - score(prev); return toast(`EQUIPPED ${it.name.toUpperCase()} · ${d>=0?'+':''}${d} TOTAL`, d >= 0 ? '' : 'gold'); }
+        case 'unequip': { const s = t.dataset.slot; const prev = equippedIn(s); delete st.equipped[s]; st.sheet = null; return toast(`UNEQUIPPED ${prev.name.toUpperCase()}`, 'gold'); }
+        case 'inc': st.useN = Math.min(it.qty, st.useN + 1); return render();
+        case 'dec': st.useN = Math.max(1, st.useN - 1); return render();
+        case 'use': { it.qty -= st.useN; const n = st.useN; st.useN = 1; if (it.qty <= 0) { st.items = st.items.filter(i => i !== it); st.sheet = null; } return toast(`USED ×${n} · ${it.effect.toUpperCase()}`); }
+        case 'discard': { const n = it.type === 'consumable' ? st.useN : it.qty; it.qty -= n; if (it.qty <= 0) st.items = st.items.filter(i => i !== it); st.sheet = null; st.useN = 1; return toast(`DISCARDED ${it.name.toUpperCase()}${n > 1 ? ' ×'+n : ''}`, 'gold'); }
+      }
+    }
+    if (t.dataset.item) {
+      const it = st.items.find(i => i.id === t.dataset.item);
+      if (t.closest('.p-swap')) { // tap a swap candidate = equip it right away
+        const prev = equippedIn(it.slot); st.equipped[it.slot] = it.id; st.sheet = null; st.slotFilter = null; it.isNew = false;
+        const d = score(it) - score(prev); return toast(`EQUIPPED ${it.name.toUpperCase()} · ${d>=0?'+':''}${d} TOTAL`, d >= 0 ? '' : 'gold');
+      }
+      st.sheet = { kind:'item', id: it.id }; st.useN = 1; return render();
+    }
+    if (t.dataset.slot) { const s = t.dataset.slot; st.slotFilter = s; st.filter = 'all'; st.sheet = { kind:'slot', slot: s }; return render(); }
+    if (t.classList.contains('p-scrim') && e.target === t) { st.sheet = null; return render(); }
+  });
+  render();
+}
+document.querySelectorAll('.phone[data-proto]').forEach(el => makePhone(el, JSON.parse(el.dataset.proto)));
+
+/* ---------- as-is replica ---------- */
+(function asIs() {
+  const root = document.getElementById('asis');
+  const equipped = { weapon:'iron-sword', body:'forest-cloak', shield:'oak-shield' };
+  const eq = s => equipped[s] ? byId(equipped[s]) : null;
+  const slotEl = s => { const it = eq(s); if (!it) return `<div class="p-cell empty"><small>${s.toUpperCase()}</small></div>`;
+    const rc = RARITY[it.rarity]; return `<div class="p-cell filled" style="--rc:${rc}"><canvas data-glyph="${it.glyph}" data-color="${rc}" data-size="34"></canvas></div>`; };
+  const bag = ITEMS.filter(i => !Object.values(equipped).includes(i.id));
+  const cellEl = it => { const rc = RARITY[it.rarity]; return `<div class="p-cell filled" style="--rc:${rc}"><canvas data-glyph="${it.glyph}" data-color="${rc}" data-size="34"></canvas>${(it.qty||1)>1?`<span class="p-qty">${it.qty}</span>`:''}</div>`; };
+  root.innerHTML = `
+    <div class="p-status"><span>9:41</span><span>▮▮▮ ◔</span></div>
+    <div class="p-scroll">
+      <div class="p-appbar"><div class="p-title" style="color:var(--fg);font-size:26px">Hero</div><span style="font-family:var(--micro);font-size:8px;color:var(--muted)">⚙</span></div>
+      <div class="p-card"><div class="p-portrait"><canvas data-glyph="hero" data-color="#E9B655" data-size="40"></canvas></div>
+        <div style="flex:1"><div class="p-hname">Aldric <span style="color:var(--gold)">· LVL 7</span></div><div class="p-hsub">WARRIOR</div><div class="xp"><i></i></div><div class="p-hsub" style="margin:4px 0 0">1340 / 2000 XP</div></div></div>
+      <div class="banner"><span>★ 2 points to spend</span><small>TAP + TO ALLOCATE</small></div>
+      <div class="sect"><b>EQUIPMENT</b></div>
+      <div class="equip"><div class="col">${['head','body','boots'].map(slotEl).join('')}</div>
+        <div class="preview"><canvas data-glyph="hero" data-color="#E9B655" data-size="80"></canvas><small>TAP A SLOT TO UNEQUIP</small></div>
+        <div class="col">${['weapon','shield','ring'].map(slotEl).join('')}</div></div>
+      <div class="sect"><b>ATTRIBUTES</b></div>
+      <div class="attrs">${[['STR',18],['STA',22],['AGI',9],['INT',5],['SPI',6]].map(([k,v])=>`<div class="attr"><b>${k}</b><span>${v}</span><i>+</i></div>`).join('')}</div>
+      <div class="sect"><b>DERIVED</b></div>
+      <div class="derived">${[['HP',280],['RAGE','0/100'],['ARMOR',64],['M.RESIST',12],['PHYS ATK',46],['MAGIC ATK',8],['ATK SPEED','1.1'],['CRIT','6%']].map(([k,v])=>`<div><b>${k}</b><span>${v}</span></div>`).join('')}</div>
+      <div class="sect"><b></b></div>
+      <div class="p-appbar" style="height:auto"><div class="p-title" style="color:var(--fg);font-size:26px">Inventory</div><span style="font-family:var(--micro);font-size:7px;color:var(--muted)">${ITEMS.length} / 40 SLOTS</span></div>
+      <div class="p-chips" style="margin-top:8px">${['ALL','WEAPON','ARMOR','ACCESSORY','CONSUMABLE'].map((f,i)=>`<div class="p-chip${i?'':' on'}">${f}</div>`).join('')}</div>
+      <div class="p-grid">${bag.map(cellEl).join('')}${Array.from({length:(4-bag.length%4)%4},()=>'<div class="p-cell empty" style="border-radius:10px"></div>').join('')}</div>
+      <div class="foot"><i class="p-coin"></i><span class="g">1,240</span><small>TAP AN ITEM TO INSPECT</small></div>
+    </div>
+    <div class="p-nav" style="grid-template-columns:repeat(3,1fr)">
+      <div class="on"><canvas data-glyph="nav_bag" data-color="#E9B655" data-size="18"></canvas>BACKPACK</div>
+      <div><canvas data-glyph="nav_map" data-color="#8B8E9B" data-size="22"></canvas>MAP</div>
+      <div><canvas data-glyph="nav_gear" data-color="#8B8E9B" data-size="18"></canvas>MENU</div>
+    </div>`;
+  root.querySelectorAll('canvas[data-glyph]').forEach(c => drawGlyph(c, c.dataset.glyph, c.dataset.color, +c.dataset.size));
+})();
+</script>
+</body>
+</html>

@@ -2,6 +2,8 @@
 
 ## Доступные классы
 
+> Кап уровня на текущем этапе — **10**, у каждого класса **4 скилла** (слоты открываются на 1 / 3 / 6 / 10). Подробные карточки классов с промтами на арт — в `troy-docs/classes/`.
+
 На старте: **Warrior** и **Mage**. В будущем планируется **Rogue**.
 
 Каждый класс имеет свою **ресурсную систему**:
@@ -69,13 +71,12 @@ auto_damage = base_weapon_dmg + STR * 0.8
 
 | # | Уровень | Скилл | Cast | CD | Rage Cost | Base Dmg | Scaling | Эффект |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 3 | Heavy Strike | 0.5s | 3s | 15 | 25 | STR × 1.0 | — |
-| 2 | 6 | Shield Bash | 0s | 8s | 20 | 10 | STR × 0.5 | stun 1.5s |
-| 3 | 10 | Battle Cry | 0s | 20s | 25 | 0 | — | +20% ATK 8s |
-| 4 | 15 | Whirlwind | 1s | 12s | 35 | 40 | STR × 1.2 | — |
-| 5 | 20 | Execution | 0.5s | 10s | 30 | 60 | STR × 1.6 | +50% урона по цели <30% HP |
-| 6 | 25 | Iron Wall | 0s | 28s | 40 | 0 | — | -35% входящего урона 6s |
+| 1 | 1 | Heavy Strike | 0s | 4s | 25 | 20 | STR × 1.2 | — |
+| 2 | 3 | Shield Slam | 0s | 8s | 35 | 10 | STR × 0.6 | stun 1.5s |
+| 3 | 6 | Battle Cry | 0s | 20s | 25 | 0 | — | +20% ATK 8s |
+| 4 | 10 | Whirlwind | 1s | 12s | 40 | 40 | STR × 1.2 | — |
 
+> Слоты 1–2 — как в БД (`prisma/seed.ts`), 3–4 — план. Полное описание класса, включая промты на арт: [classes/warrior.md](../classes/warrior.md).
 > Rage cost вместо Mana cost. Воин должен сначала накопить ярость автоатаками / получением урона, прежде чем использовать скиллы.
 
 ---
@@ -136,12 +137,12 @@ mana_regen = max_mana * 0.01 * (1 + SPI * 0.02) per second
 
 | # | Уровень | Скилл | Cast | CD | Mana Cost | Base Dmg | Scaling | Эффект |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 3 | Fireball | 1.5s | 4s | 15 | 35 | INT × 1.2 | — |
-| 2 | 6 | Frost Nova | 0s | 10s | 20 | 15 | INT × 0.6 | slow 3s |
-| 3 | 10 | Arcane Shield | 0s | 18s | 25 | 0 | INT × 0.5 | absorb щит |
-| 4 | 15 | Meteor | 2.5s | 15s | 40 | 80 | INT × 1.8 | — |
-| 5 | 20 | Lightning Bolt | 1.2s | 8s | 30 | 50 | INT × 1.4 | — |
-| 6 | 25 | Combustion | 0s | 20s | 45 | 20 | INT × 0.6 | dot 6s (тик 1/сек) |
+| 1 | 1 | Fireball | 1.5s | 3s | 15 | 30 | INT × 1.2 | — |
+| 2 | 3 | Frost Bolt | 1s | 5s | 20 | 18 | INT × 0.8 | slow 3s |
+| 3 | 6 | Arcane Shield | 0s | 18s | 25 | 0 | INT × 0.5 | absorb щит |
+| 4 | 10 | Meteor | 2.5s | 15s | 40 | 80 | INT × 1.8 | — |
+
+> Слоты 1–2 — как в БД (в seed Frost Bolt открыт на 2 уровне — привести к 3), 3–4 — план.
 
 ---
 
@@ -188,6 +189,6 @@ mana_regen = max_mana * 0.01 * (1 + SPI * 0.02) per second
 | Agility | +3.0 |
 | Spirit | +0.5 |
 
-К 30 уровню: ~95 Agility = +95% attack speed, ~14% crit chance базово.
+К 10 уровню: ~35 Agility = +35% attack speed, ~5% crit chance базово.
 
 > Детали скиллов, ресурсной системы и баланса будут определены при имплементации класса.
