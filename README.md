@@ -79,15 +79,24 @@ troy-docs/
 │   ├── map-ui.md                            # Карта: отображение мобов, игрока
 │   └── battle-ui.md                         # UI боя: панель скиллов, HP + классовый ресурс (Rage/Mana)
 │
-└── roadmap/                                 # Планирование MVP
-    ├── mvp.md                               # Индекс MVP: scope, фазы, Definition of Done
-    ├── current-flow.md                      # MVP-0: auth → character → map
-    ├── playable-map.md                      # MVP-1: игровая карта
-    ├── battle-loop.md                       # MVP-2: полный battle loop
-    ├── battle-polish.md                     # Шаг 3Б: отзывчивость/звук/VFX/результат боя, аудит + фазы P0–P3
-    ├── inventory-profile.md                 # MVP-3: профиль, инвентарь, экипировка
-    ├── content-balance.md                   # MVP-4: контент и баланс
-    └── hardening.md                         # MVP-5: стабилизация для тестирования
+├── roadmap/                                 # Планирование MVP
+│   ├── mvp.md                               # Индекс MVP: scope, фазы, Definition of Done
+│   ├── execution-plan.md                    # Сквозной план шагов 1–6 с чек-боксами
+│   ├── current-flow.md                      # MVP-0: auth → character → map
+│   ├── playable-map.md                      # MVP-1: игровая карта
+│   ├── battle-loop.md                       # MVP-2: полный battle loop (Шаг 3)
+│   ├── battle-polish.md                     # Шаг 3Б: живость боя, статус-чеклист + фазы P0–P5
+│   ├── inventory-profile.md                 # MVP-3: профиль, инвентарь, экипировка
+│   ├── inventory-backend-gaps.md            # Пробелы бэкенда под MVP-3
+│   ├── content-balance.md                   # MVP-4: контент и баланс
+│   ├── hardening.md                         # MVP-5: стабилизация для тестирования
+│   ├── asset-pipeline.md                    # Как производятся спрайты/фоны/иконки
+│   └── monster-visuals-prompt.md            # Промт генерации спрайтов мобов
+│
+└── design/                                  # Визуальные референсы и прототипы
+    ├── redesign-prompt.md                   # Промт редизайна UI
+    ├── image-reference-prompts.md           # Промты под референсные картинки
+    └── prototypes/                          # HTML-прототипы экранов (боевой экран)
 ```
 
 > **Правило**: файлы с пометкой `[TODO]` ещё не созданы. При добавлении нового документа — обновить эту структуру и таблицу ниже.

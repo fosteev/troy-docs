@@ -41,8 +41,8 @@ Backend (troy-backend) — стек **Jest + @nestjs/testing** (`npx nx test gam
 - [x] **Шаг 1** — `character` → Clean Architecture + финал MVP-0
 - [x] **Шаг 1Б** — Backend: тест-фундамент (Jest + 6 suites/16 тестов; влито в `main`)
 - [x] **Шаг 2** — MVP-1: playable map
-- [ ] **Шаг 3** — MVP-2: battle loop
-- [ ] **Шаг 3Б** — Battle polish: отзывчивость и «живость» боя — см. [battle-polish.md](./battle-polish.md) — **P0, P1, P4, P3, P5 done** (контракт событий; отзывчивость/читаемость/устойчивость; перекладка экрана в «Арену»; старт/результат/level-up; лента намерений моба). Осталось только **P2** — звук/VFX/фоны арен/спрайты смерти мобов; подготовительная часть сделана (поля в схеме, панели загрузки в админке, контракт и фон арены по зоне в клиенте), дальше нужны сами ассеты: SFX, листы VFX, спрайты hit/death, фоны арен
+- [x] **Шаг 3** — MVP-2: battle loop (real-time, server-authoritative; см. [battle-loop.md](./battle-loop.md))
+- [ ] **Шаг 3Б** — Battle polish — см. [battle-polish.md](./battle-polish.md), там же чек-лист остатка. P0/P1/P3/P4/P5 закрыты; в **P2** написан весь код (спрайты hit/death моба, фон арены по зоне), не хватает только файлов: SFX и пакет аудио, листы VFX и партиклы крита, сами спрайты hit/death, фоны арен, иконки мобовых скиллов
 - [ ] **Шаг 4** — MVP-3: profile + inventory
 - [ ] **Шаг 5** — MVP-4: контент и баланс
 - [ ] **Шаг 6** — MVP-5: hardening
@@ -154,7 +154,7 @@ DoD: позиция игрока обновляется на устройств�
 
 **Цель:** server-driven бой, меняющий состояние персонажа. См. [battle-loop.md](./battle-loop.md), [combat.md](../game-design/combat.md).
 
-> Бой — **real-time, server-authoritative**. Техническая архитектура — [battle-session.md](../technical/battle-session.md). Для делегирования слабым моделям шаг разбит на мелкие самодостаточные промты (ядро/стора/сервис/WS/seed + Flutter) — **пошаговый playbook в [step3-battle-prompts.md](./step3-battle-prompts.md)**. Промт ниже — высокоуровневый обзор шага.
+> Бой — **real-time, server-authoritative**. Техническая архитектура — [battle-session.md](../technical/battle-session.md). Промт ниже — высокоуровневый обзор шага.
 
 ```
 Работаем в /Users/fost/Projects/troy (Flutter + backend).

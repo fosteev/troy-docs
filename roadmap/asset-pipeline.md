@@ -180,8 +180,7 @@ troy-assets/
 
 Здесь честный пиксель не нужен, а нужна композиция:
 - **арены батла** по зонам (`rd_pro` даёт максимум 256px — мало для полноэкранного
-  фона); промт из `battle-screen-redesign-prompt.md`, стиль-префикс «pixel-art
-  background», после — прогон через `pixel_correction`/`k_centroid_downscale` RD
+  фона); стиль-префикс «pixel-art background», после — прогон через `pixel_correction`/`k_centroid_downscale` RD
   (бесплатные тулзы) или SpriteCook grid-snap, чтобы фон не спорил со спрайтами;
 - фоны экранов логина/регистрации (сейчас `login_background_sprite.webp`);
 - портреты, если Шаг 0 показал, что RD-портреты слишком мелкие.
