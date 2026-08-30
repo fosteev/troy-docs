@@ -199,7 +199,7 @@ Color scheme: dark steel gray, deep crimson red, warm gold accents, muted dark m
 |---|---|---|---|---|
 | `keyframeFront` | экран персонажа, старт idle | `rd_pro__fantasy` | 128 | `{subject} Front-facing full body, feet visible, small margin to the canvas edge, centered, on a plain white background.` |
 | `keyframeSide` | старт боевых анимаций | `rd_pro__edit`, input = front | 128 | `Redraw this exact character rotated 90 degrees into a strict side view in profile, facing to the RIGHT, full body, feet visible, calm guard stance with the sword tip lowered and the shield resting at the side, same armor, colors and proportions, small margin to the canvas edge, centered, on a plain white background.` |
-| `keyframeTop` | старт walk (карта) | `rd_pro__edit`, input = front | 64 | `Redraw this exact character seen from directly above, a steep top-down camera angle like a classic top-down city game: the top of the helmet and the shoulders dominate, the body is foreshortened, crimson plume on the helmet, round shield on the left, sword on the right, standing, facing up, same armor and colors. The whole small figure including feet fits in the middle of the canvas with wide empty white margins around it, on a plain white background.` |
+| `keyframeTop` | старт walk (карта) | `rd_pro__edit`, input = front, 128 → 64 | 64 | `Redraw this exact character seen from directly above, a steep top-down camera angle like a classic top-down city game: the top of the helmet and the shoulders dominate, the body is foreshortened, crimson plume on the helmet, round shield on the left, sword on the right, standing, facing up, same armor and colors. The whole small figure including feet fits in the middle of the canvas with wide empty white margins around it, on a plain white background.` |
 | `icon` → `iconUrl` | выбор класса, HUD боя (портрет-иконка), 512 px | `rd_plus__skill_icon` ×4 | 128→512 | `Class emblem icon: a crossed steel sword and a round shield with a gold rim and a crimson plume above, warm gold accents on dark steel, medieval dark fantasy, bold readable silhouette, on a plain white background.` |
 | `portrait` | резерв: диалоги/результат боя (в БД слота пока нет) | `portrait:rd_flux` | 128 | `Bust portrait of a grim human warrior in a dark steel helmet with the visor raised, crimson plume, scarred face, stern eyes, gold-trimmed gorget, dark moody lighting, warm gold rim light, on a plain white background.` |
 
@@ -215,11 +215,11 @@ Color scheme: dark steel gray, deep crimson red, warm gold accents, muted dark m
 | `spriteAttack` | профиль вправо, автоатака | side | `rd_advanced_animation__custom_action` | 8 / 12 | `Raises the sword high overhead with the whole body, then a heavy downward slash with full weight behind it, shield braced, facing right, clear wind-up then a fast powerful strike with follow-through` |
 | `ClassSkill.spriteAttack` ×4 | профиль вправо, каст | side | `rd_advanced_animation__custom_action` | 8 / 12 | см. раздел 5 |
 
-Требования к анимациям (из ревью 30.08): idle — дыхание едва заметное; attackIdle — стоит, оружием не машет; attack — явный замах → удар, не «меч туда-сюда»; walk — вид сверху как в GTA 2, **строго вверх (север), голова у верхнего края** — один лист на все направления, клиент поворачивает по heading (см. `_template.md`). Текущий лист канону соответствует.
+Требования к анимациям (из ревью 30.08): idle — дыхание едва заметное; attackIdle — стоит, оружием не машет; attack — явный замах → удар, не «меч туда-сюда»; walk — вид сверху как в GTA 2, **строго вверх (север), голова у верхнего края** — один лист на все направления, клиент поворачивает по heading (см. `_template.md`). Лист перегенерирован 30.08 вечером под канон (первый шёл «на юг»).
 
 ### Чек-лист готовности арта
 
-- [x] keyframeFront, keyframeSide, keyframeTop
+- [x] keyframeFront, keyframeSide, keyframeTop (30.08 вечер: перегенерирован на север — спина, затылок; 128→64 + `fix-top.mjs`, т.к. edit синил сталь)
 - [x] icon 512, portrait
 - [x] spriteIdle, spriteWalk, spriteAttackIdle, spriteAttack
 - [x] heavy_strike (icon + cast), shield_slam (icon + cast)
