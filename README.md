@@ -46,9 +46,9 @@
 
 ## Прогрессия
 
-- Макс. уровень: **30**
+- Кап уровня текущего этапа: **10** (изначальная цель — 30, поднимем после MVP; кривые в `leveling.md` рассчитаны до 10)
 - Каждый уровень: авто-рост статов по классу + **2 свободных очка** атрибутов
-- Скиллы открываются по уровням: 1 → 3 → 6 → 10 (всего 4 скилла; кап уровня — 10). Карточки классов: `classes/`
+- Скиллы открываются по уровням: 1 → 3 → 6 → 10 (всего 4 скилла). Карточки классов: `classes/`
 
 ## Структура репозитория
 
@@ -62,15 +62,24 @@ troy-docs/
 │   ├── stats-and-formulas.md                # Атрибуты, производные, формулы урона/защиты
 │   ├── leveling.md                          # XP таблица, авто-рост, свободные очки, разблокировки
 │   ├── combat.md                            # Боевая система, автоатака, каст, эффекты
-│   ├── monsters.md                          # [TODO] Типы мобов, статы, поведение, зоны уровней
-│   ├── loot-and-items.md                    # [TODO] Предметы, редкости, дроп-таблицы
-│   └── inventory-and-equipment.md           # [TODO] Слоты экипировки, ограничения
+│   ├── character-selection.md               # Flow выбора/создания персонажа (0–8 на аккаунт)
+│   ├── pixel-art-design.md                  # Арт-дирекшн: dark fantasy pixel art, палитра
+│   ├── content-generation.md                # Генерация контента ИИ: канон, кривые, промт-шаблоны
+│   ├── character-generation-prompt.md       # Универсальный промт генерации персонажей
+│   ├── monsters.md                          # [TODO, MVP-4] Зоны уровней, распределение мобов (числа — в mobs/)
+│   ├── loot-and-items.md                    # [TODO, MVP-4] Предметы, редкости, дроп-таблицы
+│   └── inventory-and-equipment.md           # [TODO, MVP-4] Слоты экипировки, ограничения
+│
+├── classes/                                 # Карточки классов — источник правды по числам и промтам арта
+├── mobs/                                    # Карточки мобов (10 seed-мобов, эталон — goblin_warrior)
+├── generation/                              # Сквозные гайды генерации: class.md, mob.md (карточка → арт → БД)
 │
 ├── technical/                               # Техническая архитектура
 │   ├── architecture.md                      # [TODO] Сервисы, стек, схема взаимодействия
 │   ├── database-schema.md                   # Схема БД, таблицы, связи, PostGIS
 │   ├── api-contracts.md                     # [TODO] REST/WebSocket эндпоинты, форматы
 │   ├── geolocation.md                       # Геолокация, heading, определение движения
+│   ├── battle-session.md                    # Контракт real-time боя: сессия, WS-события, снапшоты
 │   ├── realtime.md                          # [TODO] WebSocket события, формат сообщений
 │   └── auth.md                              # Регистрация, JWT, верификация, восстановление пароля
 │
@@ -87,15 +96,19 @@ troy-docs/
 │   ├── mvp-3-inventory/                     # MVP-3: профиль, инвентарь (+ backend-gaps.md, redesign.md)
 │   ├── mvp-4-content-balance/               # MVP-4: контент и баланс
 │   ├── mvp-5-hardening/                     # MVP-5: стабилизация для тестирования
-│   └── assets/                              # Конвейер ассетов: README, steps, pitfalls, промт визуала мобов
+│   ├── mobs/                                # Сквозная тема: доработка мобов (описания, арт, фоны арен)
+│   └── assets/                              # Сквозная тема: конвейер ассетов (README, steps, pitfalls)
 │
-└── design/                                  # Визуальные референсы и прототипы
-    ├── redesign-prompt.md                   # Промт редизайна UI
-    ├── image-reference-prompts.md           # Промты под референсные картинки
-    └── prototypes/                          # HTML-прототипы экранов (индекс — prototypes/README.md)
-        ├── battle-screen-current.html       # Реплика текущего боевого экрана
-        ├── battle-screen-arena.html         # Вариант «Арена» (фазы P4/P5)
-        └── inventory-redesign.html          # Аудит + интерактивный прототип инвентаря (MVP-3 redesign)
+├── design/                                  # Визуальные референсы и прототипы
+│   ├── redesign-prompt.md                   # Промт редизайна UI
+│   ├── image-reference-prompts.md           # Промты под референсные картинки
+│   ├── login-variants-reference.png         # Референс вариантов логин-экрана (dark fantasy pixel art)
+│   └── prototypes/                          # HTML-прототипы экранов (индекс — prototypes/README.md)
+│       ├── battle-screen-current.html       # Реплика текущего боевого экрана
+│       ├── battle-screen-arena.html         # Вариант «Арена» (фазы P4/P5)
+│       └── inventory-redesign.html          # Аудит + интерактивный прототип инвентаря (MVP-3 redesign)
+│
+└── assets/                                  # Сгенерированный арт: классы (war1, mage1, …), мобы, фоны экранов
 ```
 
 > **Правило**: файлы с пометкой `[TODO]` ещё не созданы. При добавлении нового документа — обновить эту структуру и таблицу ниже.
@@ -111,9 +124,16 @@ troy-docs/
 | [stats-and-formulas.md](game-design/stats-and-formulas.md) | Атрибуты, производные характеристики, все формулы |
 | [leveling.md](game-design/leveling.md) | Система уровней, XP, свободные очки, разблокировка скиллов |
 | [combat.md](game-design/combat.md) | Боевая система, автоатака, скиллы, расчёт урона |
+| [character-selection.md](game-design/character-selection.md) | Flow выбора/создания персонажа (0–8 на аккаунт) |
+| [pixel-art-design.md](game-design/pixel-art-design.md) | Арт-дирекшн: dark fantasy pixel art, палитра |
+| [content-generation.md](game-design/content-generation.md) | Генерация контента ИИ: канон, балансовые кривые, промт-шаблоны |
 | [database-schema.md](technical/database-schema.md) | Схема БД: User, Character, Item, Monster, связи |
 | [auth.md](technical/auth.md) | Auth flows: регистрация, авторизация, восстановление пароля |
 | [geolocation.md](technical/geolocation.md) | Геолокация: позиция на User, heading, moving/idle, anti-cheat |
+| [battle-session.md](technical/battle-session.md) | Контракт real-time боя: сессия, WS-события, снапшоты |
+| [classes/](classes/README.md) | Карточки классов — источник правды по числам и промтам арта |
+| [mobs/](mobs/README.md) | Карточки мобов (10 seed-мобов) |
+| [generation/](generation/README.md) | Сквозные гайды генерации: класс/моб от карточки до устройства |
 | [roadmap/README.md](roadmap/README.md) | Roadmap MVP: цикл, scope, статус фаз, правила работы по фазам |
 
 ## Статус

@@ -45,7 +45,9 @@
 
 ## Документы, которые нужно добавить
 
-- [ ] `game-design/monsters.md`
+- [ ] `game-design/monsters.md` — только зоны уровней, распределение и принципы поведения;
+      числа конкретных мобов уже живут в карточках [mobs/](../../mobs/README.md) (источник
+      правды), в monsters.md их не дублировать
 - [ ] `game-design/loot-and-items.md`
 - [ ] `game-design/inventory-and-equipment.md`
 
@@ -67,7 +69,7 @@
 - troy-docs/roadmap/mvp-4-content-balance/README.md;
 - troy-docs/game-design/classes.md, combat.md, leveling.md, stats-and-formulas.md.
 
-Game-design — дописать недостающие доки: game-design/monsters.md, loot-and-items.md, inventory-and-equipment.md.
+Game-design — дописать недостающие доки: game-design/monsters.md (только зоны/распределение/поведение — числа мобов в troy-docs/mobs/, это источник правды), loot-and-items.md, inventory-and-equipment.md.
 Контент/баланс: мобы 1–10 lvl, drop tables, минимум предметов (weapon/armor/accessory), баланс XP до 10 lvl, баланс Warrior/Mage, skill set стартовых уровней.
 
 Backend (troy-backend) — seed: zones, monsters, items, drop tables, spawn rules для тестовой зоны; повторяемый dev seed одной командой (без ручных SQL-правок).
