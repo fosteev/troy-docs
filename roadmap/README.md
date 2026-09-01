@@ -169,3 +169,4 @@ Backend (troy-backend) — **Jest + @nestjs/testing** (`npx nx test game-core`).
 - Геолокация: [geolocation.md](../technical/geolocation.md)
 - База данных: [database-schema.md](../technical/database-schema.md)
 - Визуал: [pixel-art-design.md](../game-design/pixel-art-design.md), [content-generation.md](../game-design/content-generation.md), прототипы — [design/prototypes/](../design/prototypes/README.md)
+- Генерация контента (сквозные гайды): [generation/](../generation/README.md) — новый класс от карточки до устройства
