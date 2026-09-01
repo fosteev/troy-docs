@@ -31,6 +31,8 @@ roadmap/
 ├── mvp-3-inventory/
 ├── mvp-4-content-balance/
 ├── mvp-5-hardening/
+├── mobs/                         # сквозная тема: доработка мобов (описания, арт, фоны арен)
+├── group-battle/                 # сквозная тема: групповой бой N×N (паки → кооп), пока только дизайн
 └── assets/                       # сквозная тема (конвейер ассетов), не привязана к одной фазе
 ```
 
@@ -79,6 +81,7 @@ roadmap/
 
 - [ ] **MVP-4 — контент и баланс.** Инфраструктура есть (seed одной командой, админка контента, рендер спрайтов/rarity/level), сам контент 1–10 lvl и баланс — нет. → [mvp-4-content-balance/](./mvp-4-content-balance/README.md)
 - [ ] **MVP-5 — hardening.** Последний шаг фазы — **локализация** (описания классов/скиллов на EN, см. ниже). Из списка уже закрыто: health endpoints, refresh access-токена, docker compose, seed, Swagger-тоггл. Остальное открыто. → [mvp-5-hardening/](./mvp-5-hardening/README.md)
+- [ ] **group-battle — групповой бой N×N (паки → кооп).** Дизайн и решение по ассетам (один спрайт, N инстансов) зафиксированы 01.09; этап 1 (1 игрок × N мобов) — кандидат сразу за MVP-4, этап 2 (кооп) — после MVP. → [group-battle/](./group-battle/README.md)
 
 **Следующее по порядку:** закрыть MVP-3 (гэпы бэкенда → redesign), параллельно гнать assets (классы → мобы), чтобы разблокировать P2 боя, затем MVP-4.
 
@@ -111,6 +114,7 @@ roadmap/
 - Социальные механики.
 - Продвинутый procedural spawning.
 - Production-grade moderation/admin panel.
+- Групповой бой (паки мобов, кооп) — отдельная тема [group-battle/](./group-battle/README.md), после MVP.
 
 ## Definition of Done для MVP
 
