@@ -80,6 +80,7 @@ Color scheme: {…}, muted dark medieval fantasy.
 | `attackMotion` | {замах → удар} |
 | `hitMotion` | {реакция на удар слева} |
 | `deathMotion` | {как падает} |
+| `arena` (фон арены) | {сцена логова: местность + 2–3 детали, без существ и текста} |
 
 ### Слоты (канон: в бою моб справа, смотрит ВЛЕВО; клиент не зеркалит)
 
@@ -92,7 +93,7 @@ Color scheme: {…}, muted dark medieval fantasy.
 | `spriteHit` | `custom_action` | 6 / 12 | → из state |
 | `spriteDeath` | `custom_action` (или `__destroy`) | 8 / 8 | → из state |
 | `MonsterSkill.spriteAttack` | `custom_action` | 8 / 12 | раздел 5 |
-| `arenaBackground` | {решение фазы C roadmap/mobs} | 1×1 | {…} |
+| `arenaBackground` | `rd_pro__fantasy` 256 (opaque) | 1×1 | → из state (`arena` в манифесте) |
 
 ### Чек-лист
 
@@ -103,7 +104,8 @@ Color scheme: {…}, muted dark medieval fantasy.
 
 ## 7. Реализация
 
-Моб и скиллы — админка (или seed для базовых 10); publish заливает только визуал по `name`.
+Моб (статы/дроп) — админка (или seed для базовых 10); publish находит его по `name` и заливает
+визуал, `description`, фон арены, создаёт недостающие скиллы из `db:`-блоков манифеста.
 
 ### Расхождения код ↔ документы
 

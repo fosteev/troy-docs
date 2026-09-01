@@ -10,5 +10,5 @@
 | Гайд | Что покрывает |
 |---|---|
 | [class.md](class.md) | Новый класс целиком: карточка → манифест → спрайты/иконки/анимации → скиллы с описаниями → БД → устройство |
-| mob.md (TODO — фаза B [roadmap/mobs](../roadmap/mobs/README.md)) | Моб: то же, короче — профиль влево, idle/attack/hit/death, иконка-маркер, фон арены; шаблон `troy-assets/styles/mob.yaml`, карточки — [mobs/](../mobs/README.md) |
+| [mob.md](mob.md) | Моб: то же, короче — профиль влево, idle/attack/hit/death, иконка-маркер, фон арены; шаблон `troy-assets/styles/mob.yaml`, карточки — [mobs/](../mobs/README.md) |
 | items.md (TODO) | Предметы: иконки инвентаря (Шаг 4 конвейера) |
