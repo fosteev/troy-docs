@@ -29,9 +29,14 @@
 | attackSpeed | {} | dodge | {} |
 | expReward | {} | goldReward | {} |
 | spawnable | {true} | nothingWeight | {} |
+| packMin | {1} | packMax | {1} |
 
 💡 Бюджеты по уровням — `game-design/content-generation.md` (таблица мобов): hp ≈ 31.5·lvl+33,
 награды по кривой XP. Кап уровня игрока — 10, мобы 1–10 (+элитки).
+
+💡 `packMin`/`packMax` (1..4) — размер стаи при спавне; 1/1 — одиночка. Статы каждого
+моба в паке снижаются, награда за пак растёт — см.
+`roadmap/group-battle/stage-1-packs.md`.
 
 ## 4. Дроп
 

@@ -30,6 +30,7 @@
 | attackSpeed | 1.0 | dodge | 0 |
 | expReward | 65 | goldReward | 28 |
 | spawnable | true | nothingWeight | 0 |
+| packMin | 2 | packMax | 3 |
 
 Числа — из продакшн-сида, якорь lvl 5 в `content-generation.md`. Быстрой твари по кривым
 допустим attackSpeed до 1.4 — см. Расхождения.

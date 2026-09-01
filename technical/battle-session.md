@@ -1,4 +1,10 @@
-# Battle Session — Архитектура real-time боя (MVP-2)
+# Battle Session — Архитектура real-time боя (MVP-2, контракт v2)
+
+> **v2 (01.09):** бой идёт против **пака** — 1 игрок × N мобов
+> ([group-battle/этап 1](../roadmap/group-battle/stage-1-packs.md)). В сессии и в
+> DTO вместо одного `monster` — список `monsters[]` с `instanceId`, у игрока
+> появилась цель (`targetInstanceId`), добавлено событие `battle:target`.
+> Бой 1v1 — вырожденный случай: пак из одного, отдельной ветки кода нет.
 
 ## Обзор
 
@@ -41,6 +47,7 @@
   "characterId": "uuid",
   "monsterId": "uuid",
   "spawnId": "uuid",
+  "packSize": 3,
   "status": "active",
   "startedAt": "2026-06-29T12:00:00.000Z",
   "tick": 42,
@@ -49,20 +56,32 @@
     "resourceType": "RAGE", "resource": 35, "maxResource": 100,
     "attackIntervalSec": 1.05, "nextAutoAtMs": 1380,
     "effects": [{ "type": "SLOW", "value": 30, "expiresAtMs": 4200 }],
-    "cast": null
+    "cast": null,
+    "targetInstanceId": "m2"
   },
-  "monster": {
-    "hp": 60, "maxHp": 320,
-    "attackIntervalSec": 1.4, "nextAutoAtMs": 900,
-    "effects": [{ "type": "DOT", "value": 8, "expiresAtMs": 3000 }],
-    "cast": { "skillCode": "mob_smash", "endsAtMs": 1600 }
-  },
+  "monsters": [
+    { "instanceId": "m1", "hp": 0, "maxHp": 64, "alive": false,
+      "targetId": "player",
+      "attackIntervalSec": 1.4, "nextAutoAtMs": 900,
+      "effects": [], "cast": null, "cooldowns": { "mob_bite": 2100 } },
+    { "instanceId": "m2", "hp": 41, "maxHp": 64, "alive": true, "…": "…" },
+    { "instanceId": "m3", "hp": 64, "maxHp": 64, "alive": true, "…": "…" }
+  ],
   "cooldowns": { "heavy_strike": 2.1, "whirlwind": 0 },
   "flee": null
 }
 ```
 
 > Время внутри сессии — относительное (`...Ms` от `startedAt`), чтобы тик не зависел от системных часов и сериализовался однозначно.
+
+**Про пак:**
+
+- `instanceId` — `m1`…`mN`, стабилен на весь бой; им адресуются цель, урон и лог.
+- Кулдауны, `cast`, эффекты и «spent»-флаги скиллов моба — **per-инстанс**:
+  каждый волк кастует сам за себя.
+- Мёртвый инстанс: `alive: false`, каст и эффекты сброшены, движок его пропускает.
+- `packSize` фиксируется на старте из `active_spawns.pack_size` и нужен на финале
+  для наград.
 
 ### Redis — `battle:lock:{characterId}` (опционально, SET NX)
 
@@ -130,7 +149,7 @@ START ──► ACTIVE ──(hp≤0 / flee / timeout)──► ENDED ──► 
 
 | Исход | Триггер | Эффект |
 |---|---|---|
-| **VICTORY** | `monster.hp ≤ 0` | XP → level progression → loot roll → `INSERT CharacterKill` → gold → BattleLog |
+| **VICTORY** | все мобы пака мертвы | XP → level progression → loot roll → `INSERT CharacterKill` → gold → BattleLog |
 | **DEFEAT** | `player.hp ≤ 0` | XP −5% текущего уровня (без понижения) → `battleLockUntil = now+60s` → BattleLog |
 | **ESCAPE** | успешный 3-сек channel побега | без XP/лута; моб «возвращается» (сессия просто закрывается, спавн не трогаем) → BattleLog(ESCAPE) |
 | **TIMEOUT** | сессия живёт > `BATTLE_MAX_DURATION` | трактуем как DEFEAT (страховка от зависших сессий) |
@@ -146,13 +165,18 @@ START ──► ACTIVE ──(hp≤0 / flee / timeout)──► ENDED ──► 
 **Шаг тика** — фиксированный `BATTLE_TICK_MS` (250 мс ≈ 4 Гц). Темп боя на старте регулируется проще — множителем скорости атаки **`ATTACK_SPEED_FACTOR`** (.env, дефолт 1.0): эффективная AS = `attackSpeed * ATTACK_SPEED_FACTOR`, применяется к обеим сторонам при сборке Combatant'ов. Понижение фактора (<1) делает автоатаки реже → бой медленнее и читаемее. Затрагивает только автоатаки и завязанную на них генерацию ярости; касты/кулдауны не меняет. Полноценный множитель времени (`dtMs * k`, влияет и на касты/кд) — возможное расширение позже. Логика внутри тика:
 
 1. продвинуть `elapsedMs`;
-2. протикать эффекты: DOT — урон/сек, истёкшие STUN/SLOW/BUFF/ABSORB снять;
-3. **касты:** если у игрока/моба идёт каст и `endsAtMs` достигнут — применить урон/эффект, снять каст, поставить кулдаун;
-4. **автоатаки:** если `nextAutoAtMs` достигнут и сторона не в стане и не кастует — провести автоатаку (формула урона из combat.md: raw → crit → defense → dodge), пересчитать `nextAutoAt += attackInterval`; автоатака воина генерит Rage;
-5. **намерение игрока:** если в очереди есть валидный скилл (не на кд, хватает ресурса, не в стане) — списать ресурс, начать каст (или применить инстант);
-6. **скиллы моба:** по запрограммированному алгоритму (приоритет + условие, см. combat.md → «Поведение моба в бою»): первый скилл, который не на кулдауне и чьё условие выполнено; иначе автоатака;
+2. протикать эффекты: DOT — урон/сек, истёкшие STUN/SLOW/BUFF/ABSORB снять — у игрока и у **каждого живого** моба;
+3. **касты:** каст игрока доводится в его цель (умерла по дороге — в новую, авто-выбранную); каст каждого живого моба — в игрока;
+4. **автоатаки:** если `nextAutoAtMs` достигнут и сторона не в стане и не кастует — провести автоатаку (формула урона из combat.md: raw → crit → defense → dodge), пересчитать `nextAutoAt += attackInterval`. Игрок бьёт цель, каждый живой моб — игрока; ярость воина растёт с каждого полученного удара, источников просто несколько;
+5. **намерение игрока:** если в очереди есть валидный скилл (не на кд, хватает ресурса, не в стане) — списать ресурс, начать каст (или применить инстант) по текущей цели;
+6. **скиллы мобов:** тот же алгоритм (приоритет + условие, см. combat.md → «Поведение моба в бою»), но **на каждый инстанс отдельно** — свои кулдауны, свой `spent`, `self_hp_below` читает HP этого инстанса;
 7. **побег:** если идёт channel и его не прервали уроном/станом — по достижении 3с завершить как ESCAPE;
-8. проверить конец боя (`hp ≤ 0` любой стороны) → финализация.
+8. **смерть моба:** `alive = false`, каст и эффекты сброшены, в лог `kind: 'death'`; если это была цель игрока — авторетаргет на первого живого по порядку `instanceId`;
+9. конец боя: все мобы мертвы → VICTORY; игрок мёртв → DEFEAT; timeout → DEFEAT.
+
+Один павший волк ничего не решает — пак дерётся, пока жив хоть один. Чтобы урон
+пака не приходил «пачкой», автоатаки инстансов разводятся на старте: `nextAutoAtMs`
+i-го сдвигается на `i × PACK_AUTO_STAGGER_MS`.
 
 **Эмиссия состояния:** снапшот в Redis — каждый тик; NATS-событие клиенту — на **значимое изменение** (урон, скилл, эффект, смена ресурса/кд) + keyframe не реже `BATTLE_KEYFRAME_MS` (1 с) для самосинхронизации. Голые «пустые» тики клиенту не шлём.
 
@@ -167,15 +191,22 @@ START ──► ACTIVE ──(hp≤0 / flee / timeout)──► ENDED ──► 
 ```typescript
 // начать бой
 'battle:start'   { monsterId: string; spawnId: string }
-// использовать скилл (намерение; применится на тике)
+// использовать скилл (намерение; применится на тике) — бьёт по ТЕКУЩЕЙ цели
 'battle:action'  { battleId: string; skillCode: string }
+// сменить цель в паке (тап по мобу или его плашке)
+'battle:target'  { battleId: string; targetInstanceId: string }
 // побег: start=начать channel, stop=отпустил кнопку
 'battle:flee'    { battleId: string; phase: 'start' | 'stop' }
 // переподключение в идущий бой
 'battle:resume'  { battleId?: string }
 ```
 
-Ack на каждое: `{ accepted: boolean; reason?: 'on_cooldown' | 'no_resource' | 'stunned' | 'not_active' | 'too_far' | 'incapacitated'; state?: BattleStateDto }`.
+Ack на каждое: `{ accepted: boolean; reason?: 'on_cooldown' | 'no_resource' | 'stunned' | 'casting' | 'not_active' | 'invalid_target'; state?: BattleStateDto }`.
+
+Смена цели — **отдельное намерение**, а не параметр `action`: тап по мобу и тап по
+скиллу — независимые жесты, и клиент не должен угадывать цель в момент каста.
+`battle:target` применяется **сразу**, не на тике: он не меняет игровое состояние,
+только адресацию. `invalid_target` — инстанса нет в этом бою или он уже мёртв.
 
 ### Сервер → клиент
 
@@ -184,30 +215,63 @@ Ack на каждое: `{ accepted: boolean; reason?: 'on_cooldown' | 'no_resour
 'battle:end'    BattleEndDto      // финал + награды
 ```
 
-### `BattleStateDto` (стримится)
+### `BattleStateDto` v2 (стримится)
 
 ```typescript
 {
   battleId: string;
   status: 'active';
   elapsedMs: number;
+  arenaBackground: ClassSpriteSheet | null;
   player: {
     hp: number; maxHp: number;
     resourceType: 'RAGE' | 'MANA'; resource: number; maxResource: number;
     effects: { type: EffectType; value: number; remainingSec: number }[];
     cast: { skillCode: string; remainingSec: number; totalSec: number } | null;
+    /** Кого бьёт игрок. null — все мобы мертвы (мгновение до battle:end). */
+    targetInstanceId: string | null;
   };
-  monster: {
+  /** Пак: 1..N инстансов одного моба. 1v1 — один элемент. */
+  monsters: {
+    instanceId: string;            // m1…mN, стабилен на весь бой
+    alive: boolean;
+    targetId: 'player';            // кого бьёт моб; задел под кооп
     name: string; level: number;
     hp: number; maxHp: number;
     effects: { type: EffectType; value: number; remainingSec: number }[];
     cast: { skillCode: string; remainingSec: number; totalSec: number } | null;
-  };
+    skills: BattleMonsterSkillDto[];  // лента намерений, per-инстанс
+  }[];
   skills: { code: string; name: string; cooldownRemainingSec: number; usable: boolean }[];
   flee: { remainingSec: number } | null;
-  log: { at: number; kind: 'hit'|'crit'|'miss'|'skill'|'effect'|'dot'; source: 'player'|'monster'; skillCode?: string; amount?: number }[];
+  log: BattleLogEntryDto[];
 }
 ```
+
+### `BattleLogEntryDto`
+
+```typescript
+{
+  at: number;
+  kind: 'hit'|'crit'|'miss'|'skill'|'effect'|'dot'
+      | 'cast_start'|'cast_interrupted'|'effect_expired'
+      | 'death';                   // умер инстанс пака
+  source: 'player'|'monster';      // кто действовал
+  target: 'player'|'monster';      // на кого пришлось
+  sourceInstanceId?: string;       // инстанс на стороне источника, если это моб
+  targetInstanceId?: string;       // инстанс на стороне цели, если это моб
+  skillCode?: string; amount?: number;
+  crit?: boolean; miss?: boolean;
+  damageType?: 'PHYSICAL'|'MAGICAL';
+  effectType?: EffectType;
+  durationMs?: number;             // на cast_start
+}
+```
+
+Инстансы в логе нужны клиенту для адресных цифр урона («−31 над вторым волком»),
+строк вида «Волк №2 укусил» и авторетаргета: `kind: 'death'` — сигнал сыграть
+death-анимацию; новую цель клиент не выбирает сам, а берёт из
+`player.targetInstanceId` следующего снапшота.
 
 ### `BattleEndDto`
 
@@ -246,6 +310,7 @@ Ack на каждое: `{ accepted: boolean; reason?: 'on_cooldown' | 'no_resour
 |---|---|---|
 | `battle.start` | RPC | уже есть; меняется ответ (snapshot + battleId) |
 | `battle.action` | RPC | поставить намерение использовать скилл |
+| `battle.target` | RPC | сменить цель игрока в паке (применяется сразу) |
 | `battle.flee` | RPC | старт/стоп channel побега |
 | `battle.resume` | RPC | снапшот текущего боя для реконнекта |
 | `battle.stream.{characterId}` | event (pub/sub) | тик-снапшоты от движка → gateway |
@@ -254,6 +319,7 @@ Ack на каждое: `{ accepted: boolean; reason?: 'on_cooldown' | 'no_resour
 
 ```typescript
 interface BattleActionRequest { userId: string; battleId: string; skillCode: string; }
+interface BattleTargetRequest { userId: string; battleId: string; targetInstanceId: string; }
 interface BattleFleeRequest   { userId: string; battleId: string; phase: 'start' | 'stop'; }
 interface BattleResumeRequest { userId: string; battleId?: string; }
 // событие в субъект battle.stream.{characterId}
@@ -340,6 +406,16 @@ game-core / BattleService
 | DEFEAT_LOCK_SECONDS | 60 | `incapacitated` после поражения |
 | FLEE_CHANNEL_S | 3 | удержание кнопки побега |
 | DEFEAT_XP_PENALTY | 0.05 | штраф −5% XP текущего уровня |
+| PACK_DMG_PER_EXTRA | 0.15 (env) | прирост суммарного урона пака за каждого моба сверх первого |
+| PACK_HP_PER_EXTRA | 0.25 (env) | то же для суммарного HP; он же множитель награды за пак |
+| PACK_AUTO_STAGGER_MS | 400 | сдвиг первой автоатаки i-го инстанса пака |
+
+**Награды за пак** (финализация, в той же транзакции): XP и gold — базовые
+`× PACK_REWARD_TOTAL(n)`, где `PACK_REWARD_TOTAL = PACK_TOTAL_HP`; лут — по одному
+роллу дроп-таблицы на каждого моба пака, склеенному по `itemId`. `CharacterKill` —
+**один** (пак это один спавн), `BattleLog` — одна запись. Статы инстанса
+масштабируются при сборке Combatant'ов, строка `Monster` в БД не трогается —
+таблица коэффициентов в [stage-1-packs.md](../roadmap/group-battle/stage-1-packs.md#5-баланс-черновые-числа-финальная-настройка--mvp-4).
 
 > **Несоответствие для правки:** сейчас в коде `MAX_BATTLE_DISTANCE_METERS = 100`, а радиус взаимодействия на карте — 50. В MVP-2 свести к единому `INTERACTION_RADIUS_M` (50), чтобы «вижу кнопку боя» = «могу начать бой».
 

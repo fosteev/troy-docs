@@ -30,6 +30,7 @@
 | attackSpeed | 1.0 | dodge | 0 |
 | expReward | 18 | goldReward | 7 |
 | spawnable | true | nothingWeight | 0 |
+| packMin | 2 | packMax | 3 |
 
 Числа — из продакшн-сида; якорь lvl 1 в `content-generation.md`. По кривым юркой твари
 положены dodge 3–8 и attackSpeed до 1.4 — см. Расхождения.
