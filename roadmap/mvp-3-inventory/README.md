@@ -1,6 +1,6 @@
 # MVP-3 — Profile, Inventory, Equipment
 
-> **Статус: в работе.** Клиент: Hero-экран (профиль + кукла + мешок одним скроллом) на реальном API, тесты зелёные. Бэкенд: профиль, инвентарь, equip/unequip, очки атрибутов — есть; открыты [backend-gaps.md](./backend-gaps.md) #1–#3, class restrictions (#4) не решены. Следующий шаг — [redesign.md](./redesign.md).
+> **Статус: в работе.** Клиент: Hero-экран (профиль + кукла + мешок одним скроллом) на реальном API, тесты зелёные. Бэкенд: профиль, инвентарь, equip/unequip, очки атрибутов — есть; открыты [backend-gaps.md](./backend-gaps.md) #1–#3, class restrictions (#4) не решены. Следующий шаг — гэпы бэкенда и визуальный отклик на смену статов (промт внизу), затем [redesign.md](./redesign.md).
 
 Цель: игрок должен видеть прогресс персонажа и усиливать его через предметы.
 
@@ -57,25 +57,48 @@
 
 ## Промт для сессии
 
-> Самодостаточный промт: скопировать целиком в свежую сессию. Общие правила (архитектура, тесты, делегирование) — в [roadmap/README.md](../README.md).
+> Самодостаточный промт: скопировать целиком в свежую сессию. Общие правила (архитектура, тесты, делегирование) — в [roadmap/README.md](../README.md). Редизайн мешка — отдельная сессия по промту в [redesign.md](./redesign.md).
 
 ```
-Работаем в /Users/fost/Projects/troy (Flutter + backend).
+Работаем в /Users/fost/Projects/troy (backend troy-backend + клиент troy-flutter + админка troy-admin).
+
+Задача: закрыть бэкенд-гэпы MVP-3 и визуальный отклик на смену статов. Профиль,
+инвентарь и equip/unequip уже работают на реальном API — это доработка, а не
+стройка с нуля.
 
 Прочитай:
-- troy-docs/roadmap/mvp-3-inventory/README.md, troy-docs/game-design/stats-and-formulas.md, leveling.md;
-- "Architecture rules" в troy-flutter/CLAUDE.md, эталон auth;
-- заглушки lib/features/profile/** и lib/features/inventory/**.
+- troy-docs/roadmap/mvp-3-inventory/README.md (статус и чек-листы) и
+  backend-gaps.md (аудит, гэпы #1–#6);
+- troy-docs/technical/database-schema.md, troy-docs/game-design/stats-and-formulas.md;
+- troy/CLAUDE.md (backend), раздел "Architecture rules" в troy-flutter/CLAUDE.md
+  (эталон — фича auth).
 
-Backend (troy-backend) — проверить/добить:
-- профиль активного персонажа; инвентарь; equip/unequip; проверка слотов и class restrictions;
-- computed stats = base + level growth + free attribute points + equipment bonuses.
+Порядок:
+1. Сначала вынеси пользователю решения, которых нет в доках, одним списком и
+   дождись ответа — без них половина работы бессмысленна:
+   - гэп #2 (расходники): текущего HP между боями в схеме нет (Character без
+     currentHp) — зелья вне скоупа MVP-3 или сперва персистентный HP?
+   - гэп #4: class restrictions режем из MVP-3 или добавляем (allowedClasses +
+     проверка в InventoryService.equip)?
+   - гэп #5: экипируемое стакается или нет — сейчас «Rusty Blade x3 (equipped)»
+     даёт бонус один раз, поведение неопределённое;
+   - гэп #6: иконки предметов — оставляем глифы по type/slot или заполняем iconUrl.
+2. Гэп #1 — Item.description: колонка + миграция (накатывать `migrate deploy`,
+   НЕ `migrate dev` — дропнет active_spawns), seed, отдача в /inventory и
+   /character/me, поле в форме предмета в админке, показ в item-sheet клиента.
+3. Гэп #3 — выбросить предмет: DELETE /inventory/:itemId (?quantity=), контракт +
+   NATS-паттерн; кнопка в UI появляется только вместе с эндпоинтом.
+4. Гэпы #2 и #4 — по ответам из п.1.
+5. Flutter: визуальная обратная связь после equip/unequip — тост с дифом
+   computedStats («PHYS ATK +7»), решение зафиксировано в redesign.md.
 
-Flutter — две фичи profile и inventory по стандарту (domain/data/presentation):
-- profile: entity Player + computed stats, repo (Either), ProfileBloc, экран (имя, класс, уровень, XP progress, статы, computed);
-- inventory: entity InventoryItem, repo (Either), InventoryBloc, экраны (список с rarity/slot/equipped, equip/unequip, визуальный отклик на смену статов).
+Тесты — часть DoD: backend unit на тронутые пути (equip с ограничениями, discard,
+пересчёт computed stats), Flutter — repository_impl + bloc + маппер по эталону auth.
 
-Тесты (по эталону auth): profile + inventory repository_impl, блоки, мапперы; backend — тест на equip/unequip и пересчёт computed stats.
+Проверка: `npx nx run-many -t test` в troy-backend; `flutter analyze && flutter test`
+в troy-flutter; `npx tsc -b --noEmit` в troy-admin, если её трогали.
 
-DoD: полученный в бою предмет появляется в инвентаре; equip/unequip работает; экипировка меняет computed stats; UI обновляется без рестарта; flutter analyze чисто; flutter test зелёный; backend тесты зелёные. Коммит. Отметить фазу [x] в troy-docs/roadmap/README.md.
+Ветка main, коммиты без подписей ассистента. По завершении: отметить закрытые
+пункты здесь и в backend-gaps.md, обновить баннер статуса фазы и таблицу в
+troy-docs/roadmap/README.md.
 ```
