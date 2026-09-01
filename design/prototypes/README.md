@@ -9,6 +9,7 @@
 | [battle-screen-current.html](./battle-screen-current.html) | Реплика текущего боевого экрана | — |
 | [battle-screen-arena.html](./battle-screen-arena.html) | Вариант композиции боя «Арена» | [polish/README.md](../../roadmap/mvp-2-battle-loop/polish/README.md), фазы P4/P5 |
 | [inventory-redesign.html](./inventory-redesign.html) | Аудит текущего инвентаря + интерактивный прототип нового | [redesign.md](../../roadmap/mvp-3-inventory/redesign.md) |
+| [battle-screen-pack.html](./battle-screen-pack.html) | Групповой бой (этап 1): пак ×3, выбор цели тапом, окошки «цель» у игрока и мобов | [group-battle/stage-1-packs.md](../../roadmap/group-battle/stage-1-packs.md) |
 
 ## inventory-redesign.html
 
