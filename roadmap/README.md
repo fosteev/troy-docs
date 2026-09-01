@@ -72,6 +72,7 @@ roadmap/
   - [ ] Визуальный отклик на смену статов после equip
   - [ ] [Redesign](./mvp-3-inventory/redesign.md) — мешок отдельным экраном; прототип готов, код не начат
 - [ ] **mobs — доработка мобов** (описания в БД/админке, фон арены на моба, карточки, арт-пилот). → [mobs/](./mobs/README.md)
+- [ ] **group-battle · этап 1 — паки (1 игрок × N мобов).** Взят 01.09 (осознанно раньше закрытия MVP-3). Спека — [stage-1-packs.md](./group-battle/stage-1-packs.md), прототип — battle-screen-pack.html; этап 2 (кооп) — после MVP. → [group-battle/](./group-battle/README.md)
 - [ ] **assets — конвейер ассетов.** → [assets/](./assets/README.md)
   - [x] Шаг 0 проба стиля · [x] Шаг 1 инструментарий
   - [ ] Шаг 2 классы — `knight` перегенерирован, ждёт проверки на устройстве; остальные классы дальше
@@ -81,7 +82,6 @@ roadmap/
 
 - [ ] **MVP-4 — контент и баланс.** Инфраструктура есть (seed одной командой, админка контента, рендер спрайтов/rarity/level), сам контент 1–10 lvl и баланс — нет. → [mvp-4-content-balance/](./mvp-4-content-balance/README.md)
 - [ ] **MVP-5 — hardening.** Последний шаг фазы — **локализация** (описания классов/скиллов на EN, см. ниже). Из списка уже закрыто: health endpoints, refresh access-токена, docker compose, seed, Swagger-тоггл. Остальное открыто. → [mvp-5-hardening/](./mvp-5-hardening/README.md)
-- [ ] **group-battle — групповой бой N×N (паки → кооп).** Спека этапа 1 ([stage-1-packs.md](./group-battle/stage-1-packs.md)) и прототип UI готовы 01.09, код не начат; этап 1 (1 игрок × N мобов) — кандидат сразу за MVP-4, этап 2 ([stage-2-coop.md](./group-battle/stage-2-coop.md)) — после MVP. → [group-battle/](./group-battle/README.md)
 
 **Следующее по порядку:** закрыть MVP-3 (гэпы бэкенда → redesign), параллельно гнать assets (классы → мобы), чтобы разблокировать P2 боя, затем MVP-4.
 
