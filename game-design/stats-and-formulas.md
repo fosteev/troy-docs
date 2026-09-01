@@ -74,10 +74,10 @@ Spirit влияет на скорость регенерации маны в б�
 ### HP (Здоровье)
 
 ```
-HP = base_hp + STA * 10 + STR * 2
+HP = base_hp + STA * 15 + STR * 3
 ```
 
-- `base_hp` — зависит от класса (Warrior: 22, Mage: 17)
+- `base_hp` — зависит от класса (Warrior: 33, Mage: 26)
 - Основной источник: Stamina
 - Strength даёт немного HP как бонус
 
@@ -175,7 +175,7 @@ Dodge = equipment_dodge (%)
 
 | Характеристика | Формула |
 |---|---|
-| **HP** | `base_hp + STA × 10 + STR × 2` |
+| **HP** | `base_hp + STA × 15 + STR × 3` |
 | **Mana** (Mage) | `base_mana + INT × 8` |
 | **Rage** (Warrior) | 0–100, генерируется в бою, скейлится от SPI |
 | **Armor** | `base_armor + STA × 2 + equipment` |

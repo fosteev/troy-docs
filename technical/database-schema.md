@@ -117,7 +117,7 @@ total_sta = stamina + freePointsSta + equipment_sta_bonus
 total_agi = agility + freePointsAgi + equipment_agi_bonus
 total_spi = spirit + freePointsSpi + equipment_spi_bonus
 
-maxHp        = base_hp + total_sta * 10 + total_str * 2
+maxHp        = base_hp + total_sta * 15 + total_str * 3
 maxMana      = base_mana + total_int * 8                  // только для Mage
 physAtk      = base_atk + total_str * 2
 magicAtk     = base_matk + total_int * 2.5

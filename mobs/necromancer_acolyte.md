@@ -24,7 +24,7 @@
 
 | | | | |
 |---|---|---|---|
-| level | 9 | hp | 169 |
+| level | 9 | hp | 254 |
 | strength | 29 | intelligence | 12 |
 | armor | 12 | magicResist | 12 |
 | attackSpeed | 1.0 | dodge | 0 |

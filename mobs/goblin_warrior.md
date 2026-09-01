@@ -26,7 +26,7 @@
 
 | | | | |
 |---|---|---|---|
-| level | 4 | hp | 94 |
+| level | 4 | hp | 141 |
 | strength | 16 | intelligence | 3 |
 | armor | 7 | magicResist | 2 |
 | attackSpeed | 1.0 | dodge | 0 |
@@ -34,7 +34,7 @@
 | spawnable | true | nothingWeight | 0 |
 
 Числа — из продакшн-сида (`troy-backend/prisma/seed.ts`), сидят между якорями
-`content-generation.md` (lvl 3: 78 hp / 40 exp, lvl 5: 107 hp / 65 exp). `nothingWeight: 0` —
+`content-generation.md` (lvl 3: 117 hp / 40 exp, lvl 5: 161 hp / 65 exp). `nothingWeight: 0` —
 с моба всегда что-то падает.
 
 ## 4. Дроп
@@ -59,7 +59,7 @@
 | 1 | `mob_club_smash` | Club Smash | always | 1.0s | 7s | PHYSICAL | 14 | STR × 0.6 | — |
 
 Один скилл: телеграфированный нюк на кулдауне. Урон ≈ 14 + 0.6×16 ≈ **24** до брони —
-~12% max HP воина 4 ур. (hp ≈ 100 + 24×L ≈ 196), в бюджете «≤ 35%». Каст 1.0s — окно,
+~8% max HP воина 4 ур. (hp ≈ 110 + 37×L ≈ 260), в бюджете «≤ 35%». Каст 1.0s — окно,
 которое видно в ленте намерений.
 
 **Club Smash** — `description` (в игре, RU): Подпрыгивает и обрушивает шипастую дубину двумя

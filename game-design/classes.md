@@ -50,7 +50,7 @@ auto_damage = base_weapon_dmg + STR * 0.8
 
 | Характеристика | Значение |
 |---|---|
-| HP | 98 |
+| HP | 147 |
 | Rage | 0–100 |
 | Armor | 12 |
 | Magic Resist | 3 |
@@ -116,7 +116,7 @@ mana_regen = max_mana * 0.01 * (1 + SPI * 0.02) per second
 
 | Характеристика | Значение |
 |---|---|
-| HP | 51 |
+| HP | 77 |
 | Mana | 64 |
 | Armor | 6 |
 | Magic Resist | 12 |

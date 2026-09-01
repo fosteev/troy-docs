@@ -30,7 +30,7 @@
 | expReward | {} | goldReward | {} |
 | spawnable | {true} | nothingWeight | {} |
 
-💡 Бюджеты по уровням — `game-design/content-generation.md` (таблица мобов): hp ≈ 60+18·lvl,
+💡 Бюджеты по уровням — `game-design/content-generation.md` (таблица мобов): hp ≈ 31.5·lvl+33,
 награды по кривой XP. Кап уровня игрока — 10, мобы 1–10 (+элитки).
 
 ## 4. Дроп

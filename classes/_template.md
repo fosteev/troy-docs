@@ -58,12 +58,12 @@
 
 💡 Бюджет (`content-generation.md`): старт — сумма **22**, основной стат 8, второй 5–6, остальные 2–4; рост — сумма ровно **6.5**, основной +2.5, второй +1.5–2.0. Плюс 2 свободных очка/уровень (18 за 2→10).
 
-Константы (`CharacterClass`): `baseHp {17 стекло … 22 танк}`, `baseMana {0}`, `baseAttackSpeed {0.5 медленный кастер … 0.8 быстрый мили}`.
+Константы (`CharacterClass`): `baseHp {26 стекло … 33 танк}`, `baseMana {0}`, `baseAttackSpeed {0.5 медленный кастер … 0.8 быстрый мили}`.
 
 ### Производные
 
 ```
-HP = baseHp + STA*10 + STR*2      Armor = STA*2      MR = INT*1.5
+HP = baseHp + STA*15 + STR*3      Armor = STA*2      MR = INT*1.5
 Attack Speed = baseAS * (1 + AGI*0.01)      Crit = AGI*0.15 %
 Автоатака = {base_weapon_dmg + STR*0.8 (PHYSICAL) | base_spell_dmg + INT*0.5 (MAGICAL)}
 ```
@@ -198,9 +198,9 @@ Color scheme: {цвет 1}, {цвет 2}, warm gold accents, muted dark medieval
 
 ```python
 # Таблица 1–10: подставить старт/рост, base, ресурс — вывести и вставить в раздел 4.
-S={'STR':(8,2.5),'INT':(2,.5),'STA':(6,2),'AGI':(3,1),'SPI':(3,.5)}; baseHp,baseAS,baseMana,res=22,0.8,0,'RAGE'
+S={'STR':(8,2.5),'INT':(2,.5),'STA':(6,2),'AGI':(3,1),'SPI':(3,.5)}; baseHp,baseAS,baseMana,res=33,0.8,0,'RAGE'
 for L in range(1,11):
-    v={k:a+b*(L-1) for k,(a,b) in S.items()}; hp=baseHp+v['STA']*10+v['STR']*2; AS=baseAS*(1+v['AGI']*.01)
+    v={k:a+b*(L-1) for k,(a,b) in S.items()}; hp=baseHp+v['STA']*15+v['STR']*3; AS=baseAS*(1+v['AGI']*.01)
     last=f"{5*(1+v['SPI']*.02):.2f}" if res=='RAGE' else f"{baseMana+v['INT']*8:g} / {(baseMana+v['INT']*8)*.01*(1+v['SPI']*.02):.2f}/с"
     print(f"| {L} | "+" | ".join(f"{v[k]:g}" for k in S)+f" | {hp:g} | {v['STA']*2:g} | {v['INT']*1.5:g} | {AS:.3f} ({1/AS:.2f}с) | {v['AGI']*.15:.2f}% | {last} |")
 ```

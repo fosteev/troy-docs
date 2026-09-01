@@ -24,7 +24,7 @@
 
 | | | | |
 |---|---|---|---|
-| level | 5 | hp | 107 |
+| level | 5 | hp | 161 |
 | strength | 18 | intelligence | 3 |
 | armor | 8 | magicResist | 2 |
 | attackSpeed | 1.0 | dodge | 0 |

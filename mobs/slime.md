@@ -24,14 +24,14 @@
 
 | | | | |
 |---|---|---|---|
-| level | 1 | hp | 46 |
+| level | 1 | hp | 69 |
 | strength | 7 | intelligence | 1 |
 | armor | 1 | magicResist | 0 |
 | attackSpeed | 1.0 | dodge | 0 |
 | expReward | 20 | goldReward | 8 |
 | spawnable | true | nothingWeight | 0 |
 
-Числа — из продакшн-сида; якорь lvl 1 в `content-generation.md` (39–46 hp / 18–20 exp).
+Числа — из продакшн-сида; якорь lvl 1 в `content-generation.md` (59–69 hp / 18–20 exp).
 
 ## 4. Дроп
 
