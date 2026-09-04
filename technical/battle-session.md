@@ -166,7 +166,7 @@ START ──► ACTIVE ──(hp≤0 / flee / timeout)──► ENDED ──► 
 
 1. продвинуть `elapsedMs`;
 2. протикать эффекты: DOT — урон/сек, истёкшие STUN/SLOW/BUFF/ABSORB снять — у игрока и у **каждого живого** моба;
-3. **касты:** каст игрока доводится в его цель (умерла по дороге — в новую, авто-выбранную); каст каждого живого моба — в игрока;
+3. **касты:** каст игрока доводится в его цель (умерла по дороге — в новую, авто-выбранную); каст каждого живого моба — в игрока. **Канал** (`channelTicks > 0`) вместо одного применения даёт тик на каждый созревший момент `startedAt + i × (duration / ticks)`: урон — на каждом, эффект — на первом; закрывается после последнего тика;
 4. **автоатаки:** если `nextAutoAtMs` достигнут и сторона не в стане и не кастует — провести автоатаку (формула урона из combat.md: raw → crit → defense → dodge), пересчитать `nextAutoAt += attackInterval`. Игрок бьёт цель, каждый живой моб — игрока; ярость воина растёт с каждого полученного удара, источников просто несколько;
 5. **намерение игрока:** если в очереди есть валидный скилл (не на кд, хватает ресурса, не в стане) — списать ресурс, начать каст (или применить инстант) по текущей цели;
 6. **скиллы мобов:** тот же алгоритм (приоритет + условие, см. combat.md → «Поведение моба в бою»), но **на каждый инстанс отдельно** — свои кулдауны, свой `spent`, `self_hp_below` читает HP этого инстанса;
@@ -201,7 +201,8 @@ i-го сдвигается на `i × PACK_AUTO_STAGGER_MS`.
 'battle:resume'  { battleId?: string }
 ```
 
-Ack на каждое: `{ accepted: boolean; reason?: 'on_cooldown' | 'no_resource' | 'stunned' | 'casting' | 'not_active' | 'invalid_target'; state?: BattleStateDto }`.
+Ack на каждое: `{ accepted: boolean; reason?: 'on_cooldown' | 'no_resource' | 'stunned' | 'casting' | 'not_active' | 'invalid_target' | 'locked_out'; state?: BattleStateDto }`.
+`locked_out` — игрок под локаутом (эффект `INTERRUPT`): скиллы с `castTimeSec > 0` нельзя начать, инстанты можно.
 
 Смена цели — **отдельное намерение**, а не параметр `action`: тап по мобу и тап по
 скиллу — независимые жесты, и клиент не должен угадывать цель в момент каста.
@@ -227,7 +228,8 @@ Ack на каждое: `{ accepted: boolean; reason?: 'on_cooldown' | 'no_resour
     hp: number; maxHp: number;
     resourceType: 'RAGE' | 'MANA'; resource: number; maxResource: number;
     effects: { type: EffectType; value: number; remainingSec: number }[];
-    cast: { skillCode: string; remainingSec: number; totalSec: number } | null;
+    cast: { skillCode: string; remainingSec: number; totalSec: number;
+            channel?: { ticks: number; done: number } } | null;  // канал: бар опустошается
     /** Кого бьёт игрок. null — все мобы мертвы (мгновение до battle:end). */
     targetInstanceId: string | null;
   };
@@ -265,6 +267,7 @@ Ack на каждое: `{ accepted: boolean; reason?: 'on_cooldown' | 'no_resour
   damageType?: 'PHYSICAL'|'MAGICAL';
   effectType?: EffectType;
   durationMs?: number;             // на cast_start
+  channelTick?: boolean;           // skill-событие тика канала: без замаха
 }
 ```
 
@@ -380,8 +383,8 @@ game-core / BattleService
 ### Двойной старт (две вкладки / ретрай)
 `battle:lock:{characterId}` (SET NX) + проверка существующей сессии. Второй старт получает снапшот первого, новую сессию не создаёт.
 
-### Прерывание каста станом
-Если во время каста прилетает STUN — каст срывается, эффект не применяется, ресурс **не возвращается**, на скилл ставится штрафной кд 50% (combat.md). Инстанты не прерываются.
+### Прерывание каста станом или киком
+Если во время каста прилетает STUN или INTERRUPT — каст срывается, эффект не применяется, ресурс **не возвращается**, на скилл ставится штрафной кд 50% (combat.md). У канала прилетевшие тики остаются. INTERRUPT вдобавок вешает на цель одноимённый эффект-локаут на `effectDurationSec`: пока он висит, цель не начинает касты (движок — `canUseSkill` игрока и выбор скилла моба), в ack — `locked_out`. Инстанты не прерываются.
 
 ### Побег прерван
 Любой полученный урон или STUN во время 3-сек channel сбрасывает `flee` → побег не засчитан, бой продолжается.

@@ -33,6 +33,7 @@ roadmap/
 ├── mvp-5-hardening/
 ├── mobs/                         # сквозная тема: доработка мобов (описания, арт, фоны арен)
 ├── group-battle/                 # сквозная тема: групповой бой N×N (этап 1 паки сделан, кооп — дизайн)
+├── combat-casting/               # сквозная тема: channel-скиллы и сбитие каста (INTERRUPT + локаут), сделана
 └── assets/                       # сквозная тема (конвейер ассетов), не привязана к одной фазе
 ```
 
@@ -59,6 +60,7 @@ roadmap/
 - [x] **MVP-0 — flow auth → персонаж → карта.** `character` на Clean Architecture, backend тест-фундамент. → [mvp-0-current-flow/](./mvp-0-current-flow/README.md), [backend-tests.md](./mvp-0-current-flow/backend-tests.md)
 - [x] **MVP-1 — playable map.** Реальная геопозиция, мобы с backend, персональная видимость, бой только в радиусе, вектор-тайлы. → [mvp-1-playable-map/](./mvp-1-playable-map/README.md)
 - [x] **MVP-2 — battle loop.** Real-time server-authoritative бой, XP/level/loot. → [mvp-2-battle-loop/](./mvp-2-battle-loop/README.md)
+- [x] **combat-casting — каналы и сбитие каста.** 04.09: channel-скиллы, эффект INTERRUPT с локаутом, магу Counterspell + Arcane Missiles; мобы не кикают, pushback'а нет (осознанно). → [combat-casting/](./combat-casting/README.md)
 
 ### В работе
 

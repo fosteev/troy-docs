@@ -96,7 +96,7 @@ Attack Speed = 0.5 * (1 + AGI*0.01)      Crit = AGI*0.15 %
 
 ## 5. Скиллы
 
-Слоты **1 / 3 / 6 / 10**. Все — `resourceType MANA`, `damageType MAGICAL`, скейл от `INT`. Урон = `baseDamage + INT * scalingRatio` (далее MR цели, крит). Касты срываются от STUN.
+Слоты **1 / 3 / 6 / 10** + утилити **2 / 4**. Все — `resourceType MANA`, урон — `damageType MAGICAL`, скейл от `INT`. Урон = `baseDamage + INT * scalingRatio` (далее MR цели, крит). Касты и каналы срываются от STUN и от кика (`INTERRUPT`, см. combat.md).
 
 | Слот | Ур. | code | Название EN / RU | Cast | CD | Mana | Base | Scaling | Эффект | Статус |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -104,6 +104,10 @@ Attack Speed = 0.5 * (1 + AGI*0.01)      Crit = AGI*0.15 %
 | 2 | 3 | `frost_bolt` | Frost Bolt / Ледяная стрела | 1s | 5s | 30 | 18 | INT × 0.8 | SLOW 30 %, 3s | в БД (unlock 2 → 3) |
 | 3 | 6 | `arcane_shield` | Arcane Shield / Чародейский щит | 0s | 18s | 25 | 0 | INT × 0.5 (щит) | ABSORB 30 + INT×0.5, 10s | seed + манифест `db:` |
 | 4 | 10 | `meteor` | Meteor / Метеор | 2.5s | 15s | 40 | 80 | INT × 1.8 | NONE | seed + манифест `db:` |
+| 5 | 2 | `counterspell` | Counterspell / Контрзаклинание | 0s | 20s | 15 | 0 | — | INTERRUPT, локаут 4s | seed (04.09) |
+| 6 | 4 | `arcane_missiles` | Arcane Missiles / Чародейские снаряды | канал 1.5s × 3 | 8s | 30 | 12 / тик | INT × 0.5 / тик | NONE | seed (04.09) |
+
+Counterspell — единственное сбитие мага: срывает каст моба и на 4 с запрещает ему кастовать (инстанты моб бьёт). В молоко — просто уходит в перезарядку. Arcane Missiles — канал: 3 залпа за 1.5 с, стан обрывает канал, что долетело — остаётся; ресурс списан на старте целиком.
 
 Экономика маны: 1 ур. — 64 маны = Fireball ×2 и всё, дальше автоатака и 0.7/с. 10 ур. — 244 маны, реген 3.12/с: открытие Meteor (40) + Frost Bolt (30) + Fireball ×5 за первые ~15с, потом Fireball раз в ~8с на регене. Класс обязан «выиграть первые 20 секунд».
 
@@ -116,6 +120,12 @@ arcane_shield: { slot: 3, unlockLevel: 6,  castTimeSec: 0,   cooldownSec: 18, re
 meteor:        { slot: 4, unlockLevel: 10, castTimeSec: 2.5, cooldownSec: 15, resourceType: MANA, resourceCost: 40,
                  damageType: MAGICAL, baseDamage: 80, scalingStat: INT, scalingRatio: 1.8,
                  effectType: NONE, effectValue: 0, effectDurationSec: 0 }
+counterspell:  { slot: 5, unlockLevel: 2,  castTimeSec: 0,   cooldownSec: 20, resourceType: MANA, resourceCost: 15,
+                 damageType: null, baseDamage: 0, scalingStat: null, scalingRatio: 0,
+                 effectType: INTERRUPT, effectValue: 0, effectDurationSec: 4, channelTicks: 0 }
+arcane_missiles: { slot: 6, unlockLevel: 4, castTimeSec: 1.5, cooldownSec: 8, resourceType: MANA, resourceCost: 30,
+                 damageType: MAGICAL, baseDamage: 12, scalingStat: INT, scalingRatio: 0.5,
+                 effectType: NONE, effectValue: 0, effectDurationSec: 0, channelTicks: 3 }   # урон — за тик
 ```
 
 ### Описания и промты
@@ -139,6 +149,18 @@ meteor:        { slot: 4, unlockLevel: 10, castTimeSec: 2.5, cooldownSec: 15, re
 - `icon`: `a translucent violet hexagonal arcane barrier with glowing cyan runes along its edge`
 - `cast`: `Arcane Shield — slams the staff butt into the ground, a translucent violet dome of glowing cyan runes rises around the body and settles as a shimmering barrier`
 - ✅ сгенерировано (state `skill:*`)
+
+**Counterspell** — «Обрыв. Кастующий моб замолкает на четыре секунды.»
+- `description` (в игре, RU): Обрывает каст цели и на 4 с запрещает ей кастовать. В молоко — просто уходит в перезарядку.
+- `icon`: `a glowing violet rune sigil shattering a pale spell-glyph, cyan crack lines`
+- `cast`: `Counterspell — snaps the staff sideways with one hand, a violet sigil flashes at the tip and a shockwave of cyan runes bursts forward`
+- ⏳ арт не генерировался
+
+**Arcane Missiles** — «Три снаряда за полторы секунды. Канал.»
+- `description` (в игре, RU): Канал: три чародейских снаряда за полторы секунды. Стан обрывает канал — что успело долететь, остаётся.
+- `icon`: `three small violet arcane bolts in a fan, trailing cyan sparks, flying to the right`
+- `cast`: `Arcane Missiles — holds the staff levelled forward with both hands, the crystal pulses and violet arcane bolts stream out one after another in a steady rhythm`
+- ⏳ арт не генерировался
 
 **Meteor** — «Долгий каст — и с неба падает камень в огне.»
 - `description` (в игре, RU): Долгий каст — и с неба падает горящий камень. Самый мощный удар мага; оглушение срывает каст.
