@@ -34,6 +34,7 @@ roadmap/
 ├── mobs/                         # сквозная тема: доработка мобов (описания, арт, фоны арен)
 ├── group-battle/                 # сквозная тема: групповой бой N×N (этап 1 паки сделан, кооп — дизайн)
 ├── combat-casting/               # сквозная тема: channel-скиллы и сбитие каста (INTERRUPT + локаут), сделана
+├── items/                        # сквозная тема: предметы — ilvl, редкость как бюджет, класс-ограничения, зелья в бою (спека)
 └── assets/                       # сквозная тема (конвейер ассетов), не привязана к одной фазе
 ```
 
@@ -51,6 +52,20 @@ roadmap/
 3. По завершении: `flutter analyze` чисто, тесты зелёные → коммит → обновил баннер в README фазы и таблицу здесь.
 4. Весь новый код — строго по разделу «Architecture rules (MUST follow)» в `troy-flutter/CLAUDE.md`, эталон — фича `auth` (`lib/features/auth/**`). Backend — по корневому `troy/CLAUDE.md`.
 
+**Трекер:** открытый скоуп продублирован в Jira — проект [SCRUM](https://fosteev.atlassian.net/browse/SCRUM), эпик на тему, задача на пункт (05.09). Закрытые фазы в Jira не заводились: их история — в git и в этих доках. Источник правды по статусу остаётся здесь; Jira — доска на «что делать дальше», скилл `troy-jira`.
+
+| Тема | Эпик |
+|---|---|
+| MVP-3 — профиль, инвентарь, экипировка | [SCRUM-8](https://fosteev.atlassian.net/browse/SCRUM-8) |
+| MVP-2 · P2 — звук, VFX, спрайты боя | [SCRUM-9](https://fosteev.atlassian.net/browse/SCRUM-9) |
+| assets — конвейер ассетов | [SCRUM-10](https://fosteev.atlassian.net/browse/SCRUM-10) |
+| mobs — доработка мобов | [SCRUM-14](https://fosteev.atlassian.net/browse/SCRUM-14) |
+| MVP-4 — контент и баланс | [SCRUM-11](https://fosteev.atlassian.net/browse/SCRUM-11) |
+| MVP-5 — hardening | [SCRUM-12](https://fosteev.atlassian.net/browse/SCRUM-12) |
+| group-battle — этап 2, кооп | [SCRUM-13](https://fosteev.atlassian.net/browse/SCRUM-13) |
+| combat-casting — хвосты темы | [SCRUM-53](https://fosteev.atlassian.net/browse/SCRUM-53) |
+| items — предметы и лут | [SCRUM-61](https://fosteev.atlassian.net/browse/SCRUM-61) |
+
 ## Статус фаз
 
 Галочка у фазы — её DoD закрыт. Внутри README каждой фазы такие же чек-листы по каждому пункту scope и DoD.
@@ -60,7 +75,7 @@ roadmap/
 - [x] **MVP-0 — flow auth → персонаж → карта.** `character` на Clean Architecture, backend тест-фундамент. → [mvp-0-current-flow/](./mvp-0-current-flow/README.md), [backend-tests.md](./mvp-0-current-flow/backend-tests.md)
 - [x] **MVP-1 — playable map.** Реальная геопозиция, мобы с backend, персональная видимость, бой только в радиусе, вектор-тайлы. → [mvp-1-playable-map/](./mvp-1-playable-map/README.md)
 - [x] **MVP-2 — battle loop.** Real-time server-authoritative бой, XP/level/loot. → [mvp-2-battle-loop/](./mvp-2-battle-loop/README.md)
-- [x] **combat-casting — каналы и сбитие каста.** 04.09: channel-скиллы, эффект INTERRUPT с локаутом, магу Counterspell + Arcane Missiles; мобы не кикают, pushback'а нет (осознанно). → [combat-casting/](./combat-casting/README.md)
+- [x] **combat-casting — каналы и сбитие каста.** 04.09: channel-скиллы, эффект INTERRUPT с локаутом, магу Counterspell + Arcane Missiles. Два осознанных ограничения вынесены в хвосты темы (ниже, «В работе»). → [combat-casting/](./combat-casting/README.md)
 
 ### В работе
 
@@ -70,13 +85,17 @@ roadmap/
 - [ ] **MVP-3 — профиль, инвентарь, экипировка.** → [mvp-3-inventory/](./mvp-3-inventory/README.md)
   - [x] Клиент: Hero-экран (профиль + кукла + мешок) на реальном API, тесты зелёные
   - [x] Бэкенд: профиль, инвентарь, equip/unequip, очки атрибутов, computed stats
-  - [ ] Бэкенд-гэпы [#1–#3](./mvp-3-inventory/backend-gaps.md) (description, consumables, discard) и решение по class restrictions
+  - [ ] Бэкенд-гэпы [#1 и #3](./mvp-3-inventory/backend-gaps.md) (description, discard); consumables (#2), class restrictions (#4) и стак (#5) решены 05.09 и вынесены в [items/](./items/README.md)
   - [ ] Визуальный отклик на смену статов после equip
-  - [ ] [Redesign](./mvp-3-inventory/redesign.md) — мешок отдельным экраном; прототип готов, код не начат
+  - [ ] [Redesign](./mvp-3-inventory/redesign.md) — мешок отдельным экраном; прототип готов, код не начат; прототип ещё дорабатывается (навигация HERO, углы sharp vs `tokens.radius*`)
+- [ ] **items — предметы и лут «как в WoW».** itemLevel + requiredLevel, редкость как бюджет статов, class restrictions с личным лутом, зелья в бою (одно за бой), crit/dodge на шмоте, лимит мешка. Спека и решения готовы (05.09), код не начат. → [items/](./items/README.md)
 - [ ] **mobs — доработка мобов** (описания в БД/админке, фон арены на моба, карточки, арт-пилот). → [mobs/](./mobs/README.md)
 - [ ] **group-battle — групповой бой.** → [group-battle/](./group-battle/README.md)
   - [x] Этап 1 — паки (1 игрок × N мобов): контракт v2 (`monsters[]`, `battle:target`), pack-баланс, сцена с N инстансами. Спека — [stage-1-packs.md](./group-battle/stage-1-packs.md)
   - [ ] Этап 2 — кооп: после MVP
+- [ ] **combat-casting · хвосты** — осознанные ограничения темы, отложенные «отдельным шагом». → [combat-casting/](./combat-casting/README.md)
+  - [ ] Мобы сбивают касты игрока: условие AI `target_casting` + моб-скилл с `INTERRUPT` в сиде
+  - [ ] Pushback от урона — решение «не делаем», пересмотр только в MVP-4
 - [ ] **assets — конвейер ассетов.** → [assets/](./assets/README.md)
   - [x] Шаг 0 проба стиля · [x] Шаг 1 инструментарий
   - [ ] Шаг 2 классы — `knight` перегенерирован, ждёт проверки на устройстве; остальные классы дальше
@@ -87,7 +106,7 @@ roadmap/
 - [ ] **MVP-4 — контент и баланс.** Инфраструктура есть (seed одной командой, админка контента, рендер спрайтов/rarity/level), сам контент 1–10 lvl и баланс — нет. → [mvp-4-content-balance/](./mvp-4-content-balance/README.md)
 - [ ] **MVP-5 — hardening.** Последний шаг фазы — **локализация** (описания классов/скиллов на EN, см. ниже). Из списка уже закрыто: health endpoints, refresh access-токена, docker compose, seed, Swagger-тоггл. Остальное открыто. → [mvp-5-hardening/](./mvp-5-hardening/README.md)
 
-**Следующее по порядку:** закрыть MVP-3 (гэпы бэкенда → redesign), параллельно гнать assets (классы → мобы), чтобы разблокировать P2 боя, затем MVP-4.
+**Следующее по порядку:** закрыть MVP-3 (гэпы #1/#3 → redesign), затем миграция items (ilvl / класс / зелья) — до контента MVP-4, чтобы предметы 1–10 lvl сразу заводились с уровнем и бюджетом; параллельно гнать assets (классы → мобы), чтобы разблокировать P2 боя, затем MVP-4.
 
 Старая нумерация (встречается в коммитах и заметках): Шаг 1 → MVP-0, Шаг 1Б → `mvp-0/backend-tests.md`, Шаг 2 → MVP-1, Шаг 3 → MVP-2, Шаг 3Б → `mvp-2/polish/`, Шаг 4 → MVP-3, Шаг 4Б → `mvp-3/redesign.md`, Шаг 5 → MVP-4, Шаг 6 → MVP-5. Файлы `mvp.md` и `execution-plan.md` слиты в этот README, `asset-pipeline.md` → `assets/`.
 

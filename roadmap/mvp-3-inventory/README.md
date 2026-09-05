@@ -1,6 +1,6 @@
 # MVP-3 — Profile, Inventory, Equipment
 
-> **Статус: в работе.** Клиент: Hero-экран (профиль + кукла + мешок одним скроллом) на реальном API, тесты зелёные. Бэкенд: профиль, инвентарь, equip/unequip, очки атрибутов — есть; открыты [backend-gaps.md](./backend-gaps.md) #1–#3, class restrictions (#4) не решены. Следующий шаг — гэпы бэкенда и визуальный отклик на смену статов (промт внизу), затем [redesign.md](./redesign.md).
+> **Статус: в работе.** Клиент: Hero-экран (профиль + кукла + мешок одним скроллом) на реальном API, тесты зелёные. Бэкенд: профиль, инвентарь, equip/unequip, очки атрибутов — есть; открыты [backend-gaps.md](./backend-gaps.md) #1 и #3; #2 (зелья), #4 (class restrictions) и #5 (стак) решены 05.09 и вынесены в [items/](../items/README.md). Следующий шаг — гэпы бэкенда и визуальный отклик на смену статов (промт внизу), затем [redesign.md](./redesign.md).
 
 Цель: игрок должен видеть прогресс персонажа и усиливать его через предметы.
 
@@ -14,7 +14,7 @@
 - [x] Endpoint инвентаря.
 - [x] Equip/unequip endpoint.
 - [x] Проверка слотов экипировки.
-- [ ] Проверка class restrictions, если они есть у предмета.
+- Class restrictions — решено 05.09, реализация в теме [items/](../items/README.md) (SCRUM-17).
 - [x] Computed stats должны учитывать:
   - [x] base stats;
   - [x] level growth;
@@ -74,25 +74,21 @@
   (эталон — фича auth).
 
 Порядок:
-1. Сначала вынеси пользователю решения, которых нет в доках, одним списком и
-   дождись ответа — без них половина работы бессмысленна:
-   - гэп #2 (расходники): текущего HP между боями в схеме нет (Character без
-     currentHp) — зелья вне скоупа MVP-3 или сперва персистентный HP?
-   - гэп #4: class restrictions режем из MVP-3 или добавляем (allowedClasses +
-     проверка в InventoryService.equip)?
-   - гэп #5: экипируемое стакается или нет — сейчас «Rusty Blade x3 (equipped)»
-     даёт бонус один раз, поведение неопределённое;
-   - гэп #6: иконки предметов — оставляем глифы по type/slot или заполняем iconUrl.
+1. Решения по гэпам #2, #4, #5 уже приняты (05.09) и записаны в
+   troy-docs/roadmap/items/README.md — не переспрашивать: зелья и class
+   restrictions делаются в теме items (SCRUM-19, SCRUM-17), стак экипировки —
+   «quantity = копии, isEquipped = одна надета», без миграции. Открыт только
+   гэп #6 (иконки: глифы по type/slot или iconUrl) — спросить одним вопросом.
 2. Гэп #1 — Item.description: колонка + миграция (накатывать `migrate deploy`,
    НЕ `migrate dev` — дропнет active_spawns), seed, отдача в /inventory и
    /character/me, поле в форме предмета в админке, показ в item-sheet клиента.
 3. Гэп #3 — выбросить предмет: DELETE /inventory/:itemId (?quantity=), контракт +
    NATS-паттерн; кнопка в UI появляется только вместе с эндпоинтом.
-4. Гэпы #2 и #4 — по ответам из п.1.
+4. Гэпы #2 и #4 — вне MVP-3 (тема items, SCRUM-19 / SCRUM-17), здесь не трогать.
 5. Flutter: визуальная обратная связь после equip/unequip — тост с дифом
    computedStats («PHYS ATK +7»), решение зафиксировано в redesign.md.
 
-Тесты — часть DoD: backend unit на тронутые пути (equip с ограничениями, discard,
+Тесты — часть DoD: backend unit на тронутые пути (discard,
 пересчёт computed stats), Flutter — repository_impl + bloc + маппер по эталону auth.
 
 Проверка: `npx nx run-many -t test` в troy-backend; `flutter analyze && flutter test`
