@@ -1,7 +1,9 @@
 # Предметы — ilvl, редкость, класс-ограничения, зелья в бою
 
-> **Статус: спека (05.09), код не начат.** Сквозная тема поверх [mvp-3-inventory](../mvp-3-inventory/README.md)
-> (модель и эндпоинты) и [mvp-4-content-balance](../mvp-4-content-balance/README.md) (контент). Эпик
+> **Статус: шаги 2–3 (SCRUM-62/17) сделаны 05.09** — миграция `0020_item_progression`, план —
+> [item-progression.md](./item-progression.md). Остальное — спека, код не начат. Сквозная тема поверх
+> [mvp-3-inventory](../mvp-3-inventory/README.md) (модель и эндпоинты) и
+> [mvp-4-content-balance](../mvp-4-content-balance/README.md) (контент). Эпик
 > [SCRUM-61](https://fosteev.atlassian.net/browse/SCRUM-61). Решения: itemLevel + requiredLevel — **да**;
 > редкость = бюджет статов — **да**, правило для контента, не код; class restrictions — **да**, массив кодов
 > + личный лут; зелья — **в бою, одно за бой**, персистентный HP не заводим; стак экипировки — **без миграции**;
@@ -49,7 +51,9 @@
 ## 1. Данные
 
 `Item`, миграция `0019_item_progression` (накатывать `migrate deploy`, **не** `migrate dev` — дропнет
-`active_spawns`):
+`active_spawns`). **05.09:** `itemLevel`/`requiredLevel`/`allowedClassCodes`/`critChanceBonus`/`dodgeBonus`
+уже накатились миграцией `0020_item_progression` (SCRUM-62/17, план — [item-progression.md](./item-progression.md));
+`hpRestore`/`resourceRestore` едут отдельно, с зельями (SCRUM-19), миграцией `0021_item_consumables`.
 
 ```prisma
 itemLevel         Int      @default(1)   // уровень предмета: бюджет статов и «▲ апгрейд»
@@ -176,9 +180,11 @@ MVP-3 закрывается независимо от items, `item_progression`
 ## Definition of Done
 
 - [ ] У предмета есть ilvl и требование уровня; equip отказывает по уровню и классу; клиент не даёт нажать Equip на недоступном.
-- [ ] Лут не выдаёт шмот чужого класса.
+  - [x] Бэкенд: `itemLevel`/`requiredLevel`/`allowedClassCodes`, equip отвечает 400 `LEVEL_TOO_LOW`/`CLASS_NOT_ALLOWED` (SCRUM-62/17, 05.09)
+  - [ ] Клиент: Equip disabled на недоступном предмете (SCRUM-64)
+- [x] Лут не выдаёт шмот чужого класса.
 - [ ] Зелье используется в бою один раз, quantity уменьшается, событие в ленте.
-- [ ] crit/dodge от шмота видны в computed stats, dodge не захардкожен.
+- [x] crit/dodge от шмота видны в computed stats, dodge не захардкожен.
 - [ ] Мешок ограничен на бэкенде, переполнение видно в результате боя.
 - [ ] Админка и клиент показывают новые поля; тесты зелёные (`npx nx run-many -t test`, `flutter test`, `npx tsc -b --noEmit`).
 - [ ] `loot-and-items.md` содержит правило бюджета; сид переведён на ilvl (сам контент — MVP-4).

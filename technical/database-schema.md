@@ -124,8 +124,8 @@ magicAtk     = base_matk + total_int * 2.5
 armor        = base_armor + total_sta * 2 + equipment_armor
 magicResist  = base_mr + total_int * 1.5 + equipment_mr
 attackSpeed  = base_as * (1 + total_agi * 0.01)
-critChance   = base_crit + total_agi * 0.15
-dodge        = equipment_dodge
+critChance   = base_crit + total_agi * 0.15 + equipment_crit   // %
+dodge        = equipment_dodge   // %, в бою /100
 ragePerAuto  = 5 * (1 + total_spi * 0.02)                // Warrior
 manaRegen    = maxMana * regen_rate * (1 + total_spi * 0.02) // Mage
 ```
@@ -244,6 +244,12 @@ WHERE is_active = true;
 | **Бонусы к урону** | | |
 | physDmgBonus | Int, default 0 | +Physical Damage (base_weapon_dmg) |
 | magicDmgBonus | Int, default 0 | +Magic Damage (base_spell_dmg) |
+| **Прогрессия и ограничения** | | |
+| itemLevel | Int, default 1 | Уровень предмета — бюджет статов (roadmap/items §3), «▲ апгрейд» на клиенте |
+| requiredLevel | Int, default 1 | Минимальный уровень персонажа; ниже — equip отвечает 400 `LEVEL_TOO_LOW` |
+| allowedClassCodes | String[], default [] | `CharacterClass.code`; пусто — всем. Чужой класс: equip 400 `CLASS_NOT_ALLOWED`, в личный лут не попадает |
+| critChanceBonus | Float, default 0 | +% к critChance |
+| dodgeBonus | Float, default 0 | +% к dodge |
 | description | String? | Описание для карточки предмета на клиенте |
 | iconUrl | String? | URL иконки |
 
@@ -278,7 +284,7 @@ WHERE is_active = true;
 | armor | Int, default 0 | Броня |
 | magicResist | Int, default 0 | Маг. сопротивление |
 | attackSpeed | Float, default 1.0 | Скорость атаки |
-| dodge | Float, default 0 | Уклонение (%), у обычных мобов 0 |
+| dodge | Float, default 0 | Уклонение, доля 0–1 (0.05 = 5 %); у обычных мобов 0 |
 | isElite | Boolean, default false | Элитный моб (может иметь dodge > 0) |
 | expReward | Int | Награда опытом |
 | goldReward | Int | Награда золотом |
