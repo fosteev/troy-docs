@@ -59,7 +59,7 @@ critChanceBonus   Float    @default(0)   // %, суммируется в critCha
 dodgeBonus        Float    @default(0)   // %, суммируется в dodge (сейчас захардкожен 0)
 hpRestore         Int      @default(0)   // CONSUMABLE: лечение в бою
 resourceRestore   Int      @default(0)   // CONSUMABLE: мана/ярость по resourceType
-description       String?                // гэп #1 MVP-3 (SCRUM-15) — можно той же миграцией
+description       String?                // гэп #1 MVP-3 (SCRUM-15) — той же миграцией (решено 05.09)
 ```
 
 Классы — данные (`CharacterClass`), поэтому ограничение — массив кодов, а не FK-таблица: два класса,
@@ -160,7 +160,9 @@ Swift Boots (RARE) = 3.5 — бюджеты вразнобой, что и ест
 | 7 | Лимит мешка | [SCRUM-65](https://fosteev.atlassian.net/browse/SCRUM-65) | items |
 | 8 | Контент: `loot-and-items.md`, набор предметов, drop tables | [SCRUM-34](https://fosteev.atlassian.net/browse/SCRUM-34), [SCRUM-50](https://fosteev.atlassian.net/browse/SCRUM-50), [SCRUM-36](https://fosteev.atlassian.net/browse/SCRUM-36) | mvp-4 |
 
-Шаги 2–4 — одна миграция и одна сессия, если делаются подряд. Шаг 7 — после SCRUM-16.
+Шаги 2–4 — одна миграция и одна сессия, если делаются подряд. `description` из SCRUM-15 (шаг 1) идёт
+отдельной миграцией `0019_item_description` (решение 05.09, [mvp-3/description-discard.md](../mvp-3-inventory/description-discard.md)):
+MVP-3 закрывается независимо от items, `item_progression` берёт следующий номер. Шаг 7 — после SCRUM-16.
 Контент MVP-4 заводить уже с ilvl и бюджетом, поэтому items идёт до MVP-4.
 
 ## Потом (в Jira не заводим до MVP-4)
@@ -189,8 +191,8 @@ Swift Boots (RARE) = 3.5 — бюджеты вразнобой, что и ест
 Работаем в /Users/fost/Projects/troy (backend troy-backend, клиент troy-flutter, админка troy-admin).
 
 Задача: тема items — шаги 2–4 из troy-docs/roadmap/items/README.md (миграция item_progression,
-class restrictions + личный лут, зелья в бою). Спека и решения там же — не переспрашивать то,
-что уже решено (баннер статуса).
+class restrictions + личный лут, зелья в бою) плюс колонка description (SCRUM-15) — она едет в ту же
+миграцию. Спека и решения там же — не переспрашивать то, что уже решено (баннер статуса).
 
 Прочитай:
 - troy-docs/roadmap/items/README.md целиком;
@@ -200,8 +202,8 @@ class restrictions + личный лут, зелья в бою). Спека и �
 - troy/CLAUDE.md (backend), раздел "Architecture rules" в troy-flutter/CLAUDE.md.
 
 Порядок:
-1. Prisma: колонки из §1 одной миграцией 0019_item_progression; накатывать `migrate deploy`,
-   НЕ `migrate dev` (дропнет active_spawns). Контракты, Swagger DTO, AdminItemDto, seed.
+1. Prisma: колонки из §1 (включая description) одной миграцией 0019_item_progression; накатывать
+   `migrate deploy`, НЕ `migrate dev` (дропнет active_spawns). Контракты, Swagger DTO, AdminItemDto, seed.
 2. InventoryService.equip — level_too_low / class_not_allowed; CharacterService — crit/dodge от шмота,
    снять хардкод dodge = 0.
 3. BattleService.generateLoot — фильтр строк DropTable по классу до взвешивания.
@@ -218,5 +220,5 @@ RNG, движок (heal с clamp, второй use отказывает); Flutte
 `npx tsc -b --noEmit` в troy-admin.
 
 Ветка main, коммиты без подписей ассистента. По завершении: отметить DoD здесь, обновить баннер статуса,
-таблицу в troy-docs/roadmap/README.md и статусы задач SCRUM-62/17/19/63/64 (скилл troy-jira).
+таблицу в troy-docs/roadmap/README.md и статусы задач SCRUM-62/17/19/63/64 и SCRUM-15 (скилл troy-jira).
 ```

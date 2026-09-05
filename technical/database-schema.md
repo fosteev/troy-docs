@@ -244,6 +244,7 @@ WHERE is_active = true;
 | **Бонусы к урону** | | |
 | physDmgBonus | Int, default 0 | +Physical Damage (base_weapon_dmg) |
 | magicDmgBonus | Int, default 0 | +Magic Damage (base_spell_dmg) |
+| description | String? | Описание для карточки предмета на клиенте |
 | iconUrl | String? | URL иконки |
 
 Связи: `inventory[]`, `dropTables[]`
