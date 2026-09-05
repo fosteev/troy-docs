@@ -7,6 +7,7 @@
 ## Backend
 
 - [ ] Logout / refresh token revocation.
+- [ ] Админка: раздел «Пользователи» — список с пагинацией и поиском по email, карточка с персонажами, смена роли, revoke refresh-сессий (`/admin/users`). [SCRUM-66](https://fosteev.atlassian.net/browse/SCRUM-66)
 - [ ] WebSocket CORS whitelist.
 - [ ] Rate limiting для WebSocket events.
 - [ ] Anti-cheat fix: `checkSpeed()` не должен разрешать teleport при `timeDelta = 0`. *(`libs/shared/utils/src/lib/geo.ts` всё ещё возвращает 0)*
