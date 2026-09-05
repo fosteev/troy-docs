@@ -1,6 +1,6 @@
 # MVP-3 — гэпы бэкенда: описание предмета, выброс, отклик на статы
 
-> **Статус: сессия 1 (backend + admin) сделана и принята ревью 05.09** (`/troy-plan-review`: расхождений с планом нет; правка ревью — guard `quantity ≥ 1` в `discard`, решение 8). [SCRUM-15](https://fosteev.atlassian.net/browse/SCRUM-15) и [SCRUM-16](https://fosteev.atlassian.net/browse/SCRUM-16) закрыты на бэкенде и в админке — миграция накачена, `npx nx run-many -t test`/`-t build` зелёные в troy-backend, `tsc`/lint чистые в troy-admin. Обе в Jira — «В процессе проверки» (ревью 05.09 принял бэкенд; `Готово` поставит пользователь, увидев описание и выброс на реальном предмете — пока предметов в инвентаре нет); клиентская часть выделена в [SCRUM-75](https://fosteev.atlassian.net/browse/SCRUM-75) — **сессия 2 — Flutter** вместе с [SCRUM-49](https://fosteev.atlassian.net/browse/SCRUM-49). Модель: сессия 2 — Sonnet, этап 5 (дельты в sheet, `statDeltas` в стейте) — effort max + ревью Opus (`/review-local`) перед коммитом; режим — acceptEdits. **Последовательно:** сессия 2 ждёт перегенерации Dart-клиента пользователем (Swagger → `troy_backend_api`, см. «Между сессиями» ниже — ещё не сделано); параллелить было нечего — общий генерируемый артефакт. [SCRUM-18](https://fosteev.atlassian.net/browse/SCRUM-18) (стак) закрыт решением без кода.
+> **Статус: обе сессии сделаны; сессия 2 (Flutter, SCRUM-75/49) принята ревью 06.09 с правками — код в `troy-flutter` не закоммичен, ждёт проверки на устройстве** (что и как проверить — решение 9, там же два готовых коммит-сообщения). Сессия 1 (backend + admin, SCRUM-15/16) — 05.09, ревью без расхождений (решение 8), закрыта пользователем. SCRUM-75/49 — «В процессе проверки»: описание в карточке до ревью не маппилось (исполнитель пропустил чекбокс), починено ревью, на устройстве не проверялось. Модель сессии 2 — Sonnet, acceptEdits; ревью Opus сделано этим `/troy-plan-review`.
 
 Родитель: [README фазы](./README.md) · аудит: [backend-gaps.md](./backend-gaps.md) (#1, #3, #7) · UX-решения: [redesign.md](./redesign.md).
 
@@ -32,6 +32,8 @@
 7. **Дельта в карточке** (вторая половина SCRUM-49): бонусы в sheet — строками `label | +value | Δ против надетого в этот слот` (▲ зелёный / ▼ красный / — muted), над таблицей строка «VS. EQUIPPED <имя>», когда в слоте что-то есть; пустой слот или расходник — колонка Δ не рисуется. Кнопка UNEQUIP в sheet — не здесь (redesign).
 
 8. **Ревью сессии 1 (05.09):** принято без расхождений с планом; исполнитель решений по ходу не принимал — план зазора не оставил. Правка ревью: `InventoryService.discard` отвергает `quantity`, если оно не целое или < 1, **до** чтения инвентаря. Gateway и так валидирует `@Min(1)`, но NATS-паттерн `inventory.discard` доступен изнутри game-core, а `decrement` на отрицательное число увеличил бы стак. Осознанный долг: discard (как и equip) не атомарен — `findFirst` → `update`/`delete` без условия по `quantity`; два одновременных discard одного стака дадут строку с `quantity 0` или 500 на втором delete. Клиент сериализует мутации (`_mutationInFlight`), в MVP не чиним; если понадобится — `updateMany({ where: { id, quantity: { gte: N } } })` / `deleteMany({ where: { id, quantity: N, isEquipped: false } })` с проверкой `count`. Записано в Known issues `troy/CLAUDE.md`. Коммиты исполнителя были на английском не в стиле истории репо — переамендены (не запушены); в промты сессий добавлять пример сообщения дословно.
+
+9. **Ревью сессии 2 (06.09, `/troy-plan-review`).** Исполнитель (Sonnet) сделал этапы 4–5 по контракту, но **не прогнал `/troy-continue`**: ни коммитов, ни галочек, ни комментов в Jira; при этом SCRUM-15/16/49/75 оказались в «Готово» (кем — по комментам не видно; SCRUM-75/49 возвращены в «В процессе проверки»). Пропущено молча: `description` в `hero_mapper.dart` — карточка описание не показывала вовсе, хотя это половина SCRUM-75; тесты `hero_mapper_test.dart` (description) и `hero_repository_impl_test.dart` (discard). Всё три добавлены ревью, `flutter analyze` чисто, 241 тест зелёный. Решения исполнителя, принятые ревью: (а) в кубите ошибка мутации эмитится поверх **текущего** стейта (`_emitFailure`), а не захваченного до `await` — страница вызывает `discard`/`equip` без `await` и тут же закрывает sheet (`clearInspect`), поэтому ошибка на захваченном стейте воскрешала бы `selectedItemId`; применено ко всем четырём мутациям, покрыто тестом «clearInspect во время discard не откатывается ошибкой». Успешный путь по-прежнему на захваченном `s` — как было до сессии, не трогали; (б) в тосте `atkSpeed`/`critPct` печатаются с одним знаком после запятой (IEEE-754 даёт `0.1499…` на разности double), остальные — как есть; (в) ▼ в дельте — `context.colors.error`, в токенах нет `error`. Побочное от перегенерации клиента: в `ClassSkillListItemDto` появились `INTERRUPT` и обязательный `channelTicks` — исполнитель добавил ветку в `class_mapper.dart` и `channelTicks: 0` в двух тестах классов; это едет в коммит `chore(api)`, не в фичу. Флак: `test/shared/widgets/sprite_sheet_animator_test.dart` («phase offsets a looping sheet…») раз упал в полном прогоне, 3/3 зелёный в изоляции — таймингозависимый, к связке не относится, при повторе — открыть отдельно. **Коммиты — после проверки на устройстве**, два, в `troy-flutter`: `chore(api): реген клиента — description и DELETE /inventory, INTERRUPT/channelTicks в классах` (пакет + `class_mapper.dart` + два теста классов) и `feat(hero): описание и Discard в карточке, тост с дифом статов и дельты против надетого (SCRUM-75, SCRUM-49)` (остальное). Проверить на устройстве: описание под названием в карточке предмета из мешка; DISCARD под EQUIP (у зелья — единственная кнопка), диалог «Выбросить N?» с «Отмена / Выбросить» при ×1 и «Выбросить 1 / Выбросить все (×N)» при стаке, после — sheet закрыт, мешок обновлён; надеть предмет — снекбар вида «PHYS ATK +7 · ARMOR −2», без изменений статов — снекбара нет; в карточке предмета при занятом слоте — строка «ПРОТИВ НАДЕТОГО <имя>» и ▲/▼/— у каждого бонуса.
 ## Этапы
 
 ### Сессия 1 · Этап 1 — SCRUM-15, backend: description
@@ -69,31 +71,31 @@
 
 ### Между сессиями — пользователь
 
-- [ ] **Перезапустить** gateway (ревью 05.09: процесс на :3000 отдавал Swagger без `DELETE /inventory/{itemId}` — старая сборка; клиент, снятый с него, будет без `inventoryControllerDiscard`) и перегенерировать клиент: `./tools/generate_openapi.sh` в `troy-flutter` (нужен docker). Проверка: `grep -c inventoryControllerDiscard packages/troy_backend_api/lib/src/api/inventory_api.dart` ≥ 1 и `grep -c description packages/troy_backend_api/lib/src/model/equipped_item_dto.dart` ≥ 1. Закоммитить пакет отдельным коммитом (`chore(api): regenerate client — item description, DELETE /inventory`).
+- [x] **Сделано пользователем 05–06.09** (клиент перегенерирован, обе проверки ниже проходят; пакет ещё не закоммичен — коммит `chore(api)` вместе с сессией 2, решение 9). **Перезапустить** gateway (ревью 05.09: процесс на :3000 отдавал Swagger без `DELETE /inventory/{itemId}` — старая сборка; клиент, снятый с него, будет без `inventoryControllerDiscard`) и перегенерировать клиент: `./tools/generate_openapi.sh` в `troy-flutter` (нужен docker). Проверка: `grep -c inventoryControllerDiscard packages/troy_backend_api/lib/src/api/inventory_api.dart` ≥ 1 и `grep -c description packages/troy_backend_api/lib/src/model/equipped_item_dto.dart` ≥ 1. Закоммитить пакет отдельным коммитом (`chore(api): regenerate client — item description, DELETE /inventory`).
 
 ### Сессия 2 · Этап 4 — SCRUM-75 (клиент SCRUM-15/16), Flutter: description и discard
 
-- [ ] Предусловие: обе проверки из блока выше проходят. Иначе — стоп и попросить пользователя перегенерировать клиент.
-- [ ] `hero_mapper.dart`: `description: item.description` в `_EquippedEntryMapper.toDomain()`.
-- [ ] `hero_repository.dart` + `hero_repository_impl.dart` + `hero_remote_datasource.dart`: `discard(itemId, {quantity})` по образцу `equip`.
-- [ ] `hero_cubit.dart`: `discard(itemId, {quantity})` по образцу `equip` (`_mutationInFlight`, сброс `selectedItemId`).
-- [ ] `item_inspect_sheet.dart`: параметр `onDiscard: ValueChanged<int>`, кнопка DISCARD, диалог по решению 5.
-- [ ] `hero_page.dart`: пробросить `onDiscard` в `showItemInspectSheet`.
-- [ ] Переводы `assets/translations/en.json` + `ru.json`: ключи из «Контракта».
-- [ ] Тесты: `hero_mapper_test.dart` (description), `hero_repository_impl_test.dart` (discard: успех, 400), `hero_cubit_test.dart` (группа `discard`: успех / ошибка / double-tap).
+- [x] Предусловие: обе проверки из блока выше проходят. Иначе — стоп и попросить пользователя перегенерировать клиент.
+- [x] `hero_mapper.dart`: `description: item.description as String?` в `_EquippedEntryMapper.toDomain()` — **пропущено исполнителем, добавлено ревью 06.09** (DTO несёт поле как `Object?`).
+- [x] `hero_repository.dart` + `hero_repository_impl.dart` + `hero_remote_datasource.dart`: `discard(itemId, {quantity})` по образцу `equip`.
+- [x] `hero_cubit.dart`: `discard(itemId, {quantity})` по образцу `equip` (`_mutationInFlight`, сброс `selectedItemId`).
+- [x] `item_inspect_sheet.dart`: параметр `onDiscard: ValueChanged<int>`, кнопка DISCARD, диалог по решению 5.
+- [x] `hero_page.dart`: пробросить `onDiscard` в `showItemInspectSheet`.
+- [x] Переводы `assets/translations/en.json` + `ru.json`: ключи из «Контракта».
+- [x] Тесты: `hero_mapper_test.dart` (description) и `hero_repository_impl_test.dart` (discard: успех, 400) — **не написаны исполнителем, добавлены ревью 06.09**; `hero_cubit_test.dart` (группа `discard`: успех / ошибка / double-tap + гонка с `clearInspect`) — исполнитель.
 
 Готово, когда: `flutter analyze` чисто, `flutter test` зелёный.
 
 ### Сессия 2 · Этап 5 — SCRUM-49, Flutter: отклик на смену статов
 
-- [ ] `lib/features/profile/domain/entities/stat_delta.dart` + `lib/features/profile/domain/usecases/derived_stats_diff.dart`: чистая функция `List<StatDelta> derivedStatsDiff(DerivedStats before, DerivedStats after)`.
-- [ ] `hero_state.dart`: `statDeltas: List<StatDelta>` (по умолчанию `const []`), `copyWith`, `clearStatDeltas`.
-- [ ] `hero_cubit.dart`: после успешных `equip`/`unequip` — `statDeltas: derivedStatsDiff(old.profile.derived, new.profile.derived)`; `allocate` и `discard` — не трогают (пустой список).
-- [ ] `context_extensions.dart`: `showInfoSnackBar(String message)` рядом с `showErrorSnackBar`.
-- [ ] `hero_page.dart` listener: `statDeltas.isNotEmpty` → `showInfoSnackBar(format(...))` → `cubit.clearStatDeltas()`.
-- [ ] `item_inspect_sheet.dart`: параметр `equippedInSlot: InventoryItem?`, бонусы строками с дельтой (решение 7); `hero_page.dart` передаёт `loaded.snapshot.equippedIn(item.slot!)` при `slot != null`.
-- [ ] Тесты: `test/features/profile/domain/usecases/derived_stats_diff_test.dart` (таблица кейсов: нет изменений → пусто; рост/падение; порядок полей стабилен), `hero_cubit_test.dart` (equip меняет `physAtk` → `statDeltas` непустой; повторный `clearStatDeltas` → пустой), `hero_page_smoke_test.dart` остаётся зелёным.
-- [ ] Доки: галочка «визуальная обратная связь после изменения статов» в [README фазы](./README.md), баннер фазы и таблица в [roadmap/README.md](../README.md) (`/troy-continue`).
+- [x] `lib/features/profile/domain/entities/stat_delta.dart` (freezed, `.freezed.dart` сгенерирован) + `lib/features/profile/domain/usecases/derived_stats_diff.dart`: чистая функция `List<StatDelta> derivedStatsDiff(DerivedStats before, DerivedStats after)`.
+- [x] `hero_state.dart`: `statDeltas: List<StatDelta>` (по умолчанию `const []`), `copyWith`, `clearStatDeltas`.
+- [x] `hero_cubit.dart`: после успешных `equip`/`unequip` — `statDeltas: derivedStatsDiff(old.profile.derived, new.profile.derived)`; `allocate` и `discard` — не трогают (пустой список).
+- [x] `context_extensions.dart`: `showInfoSnackBar(String message)` рядом с `showErrorSnackBar`.
+- [x] `hero_page.dart` listener: `statDeltas.isNotEmpty` → `showInfoSnackBar(format(...))` → `cubit.clearStatDeltas()`.
+- [x] `item_inspect_sheet.dart`: параметр `equippedInSlot: InventoryItem?`, бонусы строками с дельтой (решение 7); `hero_page.dart` передаёт `loaded.snapshot.equippedIn(item.slot!)` при `slot != null`.
+- [x] Тесты: `test/features/profile/domain/usecases/derived_stats_diff_test.dart` (таблица кейсов: нет изменений → пусто; рост/падение; порядок полей стабилен), `hero_cubit_test.dart` (equip меняет `physAtk` → `statDeltas` непустой; повторный `clearStatDeltas` → пустой), `hero_page_smoke_test.dart` остаётся зелёным.
+- [x] Доки (ревью 06.09): галочка «визуальная обратная связь после изменения статов» в [README фазы](./README.md), баннер фазы и таблица в [roadmap/README.md](../README.md) (`/troy-continue`).
 
 Готово, когда: `flutter analyze` чисто, `flutter test` зелёный.
 
