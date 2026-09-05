@@ -1,6 +1,6 @@
 # MVP-3 — гэпы бэкенда: описание предмета, выброс, отклик на статы
 
-> **Статус: сессия 1 (backend + admin) сделана и принята ревью 05.09** (`/troy-plan-review`: расхождений с планом нет; правка ревью — guard `quantity ≥ 1` в `discard`, решение 8). [SCRUM-15](https://fosteev.atlassian.net/browse/SCRUM-15) и [SCRUM-16](https://fosteev.atlassian.net/browse/SCRUM-16) закрыты на бэкенде и в админке — миграция накачена, `npx nx run-many -t test`/`-t build` зелёные в troy-backend, `tsc`/lint чистые в troy-admin. Обе задачи остаются «В работе» в Jira — клиентская часть (**сессия 2 — Flutter**, 15/16 + [SCRUM-49](https://fosteev.atlassian.net/browse/SCRUM-49)) ещё впереди. Модель: сессия 2 — Sonnet, этап 5 (дельты в sheet, `statDeltas` в стейте) — effort max + ревью Opus (`/review-local`) перед коммитом; режим — acceptEdits. **Последовательно:** сессия 2 ждёт перегенерации Dart-клиента пользователем (Swagger → `troy_backend_api`, см. «Между сессиями» ниже — ещё не сделано); параллелить было нечего — общий генерируемый артефакт. [SCRUM-18](https://fosteev.atlassian.net/browse/SCRUM-18) (стак) закрыт решением без кода.
+> **Статус: сессия 1 (backend + admin) сделана и принята ревью 05.09** (`/troy-plan-review`: расхождений с планом нет; правка ревью — guard `quantity ≥ 1` в `discard`, решение 8). [SCRUM-15](https://fosteev.atlassian.net/browse/SCRUM-15) и [SCRUM-16](https://fosteev.atlassian.net/browse/SCRUM-16) закрыты на бэкенде и в админке — миграция накачена, `npx nx run-many -t test`/`-t build` зелёные в troy-backend, `tsc`/lint чистые в troy-admin. Обе в Jira — «В процессе проверки» (ревью 05.09 принял бэкенд; `Готово` поставит пользователь, увидев описание и выброс на реальном предмете — пока предметов в инвентаре нет); клиентская часть выделена в [SCRUM-75](https://fosteev.atlassian.net/browse/SCRUM-75) — **сессия 2 — Flutter** вместе с [SCRUM-49](https://fosteev.atlassian.net/browse/SCRUM-49). Модель: сессия 2 — Sonnet, этап 5 (дельты в sheet, `statDeltas` в стейте) — effort max + ревью Opus (`/review-local`) перед коммитом; режим — acceptEdits. **Последовательно:** сессия 2 ждёт перегенерации Dart-клиента пользователем (Swagger → `troy_backend_api`, см. «Между сессиями» ниже — ещё не сделано); параллелить было нечего — общий генерируемый артефакт. [SCRUM-18](https://fosteev.atlassian.net/browse/SCRUM-18) (стак) закрыт решением без кода.
 
 Родитель: [README фазы](./README.md) · аудит: [backend-gaps.md](./backend-gaps.md) (#1, #3, #7) · UX-решения: [redesign.md](./redesign.md).
 
@@ -71,7 +71,7 @@
 
 - [ ] **Перезапустить** gateway (ревью 05.09: процесс на :3000 отдавал Swagger без `DELETE /inventory/{itemId}` — старая сборка; клиент, снятый с него, будет без `inventoryControllerDiscard`) и перегенерировать клиент: `./tools/generate_openapi.sh` в `troy-flutter` (нужен docker). Проверка: `grep -c inventoryControllerDiscard packages/troy_backend_api/lib/src/api/inventory_api.dart` ≥ 1 и `grep -c description packages/troy_backend_api/lib/src/model/equipped_item_dto.dart` ≥ 1. Закоммитить пакет отдельным коммитом (`chore(api): regenerate client — item description, DELETE /inventory`).
 
-### Сессия 2 · Этап 4 — SCRUM-15/16, Flutter: description и discard
+### Сессия 2 · Этап 4 — SCRUM-75 (клиент SCRUM-15/16), Flutter: description и discard
 
 - [ ] Предусловие: обе проверки из блока выше проходят. Иначе — стоп и попросить пользователя перегенерировать клиент.
 - [ ] `hero_mapper.dart`: `description: item.description` в `_EquippedEntryMapper.toDomain()`.
@@ -352,14 +352,14 @@ Dart-клиент (`./tools/generate_openapi.sh` в troy-flutter при запу
 этого сессия 2 не стартует.
 ```
 
-### Сессия 2 — SCRUM-15/16 (клиент) + SCRUM-49 (troy-flutter) · Sonnet, этап 5 на max + ревью Opus · после сессии 1
+### Сессия 2 — SCRUM-75 (клиент 15/16) + SCRUM-49 (troy-flutter) · Sonnet, этап 5 на max + ревью Opus · после сессии 1
 
 Этап 4 — механика по эталону `equip`. Этап 5 — новая вёрстка строк с дельтой, `statDeltas` в `HeroLoaded` с сентинелом `_noChange`, живой `hero_page_smoke_test` — место, где слабая модель начинает изобретать; прогнать `/review-local` на Opus до коммита. Режим — acceptEdits.
 
 ```
 Работаем в /Users/fost/Projects/troy (troy-flutter).
 
-Задачи: клиентская часть SCRUM-15 (описание предмета в карточке) и SCRUM-16 (кнопка
+Задачи: SCRUM-75 — клиентская часть SCRUM-15/16 (описание предмета в карточке, кнопка
 Discard), плюс SCRUM-49 — визуальный отклик на смену статов после equip/unequip.
 Hero-экран на реальном API уже есть (lib/features/profile) — это доработка.
 
@@ -369,8 +369,8 @@ Hero-экран на реальном API уже есть (lib/features/profile)
 оба ≥ 1. Если нет — остановись и попроси пользователя запустить
 `./tools/generate_openapi.sh` при поднятом gateway; пакет руками не править.
 
-Начни с `bash ~/.claude/skills/troy-jira/jira.sh view SCRUM-49` (SCRUM-15/16 уже
-«В работе» после сессии 1 — не трогать их статус) и переведи SCRUM-49 в «В работе».
+Начни с `bash ~/.claude/skills/troy-jira/jira.sh view SCRUM-75` и `... view SCRUM-49`
+(SCRUM-15/16 закрыты — бэкенд и админка сделаны) и переведи обе в «В работе».
 Токен: `export $(grep -oE 'JIRA_CLOUD_[A-Z]+=[^ ]+' ~/.zshrc | tr -d '"'"'" | xargs)`.
 
 План — troy-docs/roadmap/mvp-3-inventory/description-discard.md: этапы 4–5, решения 5–7,
@@ -400,10 +400,11 @@ profile.derived старого и нового снапшота («PHYS ATK +7 �
 DoD: `flutter analyze` чисто, `flutter test` зелёный; описание видно в карточке, предмет
 выбрасывается, после equip виден тост. Тесты — часть DoD (список в плане).
 
-Ветка main, коммиты без подписей ассистента, ключи задач в сообщении (SCRUM-15/16 —
-один коммит, SCRUM-49 — отдельный). `flutter run` и дев-процессы не запускать; визуально
+Ветка main, коммиты без подписей ассистента, по-русски в стиле истории репо, ключ в
+хвосте — например `feat(profile): описание предмета и discard в карточке (SCRUM-75)`;
+SCRUM-75 — один коммит, SCRUM-49 — отдельный. `flutter run` и дев-процессы не запускать; визуально
 проверяет пользователь. Чужие незакоммиченные файлы не трогать.
 
-По завершении: /troy-continue — закрыть SCRUM-15, SCRUM-16, SCRUM-49, отметить галочки в
+По завершении: /troy-continue — закрыть SCRUM-75 и SCRUM-49, отметить галочки в
 README фазы, backend-gaps.md (#1, #3, #7) и roadmap/README.md.
 ```

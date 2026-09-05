@@ -24,6 +24,7 @@ Item-inspect sheet на клиенте показывает описание п�
 `GET /inventory` и `/character/me`.
 **План (05.09):** [description-discard.md](./description-discard.md), SCRUM-15. Уточнение: в `/character/me` не
 `include`, а `select`-whitelist, и только надетое — см. #7; поле добавляется явно, миграция `0019_item_description` отдельная.
+**Сделано на бэкенде и в админке 05.09 (SCRUM-15, ревью принято); карточка на клиенте — SCRUM-75.**
 **Бэкенд закрыт 05.09** (сессия 1) — колонка, миграция, seed, Swagger DTO, админка; клиентская выдача (карточка на клиенте) — сессия 2.
 
 ### 2. Consumables — тип есть, механики нет
@@ -43,6 +44,7 @@ Item-inspect sheet на клиенте показывает описание п�
 **Решение (05.09):** только discard — `DELETE /inventory/:itemId?quantity=N`; целиком надетый стак не
 выбрасывается (400 «Unequip the item first»), частично — можно; ответ — полный инвентарь. Продажа — тема
 [vendors/](../vendors/README.md). План — [description-discard.md](./description-discard.md), SCRUM-16.
+**Сделано на бэкенде 05.09 (SCRUM-16, ревью принято); кнопка на клиенте — SCRUM-75.**
 **Бэкенд закрыт 05.09** (сессия 1) — эндпоинт, сервис, 6 unit-тестов; кнопка Discard на клиенте — сессия 2.
 
 ### 4. Class restrictions на предметах
@@ -71,7 +73,7 @@ README.md фазы упоминает проверку ограничений п
 (`character.service.ts`), а клиент собирает и куклу, и мешок только из `/character/me`
 (`HeroRemoteDataSource.getMe`; `GET /inventory` не вызывается). На реальном API мешок пуст.
 **Решение (05.09):** в `getMe` инвентарь отдаётся полным списком отдельным `findMany` (include item);
-`ACTIVE_CHARACTER_SELECT` для горячих путей не трогаем. Чинится в [description-discard.md](./description-discard.md), этап 1.
+`ACTIVE_CHARACTER_SELECT` для горячих путей не трогаем. Сделано 05.09 (SCRUM-15, [description-discard.md](./description-discard.md), этап 1): `getMe` отдаёт весь инвентарь.
 **Закрыто 05.09** (сессия 1) — `getMe` отдаёт полный список, тест на это есть.
 
 ## Не гэпы бэкенда (заметки для Flutter-стороны)
@@ -88,5 +90,5 @@ README.md фазы упоминает проверку ограничений п
 
 ## Порядок
 
-1, 3 и 7 — обязательные для DoD MVP-3, бэкенд закрыт 05.09 (сессия 1), клиентская часть — сессия 2, план [description-discard.md](./description-discard.md); 2, 4, 5 — решены 05.09 и живут в теме [items/](../items/README.md).
+1, 3 и 7 — обязательные для DoD MVP-3, бэкенд закрыт 05.09 (сессия 1), клиентская часть — SCRUM-75 (сессия 2), план [description-discard.md](./description-discard.md); 2, 4, 5 — решены 05.09 и живут в теме [items/](../items/README.md).
 6 — открытый вопрос (глифы по type/slot или iconUrl), кода не требует.

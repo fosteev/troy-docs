@@ -1,6 +1,6 @@
 # MVP-3 — Profile, Inventory, Equipment
 
-> **Статус: в работе.** Клиент: Hero-экран (профиль + кукла + мешок одним скроллом) на реальном API, тесты зелёные. Бэкенд: профиль, инвентарь, equip/unequip, очки атрибутов — есть; [backend-gaps.md](./backend-gaps.md) #1, #3 и #7 закрыты бэкендом 05.09 (сессия 1, SCRUM-15/16 — тесты и сборка зелёные), клиентская часть — сессия 2; #2 (зелья), #4 (class restrictions) и #5 (стак) решены 05.09 и вынесены в [items/](../items/README.md). План закрытия гэпов и отклика на статы — [description-discard.md](./description-discard.md) (SCRUM-15/16/49, две сессии, промты внутри), затем [redesign.md](./redesign.md).
+> **Статус: в работе.** Клиент: Hero-экран (профиль + кукла + мешок одним скроллом) на реальном API, тесты зелёные. Бэкенд: профиль, инвентарь, equip/unequip, очки атрибутов — есть; [backend-gaps.md](./backend-gaps.md) #1, #3 и #7 закрыты бэкендом 05.09 (сессия 1, SCRUM-15/16 — тесты и сборка зелёные), клиентская часть — SCRUM-75 (сессия 2); #2 (зелья), #4 (class restrictions) и #5 (стак) решены 05.09 и вынесены в [items/](../items/README.md). План закрытия гэпов и отклика на статы — [description-discard.md](./description-discard.md) (сессия 1 сделана; сессия 2 Flutter — SCRUM-75/49, промт внутри), затем [redesign.md](./redesign.md).
 
 Цель: игрок должен видеть прогресс персонажа и усиливать его через предметы.
 
@@ -58,4 +58,4 @@
 
 ## Промт для сессии
 
-> Промты сессий живут в roadmap связки — [description-discard.md](./description-discard.md), раздел «Промты»: **сессия 1** (troy-backend + troy-admin, SCRUM-15/16) и **сессия 2** (troy-flutter, клиентская часть 15/16 + SCRUM-49). Между ними пользователь перегенерирует Dart-клиент (`./tools/generate_openapi.sh`). Редизайн мешка — отдельная сессия по промту в [redesign.md](./redesign.md). Общие правила — в [roadmap/README.md](../README.md).
+> Промты сессий живут в roadmap связки — [description-discard.md](./description-discard.md), раздел «Промты»: **сессия 1** (troy-backend + troy-admin, SCRUM-15/16) и **сессия 2** (troy-flutter, SCRUM-75 (клиент 15/16) + SCRUM-49). Между ними пользователь перегенерирует Dart-клиент (`./tools/generate_openapi.sh`). Редизайн мешка — отдельная сессия по промту в [redesign.md](./redesign.md). Общие правила — в [roadmap/README.md](../README.md).

@@ -87,7 +87,7 @@ roadmap/
 - [ ] **MVP-3 — профиль, инвентарь, экипировка.** → [mvp-3-inventory/](./mvp-3-inventory/README.md)
   - [x] Клиент: Hero-экран (профиль + кукла + мешок) на реальном API, тесты зелёные
   - [x] Бэкенд: профиль, инвентарь, equip/unequip, очки атрибутов, computed stats
-  - [x] Бэкенд-гэпы [#1, #3 и #7](./mvp-3-inventory/backend-gaps.md) (description, discard, `/character/me` только с надетым) закрыты бэкендом 05.09 ([description-discard.md](./mvp-3-inventory/description-discard.md), сессия 1, SCRUM-15/16); клиентская часть (карточка, кнопка Discard) — сессия 2; consumables (#2), class restrictions (#4) и стак (#5) решены 05.09 и вынесены в [items/](./items/README.md)
+  - [x] Бэкенд-гэпы [#1, #3 и #7](./mvp-3-inventory/backend-gaps.md) (description, discard, `/character/me` только с надетым) закрыты бэкендом 05.09 ([description-discard.md](./mvp-3-inventory/description-discard.md), сессия 1, SCRUM-15/16); клиентская часть (карточка, кнопка Discard) — SCRUM-75 в сессии 2; consumables (#2), class restrictions (#4) и стак (#5) решены 05.09 и вынесены в [items/](./items/README.md)
   - [ ] Клиент: описание/discard (SCRUM-15/16) и визуальный отклик на смену статов после equip (SCRUM-49) — сессия 2, план [description-discard.md](./mvp-3-inventory/description-discard.md)
   - [ ] [Redesign](./mvp-3-inventory/redesign.md) — мешок отдельным экраном; прототип готов, код не начат; прототип ещё дорабатывается (навигация HERO, углы sharp vs `tokens.radius*`)
 - [ ] **items — предметы и лут «как в WoW».** itemLevel + requiredLevel, редкость как бюджет статов, class restrictions с личным лутом, зелья в бою (одно за бой), crit/dodge на шмоте, лимит мешка. Спека и решения готовы (05.09), код не начат. → [items/](./items/README.md)
