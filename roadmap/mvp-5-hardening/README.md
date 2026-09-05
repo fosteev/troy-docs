@@ -1,6 +1,6 @@
 # MVP-5 — Hardening
 
-> **Статус: не начат.** По ходу уже закрыто: health endpoints в api-gateway. Открыто: logout / revocation refresh-токена, WS CORS whitelist, rate limiting WS-событий, `checkSpeed()` при `timeDelta = 0`, логирование ошибок `emitEmail`, перф-baseline.
+> **Статус: не начат.** По ходу уже закрыто: health endpoints в api-gateway, логирование ошибок отправки email. Открыто: logout / revocation refresh-токена, WS CORS whitelist, rate limiting WS-событий, `checkSpeed()` при `timeDelta = 0`, перф-baseline.
 
 Цель: убрать технические дыры, которые мешают тестировать MVP на реальных устройствах.
 
@@ -10,7 +10,7 @@
 - [ ] WebSocket CORS whitelist.
 - [ ] Rate limiting для WebSocket events.
 - [ ] Anti-cheat fix: `checkSpeed()` не должен разрешать teleport при `timeDelta = 0`. *(`libs/shared/utils/src/lib/geo.ts` всё ещё возвращает 0)*
-- [ ] Логировать ошибки отправки email.
+- [x] Логировать ошибки отправки email. *(`auth.service.emitEmail` — `logger.error` в error-хендлере `subscribe`)*
 - [x] Проверить health endpoints в Docker. *(эндпоинты есть — `api-gateway/src/app/health`, раздел «Healthcheck» в `troy-backend/README.md`)*
 - [ ] Минимальные integration tests:
   - auth;
@@ -23,6 +23,7 @@
 - [x] Обработка истекшего access token. *(`core/api/auth_interceptor.dart` — refresh по 401)*
 - [ ] Recovery при refresh failure.
 - [ ] Единый error UI для network/backend ошибок.
+- [ ] Экран «нет связи» — один на «нет интернета» и «бэкенд недоступен»: анимированный моб (бандловый лист, с бэкенда тянуть нельзя), текст по причине, ретрай.
 - [ ] Smoke test auth → character → map.
 - [ ] Проверка iOS/Android permissions для location.
 - [ ] Release config для backend base URL.

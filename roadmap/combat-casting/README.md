@@ -21,6 +21,8 @@
 
 ## Ограничения (осознанные)
 
+Оба вынесены в хвосты темы: эпик [SCRUM-53](https://fosteev.atlassian.net/browse/SCRUM-53) — [SCRUM-54](https://fosteev.atlassian.net/browse/SCRUM-54) (мобы кикают) и [SCRUM-55](https://fosteev.atlassian.net/browse/SCRUM-55) (pushback).
+
 - **Мобы не сбивают касты игрока.** Движок это умеет (эффект симметричный, условие AI можно
   завести данными), но в контенте у мобов `INTERRUPT` нет. Возможное расширение — условие
   `target_casting` в AI, отдельным шагом.
