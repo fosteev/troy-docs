@@ -50,7 +50,7 @@
 
 ## 1. Данные
 
-`Item`, миграция `0019_item_progression` (накатывать `migrate deploy`, **не** `migrate dev` — дропнет
+`Item`, миграция `0020_item_progression` (накатывать `migrate deploy`, **не** `migrate dev` — дропнет
 `active_spawns`). **05.09:** `itemLevel`/`requiredLevel`/`allowedClassCodes`/`critChanceBonus`/`dodgeBonus`
 уже накатились миграцией `0020_item_progression` (SCRUM-62/17, план — [item-progression.md](./item-progression.md));
 `hpRestore`/`resourceRestore` едут отдельно, с зельями (SCRUM-19), миграцией `0021_item_consumables`.
@@ -164,7 +164,7 @@ Swift Boots (RARE) = 3.5 — бюджеты вразнобой, что и ест
 | 7 | Лимит мешка | [SCRUM-65](https://fosteev.atlassian.net/browse/SCRUM-65) | items |
 | 8 | Контент: `loot-and-items.md`, набор предметов, drop tables | [SCRUM-34](https://fosteev.atlassian.net/browse/SCRUM-34), [SCRUM-50](https://fosteev.atlassian.net/browse/SCRUM-50), [SCRUM-36](https://fosteev.atlassian.net/browse/SCRUM-36) | mvp-4 |
 
-Шаги 2–4 — одна миграция и одна сессия, если делаются подряд. `description` из SCRUM-15 (шаг 1) идёт
+Шаги 2–3 сделаны 05.09 одной сессией ([item-progression.md](./item-progression.md)); шаг 4 — своя миграция `0021_item_consumables`. `description` из SCRUM-15 (шаг 1) идёт
 отдельной миграцией `0019_item_description` (решение 05.09, [mvp-3/description-discard.md](../mvp-3-inventory/description-discard.md)):
 MVP-3 закрывается независимо от items, `item_progression` берёт следующий номер. Шаг 7 — после SCRUM-16.
 Контент MVP-4 заводить уже с ilvl и бюджетом, поэтому items идёт до MVP-4.
@@ -192,6 +192,8 @@ MVP-3 закрывается независимо от items, `item_progression`
 ## Промт для сессии
 
 > Самодостаточный промт: скопировать целиком в свежую сессию. Общие правила — в [roadmap/README.md](../README.md).
+>
+> **Устарел частично (05.09):** пункты 1–3 (миграция, equip по уровню/классу, личный лут) сделаны — см. [item-progression.md](./item-progression.md). Следующую связку (зелья SCRUM-19, затем админка SCRUM-63 / Flutter SCRUM-64) готовит `/troy-plan` отдельным roadmap-файлом; этот промт — только как список тем.
 
 ```
 Работаем в /Users/fost/Projects/troy (backend troy-backend, клиент troy-flutter, админка troy-admin).
