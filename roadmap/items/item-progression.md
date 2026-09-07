@@ -18,7 +18,7 @@
 
 ## Решения (05.09)
 
-1. **Скоуп миграции `0020_item_progression`:** только `itemLevel`, `requiredLevel`, `allowedClassCodes`, `critChanceBonus`, `dodgeBonus`. `hpRestore`/`resourceRestore` из items/README §1 — **не здесь**, они едут с зельями (SCRUM-19) своей миграцией `0021_item_consumables`.
+1. **Скоуп миграции `0020_item_progression`:** только `itemLevel`, `requiredLevel`, `allowedClassCodes`, `critChanceBonus`, `dodgeBonus`. `hpRestore`/`resourceRestore` из items/README §1 — **не здесь**, они едут с зельями (SCRUM-19) своей миграцией `0021_item_consumables` (07.09: зелья отложены, миграция не заводится).
 2. **Коды ошибок equip — `LEVEL_TOO_LOW` и `CLASS_NOT_ALLOWED`** (UPPER_SNAKE, как `NOT_ENOUGH_POINTS`/`INVALID_ATTRIBUTE` в `character.service.ts`; в Jira/README написано `level_too_low` — это они). Порядок проверок: нет в инвентаре (404) → нет слота (400) → уровень → класс; всё — до транзакции. Клиент (SCRUM-64) кнопку до 400 не доводит, коды — страховка и ключ для локализации.
 3. **Единицы:** `critChanceBonus`, `dodgeBonus`, `computedStats.critChance`, `computedStats.dodge` — **проценты**. В бой `buildPlayerCombatant` кладёт `dodge: stats.dodge / 100` (движок ждёт долю), `critChance` — как есть. `Monster.dodge` не трогаем (уже доля); в `database-schema.md` поправить «(%)» на «доля 0–1».
 4. **`CharacterService.getActiveCharacterBrief(userId) → { id, level, classCode }`** — рядом с `getActiveCharacterId`; `equip` переходит на него, остальные методы инвентаря остаются на `getActiveCharacterId`.

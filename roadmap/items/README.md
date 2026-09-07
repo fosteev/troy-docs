@@ -6,7 +6,7 @@
 > [mvp-4-content-balance](../mvp-4-content-balance/README.md) (контент). Эпик
 > [SCRUM-61](https://fosteev.atlassian.net/browse/SCRUM-61). Решения: itemLevel + requiredLevel — **да**;
 > редкость = бюджет статов — **да**, правило для контента, не код; class restrictions — **да**, массив кодов
-> + личный лут; зелья — **в бою, одно за бой**, персистентный HP не заводим; стак экипировки — **без миграции**;
+> + личный лут; зелья — **отложены 07.09** (спека §2.3 остаётся: одно за бой, без персистентного HP); стак экипировки — **без миграции**;
 > вторичные статы на шмоте — **только crit и dodge**; лимит мешка — **на бэкенде**; торговля, сеты, апгрейд
 > за золото — **потом**.
 
@@ -42,7 +42,7 @@
 - Лут растёт с мобом: у мобов 8–10 lvl падают предметы itemLevel 8–10, а не Iron Sword.
 - Редкость значит: epic того же ilvl заметно жирнее common и падает реже.
 - Маг не таскает щиты: чужой шмот не падает, а если попал в мешок — не надевается.
-- Зелье — кнопка в бою: одно за бой, лечит или восстанавливает ресурс.
+- ~~Зелье — кнопка в бою: одно за бой~~ — отложено 07.09 (SCRUM-19 в бэклоге, метка `deferred`).
 - Карточка предмета: ilvl, требование уровня, класс, crit/dodge; ▲ апгрейд — по ilvl.
 - Мешок конечен: 40 слотов, при полном мешке лут теряется с уведомлением.
 
@@ -53,7 +53,7 @@
 `Item`, миграция `0020_item_progression` (накатывать `migrate deploy`, **не** `migrate dev` — дропнет
 `active_spawns`). **05.09:** `itemLevel`/`requiredLevel`/`allowedClassCodes`/`critChanceBonus`/`dodgeBonus`
 уже накатились миграцией `0020_item_progression` (SCRUM-62/17, план — [item-progression.md](./item-progression.md));
-`hpRestore`/`resourceRestore` едут отдельно, с зельями (SCRUM-19), миграцией `0021_item_consumables`.
+`hpRestore`/`resourceRestore` едут отдельно, с зельями (SCRUM-19), миграцией `0021_item_consumables` — **зелья отложены 07.09**, миграция не заводится, пока задачу не вернут.
 
 ```prisma
 itemLevel         Int      @default(1)   // уровень предмета: бюджет статов и «▲ апгрейд»
@@ -88,7 +88,9 @@ description       String?                // гэп #1 MVP-3 (SCRUM-15) — то�
 чей предмет персонаж не может надеть по классу. `nothingWeight` не меняется — шанс «ничего» тот же,
 меняется только состав. Иначе при двух классах маг половину мешка забьёт щитами.
 
-### 2.3 Зелья в бою
+### 2.3 Зелья в бою — отложено (07.09)
+
+> **Отложено 07.09 решением пользователя:** из реализации выкидываем, в план не берём (не раньше MVP-4). Спека ниже остаётся для возврата; [SCRUM-19](https://fosteev.atlassian.net/browse/SCRUM-19) — в бэклоге с меткой `deferred`.
 
 Правило WoW «одно зелье за бой» ложится на реалтайм-бой напрямую и снимает вопрос персистентного HP:
 вне боя HP всегда полный, там зелье бессмысленно.
@@ -158,13 +160,13 @@ Swift Boots (RARE) = 3.5 — бюджеты вразнобой, что и ест
 | 1 | Гэпы MVP-3: description, discard, стак (решение записано) | [SCRUM-15](https://fosteev.atlassian.net/browse/SCRUM-15), [SCRUM-16](https://fosteev.atlassian.net/browse/SCRUM-16), [SCRUM-18](https://fosteev.atlassian.net/browse/SCRUM-18) | mvp-3 |
 | 2 | Миграция `item_progression`: ilvl, requiredLevel, crit/dodge; проверка уровня в equip; статы | [SCRUM-62](https://fosteev.atlassian.net/browse/SCRUM-62) | items |
 | 3 | Class restrictions + личный лут | [SCRUM-17](https://fosteev.atlassian.net/browse/SCRUM-17) | items |
-| 4 | Зелья в бою | [SCRUM-19](https://fosteev.atlassian.net/browse/SCRUM-19) | items |
+| 4 | ~~Зелья в бою~~ — отложено 07.09 (`deferred`) | [SCRUM-19](https://fosteev.atlassian.net/browse/SCRUM-19) | items |
 | 5 | Админка — поля предмета | [SCRUM-63](https://fosteev.atlassian.net/browse/SCRUM-63) | items |
-| 6 | Flutter — карточка предмета, ▲ по ilvl, кнопка зелья | [SCRUM-64](https://fosteev.atlassian.net/browse/SCRUM-64) | items |
+| 6 | Flutter — карточка предмета, ▲ по ilvl | [SCRUM-64](https://fosteev.atlassian.net/browse/SCRUM-64) | items |
 | 7 | Лимит мешка | [SCRUM-65](https://fosteev.atlassian.net/browse/SCRUM-65) | items |
 | 8 | Контент: `loot-and-items.md`, набор предметов, drop tables | [SCRUM-34](https://fosteev.atlassian.net/browse/SCRUM-34), [SCRUM-50](https://fosteev.atlassian.net/browse/SCRUM-50), [SCRUM-36](https://fosteev.atlassian.net/browse/SCRUM-36) | mvp-4 |
 
-Шаги 2–3 сделаны 05.09 одной сессией ([item-progression.md](./item-progression.md)); шаг 4 — своя миграция `0021_item_consumables`. `description` из SCRUM-15 (шаг 1) идёт
+Шаги 2–3 сделаны 05.09 одной сессией ([item-progression.md](./item-progression.md)); шаг 4 (зелья) отложен 07.09. `description` из SCRUM-15 (шаг 1) идёт
 отдельной миграцией `0019_item_description` (решение 05.09, [mvp-3/description-discard.md](../mvp-3-inventory/description-discard.md)):
 MVP-3 закрывается независимо от items, `item_progression` берёт следующий номер. Шаг 7 — после SCRUM-16.
 Контент MVP-4 заводить уже с ilvl и бюджетом, поэтому items идёт до MVP-4.
@@ -183,7 +185,7 @@ MVP-3 закрывается независимо от items, `item_progression`
   - [x] Бэкенд: `itemLevel`/`requiredLevel`/`allowedClassCodes`, equip отвечает 400 `LEVEL_TOO_LOW`/`CLASS_NOT_ALLOWED` (SCRUM-62/17, 05.09)
   - [ ] Клиент: Equip disabled на недоступном предмете (SCRUM-64)
 - [x] Лут не выдаёт шмот чужого класса.
-- [ ] Зелье используется в бою один раз, quantity уменьшается, событие в ленте.
+- [ ] ~~Зелье используется в бою один раз, quantity уменьшается, событие в ленте~~ — отложено 07.09, из DoD темы исключено.
 - [x] crit/dodge от шмота видны в computed stats, dodge не захардкожен.
 - [ ] Мешок ограничен на бэкенде, переполнение видно в результате боя.
 - [ ] Админка и клиент показывают новые поля; тесты зелёные (`npx nx run-many -t test`, `flutter test`, `npx tsc -b --noEmit`).
@@ -193,7 +195,7 @@ MVP-3 закрывается независимо от items, `item_progression`
 
 > Самодостаточный промт: скопировать целиком в свежую сессию. Общие правила — в [roadmap/README.md](../README.md).
 >
-> **Устарел частично (05.09):** пункты 1–3 (миграция, equip по уровню/классу, личный лут) сделаны — см. [item-progression.md](./item-progression.md). Следующую связку (зелья SCRUM-19, затем админка SCRUM-63 / Flutter SCRUM-64) готовит `/troy-plan` отдельным roadmap-файлом; этот промт — только как список тем.
+> **Устарел частично (05.09):** пункты 1–3 (миграция, equip по уровню/классу, личный лут) сделаны — см. [item-progression.md](./item-progression.md). Следующую связку (админка SCRUM-63 / Flutter SCRUM-64 параллельно, затем лимит мешка SCRUM-65; зелья отложены) готовит `/troy-plan` отдельным roadmap-файлом; этот промт — только как список тем.
 
 ```
 Работаем в /Users/fost/Projects/troy (backend troy-backend, клиент troy-flutter, админка troy-admin).
