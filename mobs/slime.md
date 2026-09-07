@@ -1,7 +1,7 @@
 # Slime — Слизень
 
 > Карточка — источник правды: числа меняются сначала здесь, потом в seed/админке и манифесте
-> `troy-assets/assets/mobs/slime.yaml` (манифеста ещё нет — завести при генерации).
+> `troy-assets/assets/mobs/slime.yaml`.
 
 ## 1. Название
 
@@ -59,7 +59,9 @@
 ## 6. Арт: промты
 
 Конвейер: `troy-assets/styles/mob.yaml` + манифест `assets/mobs/slime.yaml`;
-итоговые промты после генерации — из `slime.state.json` сюда.
+сгенерён 07.09 (seed 3301, $1.88 с учётом перегенов; баланс RD после — $4.17), промты ниже —
+из `slime.state.json`. Attack и death идут через `overrides.anims` в манифесте — общий шаблон
+безглазой бесформенной массе не подходит (см. Реализация).
 
 ### Визуальный бриф
 
@@ -92,25 +94,42 @@ muted dark medieval fantasy.
 
 | Слот БД | Style | Кадры/fps | Промт |
 |---|---|---|---|
-| keyframeSide (влево) | `rd_pro__fantasy` | 128 | → из state |
-| `iconUrl` (маркер) | `rd_plus__skill_icon` ×2 | 64→128 | → из state |
-| `spriteIdle` | `rd_advanced_animation__idle` | 8 / 5 | → из state |
-| `spriteAttack` | `custom_action` | 8 / 12 | → из state |
-| `spriteHit` | `custom_action` | 6 / 12 | → из state |
-| `spriteDeath` | `__destroy` (распад в лужу) | 8 / 8 | → из state |
-| `arenaBackground` | `rd_pro__fantasy` 256 (opaque) | 1×1 | → из state (`arena` в манифесте) |
+| keyframeSide (влево) | `rd_pro__fantasy` | 128 | `A quivering blob of translucent acid-green slime with a darker murky nucleus inside, dripping goo, no limbs, low and wide. Color scheme: acid green jelly, dark olive nucleus, muted dark medieval fantasy. Strict side view in profile, facing to the LEFT, full body, feet visible, calm menacing stance with its jelly mass slowly pulsing, drops of goo falling, small margin to the canvas edge, centered, on a plain white background.` |
+| `iconUrl` (маркер) | `rd_plus__skill_icon` ×2 | 64→128 | `Map marker icon of a dripping round slime blob with a dark nucleus, one dominant acid green color, bold readable silhouette, medieval dark fantasy, on a plain white background.` |
+| `spriteIdle` | `rd_advanced_animation__idle` | 8 / 5 | `Standing still facing left, extremely subtle and slow breathing, almost no movement, its jelly mass slowly pulsing, drops of goo falling, no weapon motion` |
+| `spriteAttack` | `custom_action` (override) | 8 / 12 | `Rears its mass up high, then slams down in a heavy sticky splash, facing left, frame by frame: the mass squashes down, then stretches tall upward as a wind-up, then throws itself forward to the left and slams flat and wide on the ground with goo splashing to the left, the last frames settle back into the round resting shape, no spinning, no rotation` |
+| `spriteHit` | `custom_action` | 6 / 12 | `Ripples violently, splatters a few drops, dents inward, facing left, takes a hit from the left: sharp recoil backwards to the right, brief stagger, then returns to the stance` |
+| `spriteDeath` | `custom_action` (override) | 8 / 8 | `Loses cohesion and melts down into a flat puddle, facing left, the jelly body sags and melts downward frame by frame, spreading wider and flatter, the last frame is a flat still puddle of goo lying on the ground with the nucleus sunk into it` |
+| `arenaBackground` | `rd_pro__fantasy` 256 (opaque) | 1×1 | `A damp mossy forest hollow after rain: dark puddles on trampled ground, a rotten fallen log, faint green mist between old trees. Wide battle arena background scene, open trampled ground across the lower third where fighters stand, clear uncluttered middle, scenery and horizon in the upper half, moody lighting, no creatures, no people, no text, muted dark medieval fantasy environment.` |
 
 ### Чек-лист
 
-- [ ] маркер читается на карте (32 px, один доминирующий цвет)
-- [ ] idle/attack/hit/death; hit — отдача вправо; death — лежит в последнем кадре
-- [ ] фон арены
-- [ ] заведён в БД (seed есть), publish залил визуал, проверка на устройстве
+- [x] маркер читается на карте (32 px, один доминирующий цвет)
+- [x] idle/attack/hit/death; hit — отдача вправо; death — в последнем кадре плоская лужа
+- [x] фон арены
+- [ ] заведён в БД (seed есть), publish залил визуал — **проверка на устройстве**
 
 ## 7. Реализация
 
-- Моб есть в seed (`Slime`), `description` в seed добавлен (01.09); на dev описание завести
-  через админку (seed не гонять).
+- Моб есть в seed (`Slime`), `description` в seed добавлен (01.09); на dev описание залил
+  publish из манифеста.
+- Арт сгенерён и залит на dev 07.09 (`troy-assets/out/slime/`, манифест `assets/mobs/slime.yaml`,
+  seed 3301, $1.88 вместе с перегенами). Скиллы не генерились — по дизайну их нет.
+
+**Что пришлось поправить в конвейере (общее, не только слизень):**
+
+1. Первый прогон дал **золотого** слизня: в палитре был единственный зелёный `#2E6B30` (XP-бар),
+   и кислотную массу RD снесло в золото. В `tools/palette.mjs` добавлены `acid #8FD62E`,
+   `acidDark #46521F`, `moss #4C7A38` (по образцу navy/violet/cyan для мага), палитра пересобрана
+   → 32 цвета. Ранее сгенерённые ассеты не затронуты.
+2. `gen.mjs` не умел переопределять шаблон под конкретную тварь — добавлен блок `overrides`
+   в манифесте (`overrides.stills.<цель>` / `overrides.anims.<цель>` мержатся поверх
+   `styles/<kind>.yaml`).
+3. `spriteDeath`: карточка просила `__destroy`, но он рассыпает искрами и оставляет ком стоять —
+   вернулись к `custom_action` с покадровым описанием «оседает и растекается в плоскую лужу».
+   Общий death из `styles/mob.yaml` (падает, закрывает глаза) безглазой массе тоже не подходит.
+4. `spriteAttack`: без оверрайда модель крутила ком вокруг оси. Помогло покадровое описание
+   (сжался → вытянулся вверх → бросок влево → возврат, `no spinning`) — приём тот же, что у death.
 
 ### Расхождения код ↔ документы
 

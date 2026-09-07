@@ -1,7 +1,7 @@
 # Drake Whelp — Молодой дрейк
 
 > Карточка — источник правды: числа меняются сначала здесь, потом в seed/админке и манифесте
-> `troy-assets/assets/mobs/drake_whelp.yaml` (манифеста ещё нет — завести при генерации).
+> `troy-assets/assets/mobs/drake_whelp.yaml`.
 
 ## 1. Название
 
@@ -54,7 +54,8 @@
 ## 6. Арт: промты
 
 Конвейер: `troy-assets/styles/mob.yaml` + манифест `assets/mobs/drake_whelp.yaml`;
-итоговые промты после генерации — из `drake_whelp.state.json` сюда.
+сгенерён 07.09 (seed 1021 у кадра, $1.46 — один переген ключевого кадра; баланс RD после —
+$19.71), промты ниже — из `drake_whelp.state.json`.
 
 ### Визуальный бриф
 
@@ -89,26 +90,39 @@ medieval fantasy.
 
 | Слот БД | Style | Кадры/fps | Промт |
 |---|---|---|---|
-| keyframeSide (влево) | `rd_pro__fantasy` | 128 | → из state |
-| `iconUrl` (маркер) | `rd_plus__skill_icon` ×2 | 64→128 | → из state |
-| `spriteIdle` | `rd_advanced_animation__idle` | 8 / 5 | → из state |
-| `spriteAttack` | `custom_action` | 8 / 12 | → из state |
-| `spriteHit` | `custom_action` | 6 / 12 | → из state |
-| `spriteDeath` | `custom_action` | 8 / 8 | → из state |
-| `arenaBackground` | `rd_pro__fantasy` 256 (opaque) | 1×1 | → из state (`arena` в манифесте) |
+| keyframeSide (влево) | `rd_pro__fantasy` | 128 | `A young stocky drake whelp on four clawed legs with crimson scales, a darker underbelly, tiny underdeveloped wings folded tight against its back and far too small to fly, small horns, wisps of smoke from the nostrils and a long swaying tail. Color scheme: crimson scales, dark grey underbelly, fiery orange glow in the maw, muted dark medieval fantasy. Strict side view in profile, facing to the LEFT, full body shot from head to feet, feet visible, the whole figure fits inside the canvas with clear empty margin above the head and below the feet, zoomed out, no cropping, not a portrait, not a bust, calm menacing stance with crouched on four legs, wings folded, the tail swaying slowly, centered, on a plain white background.` |
+| `iconUrl` (маркер) | `rd_plus__skill_icon` ×2 | 64→128 | `Map marker icon of a horned drake head breathing a small wisp of flame, one dominant fiery orange color, bold readable silhouette, medieval dark fantasy, on a plain white background.` |
+| `spriteIdle` | `rd_advanced_animation__idle` | 8 / 5 | `Standing still facing left, extremely subtle and slow breathing, almost no movement, crouched on four legs, wings folded, the tail swaying slowly, no weapon motion` |
+| `spriteAttack` | `custom_action` | 8 / 12 | `Rears the head back, then snaps forward with claws and a short burst of flame, facing left, clear wind-up then a fast powerful strike with follow-through` |
+| `spriteHit` | `custom_action` | 6 / 12 | `Screeches and flaps the stubby wings, staggering back, facing left, takes a hit from the left: sharp recoil backwards to the right, brief stagger, then returns to the stance` |
+| `spriteDeath` | `custom_action` | 8 / 8 | `Staggers, folds the wings and slumps down, the smoke fades, facing left, collapses and falls to the ground, the eyes close as it goes down, the last frame lies still with the eyes shut` |
+| `arenaBackground` | `rd_pro__fantasy` 256 (opaque) | 1×1 | `A scorched rocky nest site on a cliff ledge: charred bones and blackened stones, glowing embers in cracks, smoky orange haze. Wide battle arena background scene, open trampled ground across the lower third where fighters stand, clear uncluttered middle, scenery and horizon in the upper half, moody lighting, no creatures, no people, no text, muted dark medieval fantasy environment.` |
 
 ### Чек-лист
 
-- [ ] маркер читается на карте (32 px, один доминирующий цвет)
-- [ ] idle/attack/hit/death; hit — отдача вправо; death — лежит в последнем кадре
-- [ ] фон арены
-- [ ] заведён в БД (seed есть), publish залил визуал, проверка на устройстве
+- [x] маркер читается (рогатая голова с языком пламени; на карте — `spriteIdle`)
+- [x] idle/attack/hit/death; attack — замах и струя огня влево; death — лежит в последнем кадре
+- [x] фон арены
+- [ ] заведён в БД (seed есть), publish залил визуал — **проверка на устройстве**
 
 ## 7. Реализация
 
 - Моб есть в seed (`Drake Whelp`), `description` в seed добавлен (01.09); на dev описание
-  завести через админку (seed не гонять).
+  залил publish из манифеста.
+- Арт сгенерён и залит на dev 07.09 (`troy-assets/out/drake_whelp/`, манифест
+  `assets/mobs/drake_whelp.yaml`, seed 1021, $1.46). Скиллы не генерились — их всё ещё нет
+  в БД, см. Расхождения.
+- Один переген ключевого кадра: формулировки «stocky young drake» и «stubby half-grown wings»
+  модель проигнорировала и выдала **взрослого дракона с широко расправленными крыльями**.
+  Помогло описать не размер, а неспособность: «tiny underdeveloped wings folded tight against
+  its back and far too small to fly». Приём общий — возраст/недоразвитость модель понимает
+  через функцию («летать не может»), а не через прилагательное.
 
 ### Расхождения код ↔ документы
+
+- Скиллов в БД нет, хотя топовому мобу карточка отводит два (огненный плевок + удар хвостом
+  на открытии) — и огненный плевок уже отыгран в `spriteAttack`. Решение отложено до
+  балансового захода MVP-4; арт скиллов дозаливается блоком `skills:` без перегенерации
+  спрайтов и фона.
 
 - Нет.

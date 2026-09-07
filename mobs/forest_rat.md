@@ -1,7 +1,7 @@
 # Forest Rat — Лесная крыса
 
 > Карточка — источник правды: числа меняются сначала здесь, потом в seed/админке и манифесте
-> `troy-assets/assets/mobs/forest_rat.yaml` (манифеста ещё нет — завести при генерации).
+> `troy-assets/assets/mobs/forest_rat.yaml`.
 
 ## 1. Название
 
@@ -60,7 +60,8 @@ dev-проба «caster»-алгоритма (см. Расхождения):
 ## 6. Арт: промты
 
 Конвейер: `troy-assets/styles/mob.yaml` + манифест `assets/mobs/forest_rat.yaml`;
-итоговые промты после генерации — из `forest_rat.state.json` сюда.
+сгенерён 07.09 (seed 2101, $1.28; баланс RD после — $6.55), промты ниже — из
+`forest_rat.state.json`.
 
 ### Визуальный бриф
 
@@ -86,32 +87,38 @@ tail, muted dark medieval fantasy.
 | `weaponRest` | crouched low on all fours, tail twitching |
 | `attackMotion` | Darts forward and bites with a quick snap, then springs back |
 | `hitMotion` | Squeals and jerks sideways, fur bristling |
-| `deathMotion` | Staggers, rolls onto its side, the tail goes limp |
+| `deathMotion` | Staggers, rolls onto its side with the eyes closing, the tail goes limp |
 | `arena` (фон арены) | A forest floor by a gnawed burrow under tree roots: scattered refuse and small bones, dry leaves, dim undergrowth behind |
 
 ### Слоты (канон: в бою моб справа, смотрит ВЛЕВО; клиент не зеркалит)
 
 | Слот БД | Style | Кадры/fps | Промт |
 |---|---|---|---|
-| keyframeSide (влево) | `rd_pro__fantasy` | 128 | → из state |
-| `iconUrl` (маркер) | `rd_plus__skill_icon` ×2 | 64→128 | → из state |
-| `spriteIdle` | `rd_advanced_animation__idle` | 8 / 5 | → из state |
-| `spriteAttack` | `custom_action` | 8 / 12 | → из state |
-| `spriteHit` | `custom_action` | 6 / 12 | → из state |
-| `spriteDeath` | `custom_action` | 8 / 8 | → из state |
-| `arenaBackground` | `rd_pro__fantasy` 256 (opaque) | 1×1 | → из state (`arena` в манифесте) |
+| keyframeSide (влево) | `rd_pro__fantasy` | 128 | `A mangy oversized forest rat on all fours with matted grey-brown fur, a long bald pink tail, yellow buck teeth and beady eyes, hunched low. Color scheme: dusty grey-brown fur, pale pink tail, muted dark medieval fantasy. Strict side view in profile, facing to the LEFT, full body, feet visible, calm menacing stance with crouched low on all fours, tail twitching, small margin to the canvas edge, centered, on a plain white background.` |
+| `iconUrl` (маркер) | `rd_plus__skill_icon` ×2 | 64→128 | `Map marker icon of a snarling rat head with long whiskers and bared yellow teeth, one dominant dusty brown color, bold readable silhouette, medieval dark fantasy, on a plain white background.` |
+| `spriteIdle` | `rd_advanced_animation__idle` | 8 / 5 | `Standing still facing left, extremely subtle and slow breathing, almost no movement, crouched low on all fours, tail twitching, no weapon motion` |
+| `spriteAttack` | `custom_action` | 8 / 12 | `Darts forward and bites with a quick snap, then springs back, facing left, clear wind-up then a fast powerful strike with follow-through` |
+| `spriteHit` | `custom_action` | 6 / 12 | `Squeals and jerks sideways, fur bristling, facing left, takes a hit from the left: sharp recoil backwards to the right, brief stagger, then returns to the stance` |
+| `spriteDeath` | `custom_action` | 8 / 8 | `Staggers, rolls onto its side with the eyes closing, the tail goes limp, facing left, collapses and falls to the ground, the eyes close as it goes down, the last frame lies still with the eyes shut` |
+| `arenaBackground` | `rd_pro__fantasy` 256 (opaque) | 1×1 | `A forest floor by a gnawed burrow under thick tree roots: scattered refuse and small bones, dry fallen leaves, dim tangled undergrowth behind. Wide battle arena background scene, open trampled ground across the lower third where fighters stand, clear uncluttered middle, scenery and horizon in the upper half, moody lighting, no creatures, no people, no text, muted dark medieval fantasy environment.` |
 
 ### Чек-лист
 
-- [ ] маркер читается на карте (32 px, один доминирующий цвет)
-- [ ] idle/attack/hit/death; hit — отдача вправо; death — лежит в последнем кадре
-- [ ] фон арены
+- [x] маркер читается на карте (32 px, один доминирующий цвет)
+- [x] idle/attack/hit/death; hit — отдача вправо; death — лежит в последнем кадре, глаза закрыты
+- [x] фон арены (на горизонте вышли дальние руины — читаются как башни, оставлено)
 - [ ] заведён в БД (seed есть), publish залил визуал, проверка на устройстве
 
 ## 7. Реализация
 
 - Моб есть в seed (`Forest Rat`), `description` в seed добавлен (01.09); на dev описание
-  завести через админку (seed не гонять).
+  зальёт publish из манифеста.
+- Арт сгенерён и залит на dev 07.09 (`troy-assets/out/forest_rat/`, манифест
+  `assets/mobs/forest_rat.yaml`, seed 2101, $1.28 + $0.25 на переген death). Скиллы не
+  генерились — по дизайну их нет. Осталось: проверка на устройстве.
+- Death перегенерён 07.09 после правки `styles/mob.yaml`: в промте появилось «the eyes close
+  as it goes down … lies still with the eyes shut» (у трупа был открытый глаз). Правка общая —
+  goblin_warrior/goblin_scout сгенерены по старому промту, при желании перегенерить $0.25/шт.
 
 ### Расхождения код ↔ документы
 

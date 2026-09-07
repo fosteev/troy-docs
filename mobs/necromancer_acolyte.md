@@ -1,7 +1,7 @@
 # Necromancer Acolyte — Послушник некроманта
 
 > Карточка — источник правды: числа меняются сначала здесь, потом в seed/админке и манифесте
-> `troy-assets/assets/mobs/necromancer_acolyte.yaml` (манифеста ещё нет — завести при генерации).
+> `troy-assets/assets/mobs/necromancer_acolyte.yaml`.
 
 ## 1. Название
 
@@ -56,7 +56,8 @@
 ## 6. Арт: промты
 
 Конвейер: `troy-assets/styles/mob.yaml` + манифест `assets/mobs/necromancer_acolyte.yaml`;
-итоговые промты после генерации — из `necromancer_acolyte.state.json` сюда.
+сгенерён 07.09 (seed 9907, $1.28 — весь набор с первого прогона, перегенов и оверрайдов ноль;
+баланс RD после — $21.17), промты ниже — из `necromancer_acolyte.state.json`.
 
 ### Визуальный бриф
 
@@ -91,13 +92,13 @@ medieval fantasy.
 
 | Слот БД | Style | Кадры/fps | Промт |
 |---|---|---|---|
-| keyframeSide (влево) | `rd_pro__fantasy` | 128 | → из state |
-| `iconUrl` (маркер) | `rd_plus__skill_icon` ×2 | 64→128 | → из state |
-| `spriteIdle` | `rd_advanced_animation__idle` | 8 / 5 | → из state |
-| `spriteAttack` | `custom_action` | 8 / 12 | → из state |
-| `spriteHit` | `custom_action` | 6 / 12 | → из state |
-| `spriteDeath` | `custom_action` | 8 / 8 | → из state |
-| `arenaBackground` | `rd_pro__fantasy` 256 (opaque) | 1×1 | → из state (`arena` в манифесте) |
+| keyframeSide (влево) | `rd_pro__fantasy` | 128 | `A gaunt young necromancer acolyte standing tall in a long black hooded robe, bone trinkets on cords, a short gnarled staff with a faint sickly purple glow at the tip, pale sickly skin. Color scheme: black-grey robe, necrotic purple glow, pale skin, muted dark medieval fantasy. Strict side view in profile, facing to the LEFT, full body shot from head to feet, feet visible, the whole figure fits inside the canvas with clear empty margin above the head and below the feet, zoomed out, no cropping, not a portrait, not a bust, calm menacing stance with the gnarled staff held in both hands, hood low, slightly hunched, centered, on a plain white background.` |
+| `iconUrl` (маркер) | `rd_plus__skill_icon` ×2 | 64→128 | `Map marker icon of a deep hood with a pale face and a wisp of purple flame, one dominant necrotic purple color, bold readable silhouette, medieval dark fantasy, on a plain white background.` |
+| `spriteIdle` | `rd_advanced_animation__idle` | 8 / 5 | `Standing still facing left, extremely subtle and slow breathing, almost no movement, the gnarled staff held in both hands, hood low, slightly hunched, no weapon motion` |
+| `spriteAttack` | `custom_action` | 8 / 12 | `Raises the staff, gathers a crackling purple orb, then hurls it forward, facing left, clear wind-up then a fast powerful strike with follow-through` |
+| `spriteHit` | `custom_action` | 6 / 12 | `Recoils, clutches the robe at the chest, the glow flickers, facing left, takes a hit from the left: sharp recoil backwards to the right, brief stagger, then returns to the stance` |
+| `spriteDeath` | `custom_action` | 8 / 8 | `Falls to the knees, the staff rolls away, the purple glow dies out, facing left, collapses and falls to the ground, the eyes close as it goes down, the last frame lies still with the eyes shut` |
+| `arenaBackground` | `rd_pro__fantasy` 256 (opaque) | 1×1 | `A desecrated graveyard at night: leaning headstones, an open dug grave, guttering candles, low purple mist over the ground. Wide battle arena background scene, open trampled ground across the lower third where fighters stand, clear uncluttered middle, scenery and horizon in the upper half, moody lighting, no creatures, no people, no text, muted dark medieval fantasy environment.` |
 
 ### Чек-лист
 
@@ -109,7 +110,15 @@ medieval fantasy.
 ## 7. Реализация
 
 - Моб есть в seed (`Necromancer Acolyte`), `description` в seed добавлен (01.09); на dev
-  описание завести через админку (seed не гонять).
+  описание залил publish из манифеста.
+- Арт сгенерён и залит на dev 07.09 (`troy-assets/out/necromancer_acolyte/`, манифест
+  `assets/mobs/necromancer_acolyte.yaml`, seed 9907, $1.28). **Единственный моб серии, где
+  весь набор взлетел с первого прогона** — без перегенов и без оверрайдов: к этому моменту
+  кадрирующие формулировки (`full body … not a portrait … margin`, `zoomed out`) уже переехали
+  из разовых оверрайдов орка и голема в общий `styles/mob.yaml`.
+- Мелочь на будущее: лиловое свечение посоха в ключевом кадре вышло бледным, почти белым —
+  цвет тянут иконка и орб в attack. Если понадобится усилить, это переген только `keyframeSide`
+  (и следом анимаций, они от него наследуются).
 
 ### Расхождения код ↔ документы
 
