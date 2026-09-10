@@ -354,16 +354,22 @@ WHERE is_active = true;
 
 ### SpawnZone (зона спавна)
 
-Поле `geometry` (PostGIS POLYGON) управляется через raw SQL, не в ORM.
+Поле `geometry` (`GEOMETRY(POLYGON, 4326)`, PostGIS) управляется через raw SQL, не в ORM:
+читается как `ST_AsGeoJSON(geometry)::json`, пишется как
+`ST_SetSRID(ST_GeomFromGeoJSON(...), 4326)` из админки (`PUT /admin/spawn/zones/:id/geometry`)
+и из сида. Один ring без дырок, 4–256 позиций, `[lng, lat]`, первая точка = последняя.
 
 | Поле | Тип | Описание |
 |---|---|---|
 | id | UUID, PK | |
 | name | String | Название зоны |
-| zoneType | String | Тип зоны |
+| zoneType | String | Тип зоны; справочник `ZONE_TYPES` в контрактах (PLAINS/FOREST/MOUNTAIN/SWAMP/CITY/RUINS), не enum в БД |
 | monsterIds | String[] | ID монстров для спавна |
-| minLevel | Int | Мин. уровень монстров |
-| maxLevel | Int | Макс. уровень монстров |
+| minLevel | Int | Мин. уровень монстров (описательный, бой не проверяет) |
+| maxLevel | Int | Макс. уровень монстров (описательный) |
+| isActive | Boolean, default true | Выключенная зона не участвует в respawn и не отдаётся в `/map/zones` |
+| capacity | Int? | Сколько спаунов respawn кладёт в зону на неделю; `null` → env `ZONE_CAPACITY` (default 8) |
+| arenaBackground | Json? | `ClassSpriteSheet \| null` — фон арены боёв в зоне; статичный фон = лист 1x1 |
 
 ---
 

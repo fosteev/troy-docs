@@ -1,7 +1,8 @@
 # Зоны — раздел управления спаун-зонами в админке
 
-> **Статус: черновик · 10.09.2026.** План написан по прототипу; код не начат. Jira-эпик и задачи
-> заводятся при старте (`/troy-task`, по одной на этап 1–4). Исполнитель отмечает чекбоксы по ходу работы.
+> **Статус: этапы 1–3 сделаны (бэкенд) · 10.09.2026.** Схема, контракты, game-core и api-gateway в
+> `troy-backend`; дальше — этап 4 (админка) и этап 5 (доки). Jira-эпик и задачи заводятся при старте
+> (`/troy-task`, по одной на этап 1–4). Исполнитель отмечает чекбоксы по ходу работы.
 
 Сквозная тема: полноценный CRUD зон в админке — территория рисуется на карте, а не в `seed.ts`
 raw SQL'ом. Прототип (кликабельный, с реальными координатами сида):
@@ -67,15 +68,15 @@ raw SQL'ом. Прототип (кликабельный, с реальными 
 Поля `isActive`/`capacity`, GeoJSON-тип и справочник типов, NATS-паттерны и payload'ы — всё, от чего зависят
 game-core и gateway.
 
-- [ ] Миграция `libs/shared/prisma/migrations/0021_spawn_zone_admin/migration.sql` (только `ADD COLUMN`, см. контракт)
-- [ ] `schema.prisma` → `model SpawnZone`: `isActive Boolean @default(true)`, `capacity Int?`
-- [ ] `npm run prisma:migrate` (deploy, **не** `migrate dev` — дропнет `active_spawns` и `geometry`) → `npm run prisma:generate`
-- [ ] `contracts.ts`: `ZONE_TYPES`, `ZoneType`, `GeoJsonPolygon`, расширенный `AdminSpawnZoneDto`, payload'ы
+- [x] Миграция `libs/shared/prisma/migrations/0021_spawn_zone_admin/migration.sql` (только `ADD COLUMN`, см. контракт)
+- [x] `schema.prisma` → `model SpawnZone`: `isActive Boolean @default(true)`, `capacity Int?`
+- [x] `npm run prisma:migrate` (deploy, **не** `migrate dev` — дропнет `active_spawns` и `geometry`) → `npm run prisma:generate`
+- [x] `contracts.ts`: `ZONE_TYPES`, `ZoneType`, `GeoJsonPolygon`, расширенный `AdminSpawnZoneDto`, payload'ы
       create / settings / geometry / delete, `AdminActiveSpawnDto` + `packSize`, `spawnedAt`, `kills`, фильтр `zoneId`
-- [ ] `NATS_PATTERNS`: `ADMIN_SPAWN_ZONE_CREATE`, `ADMIN_SPAWN_ZONE_SETTINGS_UPDATE`, `ADMIN_SPAWN_ZONE_GEOMETRY_UPDATE`,
+- [x] `NATS_PATTERNS`: `ADMIN_SPAWN_ZONE_CREATE`, `ADMIN_SPAWN_ZONE_SETTINGS_UPDATE`, `ADMIN_SPAWN_ZONE_GEOMETRY_UPDATE`,
       `ADMIN_SPAWN_ZONE_DELETE`
-- [ ] `.env.example`: `ZONE_CAPACITY=8` с комментарием (дефолт для зон с `capacity = null`)
-- [ ] `technical/database-schema.md` → SpawnZone: добавить `arenaBackground` (в таблице его нет), `isActive`, `capacity`, формат geometry
+- [x] `.env.example`: `ZONE_CAPACITY=8` с комментарием (дефолт для зон с `capacity = null`)
+- [x] `technical/database-schema.md` → SpawnZone: добавить `arenaBackground` (в таблице его нет), `isActive`, `capacity`, формат geometry
 
 **Готово, когда:** `npm run prisma:migrate && npm run prisma:generate` на dev проходят, `npm run build` зелёный,
 `SELECT "isActive", capacity FROM "SpawnZone"` отдаёт `true, null` для трёх зон сида.
@@ -84,16 +85,16 @@ game-core и gateway.
 
 Вся логика в `apps/game-core/src/app/admin/spawn-admin.service.ts` + правки cron и map.
 
-- [ ] `listZones` → `$queryRaw`: все поля + `ST_AsGeoJSON(geometry)::json AS geometry` + `spawnsAlive` (подзапрос по `active_spawns`, `::int`)
-- [ ] `createZone(payload)`: валидация типа (`ZONE_TYPES`), уровней, `capacity ≥ 0`; `monsterIds` по умолчанию `[]`, geometry `NULL`
-- [ ] `updateZoneSettings(payload)`: name / zoneType / minLevel / maxLevel / capacity / isActive; P2025 → 404 как в `updateZone`
-- [ ] `updateZoneGeometry(payload)`: структурная проверка GeoJSON в TS → `ST_IsValid` в SQL → `UPDATE … ST_SetSRID(ST_GeomFromGeoJSON(...), 4326)`; `null` → `geometry = NULL`; невалидно → 400 `GEOMETRY_INVALID`
-- [ ] `deleteZone(id)`: `$transaction` — `DELETE FROM active_spawns WHERE spawn_zone_id = $1 RETURNING id` → `characterKill.deleteMany({ spawnId: { in } })` → `spawnZone.delete`; ответ `{ id, spawnsRemoved }`
-- [ ] `listActiveSpawns(filter)`: `WHERE ($zoneId IS NULL OR spawn_zone_id = $zoneId)`, поля `pack_size AS "packSize"`, `spawned_at AS "spawnedAt"`, `kills` — count `CharacterKill` по `spawnId` с `killedAt >= currentWeekStart()`
-- [ ] `spawn-cron.service.ts`: `findMany({ where: { isActive: true } })`, лимит `zone.capacity ?? Number(process.env.ZONE_CAPACITY) || 8`
-- [ ] `map.service.ts` `getZones`: `AND z."isActive" = TRUE`
-- [ ] `spawn-admin.controller.ts`: четыре новых `@MessagePattern`, `ADMIN_SPAWN_ACTIVE_LIST` принимает payload с `zoneId?`
-- [ ] Спеки: `spawn-admin.service.spec.ts` (create-валидация, geometry: незамкнутый ring / 3 точки / 257 точек / `ST_IsValid=false` → 400, `null` снимает, delete — порядок трёх операций, list маппит geometry и `spawnsAlive`), `spawn-cron.service.spec.ts` (неактивная зона пропущена; `capacity` зоны важнее env; env важнее 8), `map.service.spec.ts` (`isActive` в SQL)
+- [x] `listZones` → `$queryRaw`: все поля + `ST_AsGeoJSON(geometry)::json AS geometry` + `spawnsAlive` (подзапрос по `active_spawns`, `::int`)
+- [x] `createZone(payload)`: валидация типа (`ZONE_TYPES`), уровней, `capacity ≥ 0`; `monsterIds` по умолчанию `[]`, geometry `NULL`
+- [x] `updateZoneSettings(payload)`: name / zoneType / minLevel / maxLevel / capacity / isActive; P2025 → 404 как в `updateZone`
+- [x] `updateZoneGeometry(payload)`: структурная проверка GeoJSON в TS → `ST_IsValid` в SQL → `UPDATE … ST_SetSRID(ST_GeomFromGeoJSON(...), 4326)`; `null` → `geometry = NULL`; невалидно → 400 `GEOMETRY_INVALID`
+- [x] `deleteZone(id)`: `$transaction` — `DELETE FROM active_spawns WHERE spawn_zone_id = $1 RETURNING id` → `characterKill.deleteMany({ spawnId: { in } })` → `spawnZone.delete`; ответ `{ id, spawnsRemoved }`
+- [x] `listActiveSpawns(filter)`: `WHERE ($zoneId IS NULL OR spawn_zone_id = $zoneId)`, поля `pack_size AS "packSize"`, `spawned_at AS "spawnedAt"`, `kills` — count `CharacterKill` по `spawnId` с `killedAt >= currentWeekStart()`
+- [x] `spawn-cron.service.ts`: `findMany({ where: { isActive: true } })`, лимит `zone.capacity ?? Number(process.env.ZONE_CAPACITY) || 8`
+- [x] `map.service.ts` `getZones`: `AND z."isActive" = TRUE`
+- [x] `spawn-admin.controller.ts`: четыре новых `@MessagePattern`, `ADMIN_SPAWN_ACTIVE_LIST` принимает payload с `zoneId?`
+- [x] Спеки: `spawn-admin.service.spec.ts` (create-валидация, geometry: незамкнутый ring / 3 точки / 257 точек / `ST_IsValid=false` → 400, `null` снимает, delete — порядок трёх операций, list маппит geometry и `spawnsAlive`), `spawn-cron.service.spec.ts` (неактивная зона пропущена; `capacity` зоны важнее env; env важнее 8), `map.service.spec.ts` (`isActive` в SQL)
 
 **Готово, когда:** `npx nx test game-core` зелёный; на dev `scripts/spawn-run.ts` после создания зоны с полигоном
 и пулом кладёт в неё ровно `capacity` спаунов внутри полигона (проверка:
@@ -103,9 +104,9 @@ game-core и gateway.
 
 Проброс в NATS по образцу `admin-spawn.controller.ts`, валидация — class-validator в `dto/admin/spawn.dto.ts`.
 
-- [ ] `CreateZoneDto`, `UpdateZoneSettingsDto` (все поля опциональны, `@IsIn(ZONE_TYPES)`, `@Min(1) @Max(30)`, `capacity @Min(0) @Max(64)`), `UpdateZoneGeometryDto` (`geometry: GeoJsonPolygonDto | null`, `@ValidateNested`), `AdminSpawnZoneResponseDto` + новые поля, `ZoneDeleteResultDto`, `ActiveSpawnsQueryDto` (`zoneId?: uuid`)
-- [ ] `AdminSpawnController`: `POST zones`, `PUT zones/:id`, `PUT zones/:id/geometry`, `DELETE zones/:id`, `GET active?zoneId=`
-- [ ] Swagger: `@ApiDataResponse` на всех, пример GeoJSON в `@ApiProperty({ example })`
+- [x] `CreateZoneDto`, `UpdateZoneSettingsDto` (все поля опциональны, `@IsIn(ZONE_TYPES)`, `@Min(1) @Max(30)`, `capacity @Min(0) @Max(64)`), `UpdateZoneGeometryDto` (`geometry: GeoJsonPolygonDto | null`, `@ValidateNested`), `AdminSpawnZoneResponseDto` + новые поля, `ZoneDeleteResultDto`, `ActiveSpawnsQueryDto` (`zoneId?: uuid`)
+- [x] `AdminSpawnController`: `POST zones`, `PUT zones/:id`, `PUT zones/:id/geometry`, `DELETE zones/:id`, `GET active?zoneId=`
+- [x] Swagger: `@ApiDataResponse` на всех, пример GeoJSON в `@ApiProperty({ example })`
 
 **Готово, когда:** `npx nx test api-gateway` и `npm run build` зелёные; через Swagger `/api` под admin-токеном
 проходит цепочка create → geometry → monsters → `POST /admin/spawn/run` → `GET active?zoneId=` отдаёт спауны
@@ -231,13 +232,13 @@ UPDATE "SpawnZone" SET geometry = ST_SetSRID(ST_GeomFromGeoJSON(${json}), 4326) 
 
 ## Риски и открытые вопросы
 
-- **Бой и удалённый спаун.** Допущение: после `battle:start` бой не перечитывает `active_spawns`, значит удаление
-  зоны с идущим боем безопасно. Проверить в `battle.service.ts` в этапе 2 до реализации delete; если перечитывает —
-  запрещать удаление при живых спаунах (400 `ZONE_HAS_SPAWNS`) и требовать сначала выключить + respawn.
+- ~~**Бой и удалённый спаун.**~~ Проверено в этапе 2: `active_spawns` читает только `loadAliveSpawn`, и только
+  из `battle.start`; дальше сессия живёт в Redis, а `CharacterKill.spawnId` — UUID без FK. Удаление зоны с идущим
+  боем безопасно, `ZONE_HAS_SPAWNS` не понадобился.
 - **geoman и React 19.** Плагин императивный; если ломается — в прототипе уже есть свой слой вершин на SVG,
   переносится на leaflet `L.polygon` + `L.circleMarker` за полдня. Проверяется первым шагом этапа 4.
-- **`$queryRaw` и `::json`.** Prisma отдаёт json-колонки объектом; если в каком-то драйвере придёт строкой —
-  `JSON.parse` в маппере. Узнаем на первом же тесте `listZones` против dev-БД.
+- ~~**`$queryRaw` и `::json`.**~~ На dev-БД `ST_AsGeoJSON(...)::json` приходит объектом; `JSON.parse`-ветка в
+  маппере на случай строки всё равно оставлена и покрыта спекой.
 - **Полигон за пределами тайлов админ-карты** — не риск для бэка; на карте админки OSM-тайлы онлайн, ограничений нет.
 - **Вопрос пользователю:** чинить ли два расхождения уровней в сиде (Wild Boar, Orc Raider) — по плану оставляем
   как есть до MVP-4, админка их покажет предупреждением.
