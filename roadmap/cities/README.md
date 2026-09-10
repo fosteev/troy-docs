@@ -1,6 +1,9 @@
 # Города, зоны, территории — новая модель мира
 
-> **Статус: этап 4 (админка) сделан 10.09.2026 на моках контракта, бэкенд (этапы 1–3) не начат.**
+> **Статус: этапы 1–3 (бэкенд) и 4 (админка) сделаны 10.09.2026; остался этап 5 (доки).**
+> Сценарий «create city → boundary → split → assign → spawn run → active?cityId=» и 409 без
+> `confirmResplit` проверены через REST под admin-токеном на dev; сценарий этапа 4 в самой админке —
+> за пользователем.
 > Заменяет геометрическую часть темы [zones/](../zones/README.md) (этапы 6–7: MultiPolygon на зоне и
 > генератор сот). Разделы «Зоны» и «Спаун» в админке остаются, добавляется «Города». Админка собрана
 > строго по разделу «Контракт и точки входа» и против живого API **не проверялась** — сценарий из
@@ -109,21 +112,21 @@ City ──1:N── Territory ──N:1── SpawnZone
 
 ### 1. Схема, контракты, env
 
-- [ ] Миграция `libs/shared/prisma/migrations/0023_cities_territories/migration.sql` (см. контракт):
+- [x] Миграция `libs/shared/prisma/migrations/0023_cities_territories/migration.sql` (см. контракт):
       `City`, `Territory`, `boundary`/`geometry` raw-колонки + GIST, `active_spawns.territory_id`,
       `DROP COLUMN "SpawnZone".geometry`
-- [ ] `schema.prisma`: `model City`, `model Territory` (без geo-колонок), `SpawnZone` без изменений полей
+- [x] `schema.prisma`: `model City`, `model Territory` (без geo-колонок), `SpawnZone` без изменений полей
       (комментарий у `capacity` — «на соту»)
-- [ ] `npm run prisma:migrate` (deploy, **не** `migrate dev`) → `npm run prisma:generate` → `npm run prisma:seed`
-- [ ] `contracts.ts`: `CITY_HEX_MIN_METERS/MAX_METERS/MAX_CELLS`, `AdminCityDto`, `AdminTerritoryDto`,
+- [x] `npm run prisma:migrate` (deploy, **не** `migrate dev`) → `npm run prisma:generate` → `npm run prisma:seed`
+- [x] `contracts.ts`: `CITY_HEX_MIN_METERS/MAX_METERS/MAX_CELLS`, `AdminCityDto`, `AdminTerritoryDto`,
       payload'ы create / settings / boundary / split / assign / paint / delete, `AdminActiveSpawnListPayload += cityId?`,
       `AdminActiveSpawnDto += territoryId`; удалить `AdminSpawnZoneGeometryPayload`, `AdminSpawnZoneGeneratePayload/Result`,
       `ZONE_GENERATE_*`, `AdminSpawnZoneDto.geometry`
-- [ ] `NATS_PATTERNS`: `ADMIN_CITY_LIST/CREATE/SETTINGS_UPDATE/BOUNDARY_UPDATE/DELETE`,
+- [x] `NATS_PATTERNS`: `ADMIN_CITY_LIST/CREATE/SETTINGS_UPDATE/BOUNDARY_UPDATE/DELETE`,
       `ADMIN_CITY_TERRITORIES_LIST/SPLIT/ASSIGN/PAINT`; удалить `ADMIN_SPAWN_ZONE_GEOMETRY_UPDATE`, `…_GENERATE`
-- [ ] `libs/shared/utils/hex-assign.ts` — чистая раздача (перенос из `spawn-admin.service.ts`) + спека
-- [ ] `.env.example`: `TERRITORY_CAPACITY=2` вместо `ZONE_CAPACITY`
-- [ ] `prisma/seed.ts`: зоны без geometry, dev-город с разбиением и раздачей (решение 9)
+- [x] `libs/shared/utils/hex-assign.ts` — чистая раздача (перенос из `spawn-admin.service.ts`) + спека
+- [x] `.env.example`: `TERRITORY_CAPACITY=2` вместо `ZONE_CAPACITY`
+- [x] `prisma/seed.ts`: зоны без geometry, dev-город с разбиением и раздачей (решение 9)
 
 **Готово, когда:** миграция и сид проходят на dev, `npm run build` зелёный,
 `SELECT count(*) FROM "Territory" WHERE "zoneId" IS NOT NULL` > 0, `SELECT geometry FROM "SpawnZone"` → ошибка «нет колонки».
@@ -132,31 +135,31 @@ City ──1:N── Territory ──N:1── SpawnZone
 
 Новый модуль `apps/game-core/src/app/admin/city-admin.*`; правки `spawn-admin`, `spawn-cron`, `map`.
 
-- [ ] `listCities` — `$queryRaw`: поля + `ST_AsGeoJSON(boundary)`, `territoriesTotal`, `territoriesAssigned`,
+- [x] `listCities` — `$queryRaw`: поля + `ST_AsGeoJSON(boundary)`, `territoriesTotal`, `territoriesAssigned`,
       `spawnsAlive`, `areaKm2` (`ST_Area(boundary::geography)`)
-- [ ] `createCity` / `updateCitySettings` (name, hexSizeMeters, isActive) / `deleteCity` (транзакция:
+- [x] `createCity` / `updateCitySettings` (name, hexSizeMeters, isActive) / `deleteCity` (транзакция:
       spawns города → их kills → territories → city; ответ `{ id, territoriesRemoved, spawnsRemoved }`)
-- [ ] `updateCityBoundary`: структурная проверка → `ST_IsValid` → `UPDATE`; если у города есть территории —
+- [x] `updateCityBoundary`: структурная проверка → `ST_IsValid` → `UPDATE`; если у города есть территории —
       требует `confirmResplit: true`, иначе 409 `CITY_HAS_TERRITORIES`; с флагом — перерезка внутри той же транзакции
-- [ ] `splitCity(id)`: `ST_HexagonGrid` в UTM по bbox границы, фильтр `ST_Contains(boundary, ST_Centroid(hex))`,
+- [x] `splitCity(id)`: `ST_HexagonGrid` в UTM по bbox границы, фильтр `ST_Contains(boundary, ST_Centroid(hex))`,
       потолок `CITY_HEX_MAX_CELLS` → 400 `HEX_GRID_TOO_LARGE`; транзакция: удалить старые территории (+ спауны,
       kills) → вставить новые (`hexI`, `hexJ`, `geometry`); ответ — список территорий
-- [ ] `assignCity(id, { zoneIds, seed, dryRun })`: центры сот в TS → `hexAssign` из `@shared/utils` →
+- [x] `assignCity(id, { zoneIds, seed, dryRun })`: центры сот в TS → `hexAssign` из `@shared/utils` →
       `dryRun` отдаёт раскладку, иначе `UPDATE "Territory" SET "zoneId"` батчем; 400 `NO_ZONES`, `NOT_ENOUGH_CELLS`
-- [ ] `paintTerritories(id, [{ territoryId, zoneId | null }])`: валидация принадлежности соты городу и
+- [x] `paintTerritories(id, [{ territoryId, zoneId | null }])`: валидация принадлежности соты городу и
       существования зоны, один `UPDATE … FROM (VALUES …)`; при смене зоны спауны соты живут до respawn (как
       выключение зоны сейчас)
-- [ ] `listTerritories(cityId)`: `hexI`, `hexJ`, `zoneId`, `ST_AsGeoJSON(geometry)`, центр, `spawnsAlive`
-- [ ] `spawn-cron.service.ts`: цикл `City(isActive) → Territory(zoneId ≠ null) JOIN SpawnZone(isActive)`;
+- [x] `listTerritories(cityId)`: `hexI`, `hexJ`, `zoneId`, `ST_AsGeoJSON(geometry)`, центр, `spawnsAlive`
+- [x] `spawn-cron.service.ts`: цикл `City(isActive) → Territory(zoneId ≠ null) JOIN SpawnZone(isActive)`;
       `capacity ?? TERRITORY_CAPACITY ?? 2` точек через `ST_GeneratePoints(t.geometry, n)`; пул — зоны;
       `INSERT active_spawns (…, spawn_zone_id, territory_id)`; лог пропусков по причинам
-- [ ] `map.service.ts` `getZones`: `SELECT DISTINCT z.* FROM "Territory" t JOIN "SpawnZone" z … JOIN "City" c
+- [x] `map.service.ts` `getZones`: `SELECT DISTINCT z.* FROM "Territory" t JOIN "SpawnZone" z … JOIN "City" c
       WHERE c."isActive" AND z."isActive" AND ST_DWithin(t.geometry::geography, point, radius)`
-- [ ] `spawn-admin.service.ts`: убрать `updateZoneGeometry`, `generateZones`, `serializeMultiPolygon`
+- [x] `spawn-admin.service.ts`: убрать `updateZoneGeometry`, `generateZones`, `serializeMultiPolygon`
       (переносится в `city-admin`), `listZones` без geometry + `territoriesCount`, `citiesNames[]`;
       `listActiveSpawns({ zoneId?, cityId? })`
-- [ ] `scripts/spawn-run.ts` — без изменений по интерфейсу, проверить вывод
-- [ ] Спеки: `city-admin.service.spec.ts` (boundary-валидация, split — фильтр по центру и потолок,
+- [x] `scripts/spawn-run.ts` — без изменений по интерфейсу, проверить вывод
+- [x] Спеки: `city-admin.service.spec.ts` (boundary-валидация, split — фильтр по центру и потолок,
       assign dryRun не пишет, paint отбивает чужую соту, delete — порядок операций), `hex-assign.spec.ts`
       (перенос из `spawn-admin` + анклавы), `spawn-cron.service.spec.ts` (выключенный город пропущен,
       сота без зоны пропущена, `capacity` зоны важнее env, env важнее 2), `map.service.spec.ts` (SQL через Territory)
@@ -167,10 +170,10 @@ City ──1:N── Territory ──N:1── SpawnZone
 
 ### 3. api-gateway — REST и Swagger
 
-- [ ] `AdminCityController` (`/admin/cities`, `GatewayJwtGuard + AdminGuard`), DTO в `dto/admin/city.dto.ts`
+- [x] `AdminCityController` (`/admin/cities`, `GatewayJwtGuard + AdminGuard`), DTO в `dto/admin/city.dto.ts`
       (class-validator, `@IsIn`, `@Min/@Max` по константам, `GeoJsonMultiPolygonDto` переезжает сюда)
-- [ ] `AdminSpawnController`: удалить `PUT zones/:id/geometry`, `POST zones/generate`; `GET active?cityId=`
-- [ ] Swagger: `@ApiDataResponse` на всех, примеры GeoJSON границы и ответа split
+- [x] `AdminSpawnController`: удалить `PUT zones/:id/geometry`, `POST zones/generate`; `GET active?cityId=`
+- [x] Swagger: `@ApiDataResponse` на всех, примеры GeoJSON границы и ответа split
 
 **Готово, когда:** `npx nx test api-gateway` и `npm run build` зелёные; через Swagger под admin-токеном
 проходит цепочка create city → boundary → split → assign → `POST /admin/spawn/run` → `GET active?cityId=`
@@ -210,6 +213,21 @@ City ──1:N── Territory ──N:1── SpawnZone
 - `TerritoryEditor` и `geo.ts` переехали из `pages/zones` в `components/map/` — их теперь использует
   граница города; `components/map/cities.ts` переименован в `mapPresets.ts` (`MapPreset`), чтобы не
   путать пресеты вида с сущностью `City`.
+
+Как это закрыл бэкенд (этапы 1–3, 10.09):
+
+- `AdminCitySettingsPayload.confirmResplit?: boolean` заведён и в контракте, и в `UpdateCitySettingsDto`
+  гейтвея — `forbidNonWhitelisted` флаг пропускает. Смена `hexSizeMeters` у разбитого города без него —
+  409 `CITY_HAS_TERRITORIES`, с ним — соты режутся заново тем же запросом.
+- `AdminCityDto.zonesCount` добавлен (`count(DISTINCT "zoneId")` по сотам города) — колонка «Зон» в
+  таблице городов считается по нему, сопоставление по имени больше не нужно.
+- `AdminSpawnZoneDto.cities: [{ cityId, name, territories }]` добавлен **рядом** с `cityNames`, а не
+  вместо: `cityNames` админка уже читает в двух местах, и по контракту оно «должно приходить всегда».
+  Вкладка «Где на карте» может перейти на `cities` и перестать звать `listTerritories` на каждый город.
+- `territoriesCount` и `cityNames` приходят всегда (нормализация в `api/spawn.ts` стала no-op).
+- Плана «спаунов / нед.» в `AdminCityDto` по-прежнему нет — считать Σ `capacity` зон по сотам города в
+  каждом `listCities` дорого; таблица показывает факт (`spawnsAlive`). Если план нужен — отдельное поле
+  с подзапросом по `Territory JOIN SpawnZone`.
 
 **Готово, когда:** `npm run build` и `npm run lint` чистые; на dev: создал город → обвёл → разбил → раздал →
 покрасил пару сот кистью → сохранил → «Перезапустить спаун» → на вкладке «Спауны» и на карте точки только в
