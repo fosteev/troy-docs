@@ -420,6 +420,16 @@ troy-docs/roadmap/cities/README.md целиком — это план и кон�
 troy-docs/roadmap/zones/README.md, этапы 6–7 (их код ты переносишь с зоны на город).
 Делай этапы 1–3 в troy-backend по разделу «Контракт и точки входа», отмечая чекбоксы по ходу.
 
+Этап 4 (админка) уже смержен и написан строго по этому контракту, против живого API не проверялся —
+это твой первый потребитель: типы `troy-admin/src/api/cities.ts` и `api/spawn.ts` должны сойтись
+поле в поле. Три расхождения самой спеки, которые надо закрыть в бэкенде (записаны в конце этапа 4):
+`AdminCitySettingsPayload` нужен `confirmResplit?: boolean` (иначе смену `hexSizeMeters` у разбитого
+города не подтвердить — гейтвей с forbidNonWhitelisted отобьёт запрос); в `AdminCityDto` не хватает
+`zonesCount`, а в `AdminSpawnZoneDto` — сот по городам (`cities: [{ cityId, name, territories }]`
+вместо голых `cityNames`), сейчас админка считает это сопоставлением по имени и лишним
+`listTerritories` на каждый город; `AdminSpawnZoneDto.territoriesCount`/`cityNames` админка терпит
+отсутствующими (нормализация в `api/spawn.ts`) — после этапа 1 они должны приходить всегда.
+
 Правила: миграции только `npm run prisma:migrate` (deploy) — `migrate dev` дропает raw-геометрию;
 после миграции `npm run prisma:seed`; зависимости пинить точно; клиентский контракт /map/zones и
 /map/entities не менять. Чистую раздачу (farthest-point + nearest + анклавы) вынести в
@@ -429,7 +439,9 @@ libs/shared/utils/hex-assign.ts, чтобы её использовали и see
 DoD: `npx nx run-many -t test` и `npm run build` зелёные; через Swagger под admin-токеном проходит
 create city → boundary → split → assign → POST /admin/spawn/run → GET active?cityId= с точками внутри
 сот; PUT boundary у разбитого города без confirmResplit → 409. Коммит `cities: …`, без подписей
-ассистента. В конце — открытые вопросы и что не удалось проверить без живой БД.
+ассистента. В конце — открытые вопросы, что не удалось проверить без живой БД, и чеклист для
+пользователя: сценарий этапа 4 в админке (создать город → обвести → разбить → раздать → покрасить
+кистью → сохранить → «Перезапустить спаун») на dev.
 ```
 
 ```
