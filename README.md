@@ -108,7 +108,8 @@ troy-docs/
 │       ├── battle-screen-current.html       # Реплика текущего боевого экрана
 │       ├── battle-screen-arena.html         # Вариант «Арена» (фазы P4/P5)
 │       ├── battle-screen-pack.html          # Групповой бой: пак ×3, выбор цели (group-battle этап 1)
-│       └── inventory-redesign.html          # Аудит + интерактивный прототип инвентаря (MVP-3 redesign)
+│       ├── inventory-redesign.html          # Аудит + интерактивный прототип инвентаря (MVP-3 redesign)
+│       └── admin-cities-territories.html   # Админка «Города»: граница, соты, раздача зон (roadmap/cities)
 │
 └── assets/                                  # Сгенерированный арт: классы (war1, mage1, …), мобы, фоны экранов
 ```

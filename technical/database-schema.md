@@ -354,6 +354,13 @@ WHERE is_active = true;
 
 ### SpawnZone (зона спавна)
 
+> **План (roadmap/cities, миграция `0023_cities_territories`, код не начат):** зона теряет `geometry` и
+> становится справочником; появляются `City` (граница мира `boundary MultiPolygon`, `hexSizeMeters`,
+> `isActive`) и `Territory` (`cityId`, `zoneId?`, `hexI`, `hexJ`, `geometry Polygon` — шестиугольник),
+> `active_spawns` получает `territory_id`. `capacity` меняет смысл на «спаунов на соту в неделю»
+> (`null` → env `TERRITORY_CAPACITY`, 2). DDL и Prisma-модели — в
+> [roadmap/cities/README.md](../roadmap/cities/README.md), сюда переедут после наката. Ниже — как сейчас.
+
 Поле `geometry` (`GEOMETRY(MULTIPOLYGON, 4326)`, PostGIS) управляется через raw SQL, не в ORM:
 читается как `ST_AsGeoJSON(geometry)::json`, пишется как
 `ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(...), 4326))` из админки

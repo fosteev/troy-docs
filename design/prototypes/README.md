@@ -10,6 +10,7 @@
 | [battle-screen-arena.html](./battle-screen-arena.html) | Вариант композиции боя «Арена» | [polish/README.md](../../roadmap/mvp-2-battle-loop/polish/README.md), фазы P4/P5 |
 | [inventory-redesign.html](./inventory-redesign.html) | Аудит текущего инвентаря + интерактивный прототип нового | [redesign.md](../../roadmap/mvp-3-inventory/redesign.md) |
 | [battle-screen-pack.html](./battle-screen-pack.html) | Групповой бой (этап 1): пак ×3, выбор цели тапом, окошки «цель» у игрока и мобов | [group-battle/stage-1-packs.md](../../roadmap/group-battle/stage-1-packs.md) |
+| [admin-cities-territories.html](./admin-cities-territories.html) | Админка: «Города» (граница, соты, раздача зон, кисть), «Зоны» без карты, «Спаун» по городам | [cities/README.md](../../roadmap/cities/README.md) |
 
 ## inventory-redesign.html
 
@@ -105,3 +106,22 @@ tile.resize((300, round(300 * tile.height / tile.width))).save('player.webp', qu
 ```
 
 Дальше — `base64.b64encode(...)` и подстановка в `src="data:image/webp;base64,…"`.
+
+## admin-cities-territories.html
+
+Макет раздела «Мир» админки под модель **город → зона → территория**
+([cities/README.md](../../roadmap/cities/README.md)). Оболочка повторяет `AdminLayout`
+(antd-подобные токены, светлая и тёмная тема, кнопка «Тема» в шапке), данные — зоны и мобы из
+`prisma/seed.ts`. Карта — своя SVG-подложка вместо OSM (тайлы в артефакте не грузятся), 1 px = 5 м.
+
+Кликабельно: список городов → карточка с вкладками Основное / Граница (обвести, по радиусу,
+очистить, «Разбить на соты») / Территории (сетка сот; инструменты «выбор» и «кисть», раскраска по
+зоне / типу / уровню, показ спаунов, легенда-кисть с «без зоны», карточка соты с select зоны,
+«Раздать зоны» с чеклистом и seed, «Перерезать соты») / Спауны. «Зоны» — таблица и drawer
+Основное / Мобы / Арена / Где на карте. «Спаун» — итог прогона по городам с причиной пропуска.
+Кнопка «Заметки прототипа» в шапке — модель и решения одним экраном.
+
+Разбиение и раздача считаются в самом файле тем же способом, что планируется на бэке: pointy-top
+сетка (как `ST_HexagonGrid`), сота остаётся, если её центр внутри границы; раздача — farthest-point
+центры по seed, сота уходит ближайшему. Опубликован как артефакт:
+<https://claude.ai/code/artifact/b47f545b-531b-4aee-81f4-a5a4316479f9>.
