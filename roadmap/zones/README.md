@@ -201,7 +201,21 @@ export interface AdminActiveSpawnListPayload { zoneId?: string; }
 | GET | `active` | `?zoneId=uuid` | `AdminActiveSpawnDto[]` с `packSize`, `spawnedAt`, `kills` |
 
 Ошибки 400 в стиле `LEVEL_TOO_LOW`: `ZONE_TYPE_UNKNOWN`, `LEVEL_RANGE_INVALID` (`1 ≤ min ≤ max ≤ 30`),
-`GEOMETRY_INVALID`. Несуществующая зона — 404 `Spawn zone not found` (как сейчас).
+`CAPACITY_INVALID` (`0 ≤ capacity ≤ 64`), `GEOMETRY_INVALID`. Несуществующая зона — 404
+`Spawn zone not found` (как сейчас).
+
+Как это вышло в коде (этапы 1–3, факты для админки):
+
+- `capacity` — целое `0..64` (`ZONE_CAPACITY_MAX` в контрактах) либо `null` («по умолчанию 8»);
+  `capacity: 0` — легальная «зона без спаунов». Тот же потолок зажимает и env `ZONE_CAPACITY`.
+- `PUT zones/:id/geometry` требует ключ `geometry` в теле: `null` снимает территорию, отсутствие ключа — 400.
+  Порядок проверок: структура в TS → `ST_IsValid` в PostGIS. Самопересекающийся полигон отсекается вторым шагом.
+- Все мутации зоны (`monsters`, `arena`, `settings`, `geometry`) возвращают полный `AdminSpawnZoneDto` —
+  с `geometry`, `isActive`, `capacity` и `spawnsAlive`, так что после сохранения строку таблицы можно
+  обновлять ответом, без повторного `listZones`.
+- `GET active` без `zoneId` ведёт себя как раньше (все живые спауны), с `zoneId` — только спауны зоны.
+- Выключение зоны прячет её из `/map/zones` сразу, но её спауны живут на карте до ближайшего respawn:
+  `/map/entities` по `isActive` не фильтруется (так и задумано — мир фиксирован на неделю).
 
 ### Геометрия в SQL
 
@@ -272,8 +286,9 @@ create → geometry → monsters → POST /admin/spawn/run → GET active?zoneId
 
 ```
 Проект Troy, админка troy-admin (Vite + React 19 + antd 6 + react-leaflet 5). Прочитай troy-admin/README.md
-и troy-docs/roadmap/zones/README.md — этап 4 и раздел REST. Бэкенд этапов 1–3 уже в troy-backend
-(если нет — работай на моках в src/api/spawn.ts с теми же типами). Прототип раздела:
+и troy-docs/roadmap/zones/README.md — этап 4 и раздел «Контракт и точки входа» (REST + блок «Как это
+вышло в коде»). Бэкенд этапов 1–3 готов и смержен в troy-backend (main): миграция 0021, все эндпойнты
+/admin/spawn/zones живые. Прототип раздела:
 https://claude.ai/code/artifact/57f61faf-187b-477f-bfba-31276ad43348 — делать по нему, компоненты
 antd, стиль как у pages/monsters. Отмечай чекбоксы этапа 4 в README темы.
 
