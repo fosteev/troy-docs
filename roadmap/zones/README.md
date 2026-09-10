@@ -1,8 +1,9 @@
 # Зоны — раздел управления спаун-зонами в админке
 
-> **Статус: этапы 1–3 сделаны (бэкенд) · 10.09.2026.** Схема, контракты, game-core и api-gateway в
-> `troy-backend`; дальше — этап 4 (админка) и этап 5 (доки). Jira-эпик и задачи заводятся при старте
-> (`/troy-task`, по одной на этап 1–4). Исполнитель отмечает чекбоксы по ходу работы.
+> **Статус: этапы 1–4 сделаны · 10.09.2026.** Схема, контракты, game-core и api-gateway в `troy-backend`,
+> раздел «Зоны» — в `troy-admin`; дальше этап 5 (доки), после того как пользователь пройдёт сценарий
+> «Готово, когда» этапа 4 на dev. Jira-эпик и задачи заводятся при старте (`/troy-task`, по одной на
+> этап 1–4). Исполнитель отмечает чекбоксы по ходу работы.
 
 Сквозная тема: полноценный CRUD зон в админке — территория рисуется на карте, а не в `seed.ts`
 raw SQL'ом. Прототип (кликабельный, с реальными координатами сида):
@@ -117,16 +118,16 @@ game-core и gateway.
 
 `troy-admin`, по образцу `pages/monsters/*` (страница + панели), карта — react-leaflet как в `SpawnMapModal`.
 
-- [ ] Проверить `@geoman-io/leaflet-geoman-free` с leaflet 1.9.4 / react-leaflet 5 / React 19 (`npm i --save-exact`, `import '…/dist/leaflet-geoman.css'`, `map.pm.addControls` внутри `useMap()`); при конфликте — свой слой вершин
-- [ ] `src/api/spawn.ts`: `SpawnZone` + `geometry | null`, `isActive`, `capacity | null`, `spawnsAlive`; `createZone`, `updateZoneSettings`, `updateZoneGeometry`, `deleteZone`, `listActiveSpawns({ zoneId? })` с `packSize/spawnedAt/kills`
-- [ ] `src/pages/zones/zoneTypes.ts` — подпись и цвет на `ZoneType` (PLAINS янтарь, FOREST зелёный, MOUNTAIN фиолетовый, SWAMP бирюза, CITY бордо, RUINS охра)
-- [ ] `ZonesPage.tsx`: шапка (заголовок, «Перезапустить спаун» с `Popconfirm`, «Новая зона»), четыре `Statistic` (зон спаунится / спауны недели из лимита / площадь / следующая среда 00:00 UTC), таблица (тип, уровни, мобы + бейдж предупреждений, спауны/лимит с `Progress`, площадь км², арена, статус, «Открыть»), клик по строке подсвечивает полигон
-- [ ] `ZonesMap.tsx`: `MapContainer` + `<Polygon>` на зону (цвет типа, выключенная — пунктир) + `CircleMarker` спаунов с бейджем `×N` при `packSize > 1`, тултип (моб, уровень, зона, координаты, убит N)
-- [ ] `ZoneDrawer.tsx` (`Drawer` 780px, `Tabs`): **Основное** — форма name / type `Select` / min / max / capacity (плейсхолдер «по умолчанию 8») / `Switch` isActive, блок удаления с `Popconfirm` (текст: сколько спаунов исчезнет); **Территория** — карта с geoman (draw / edit / clear), площадь и периметр (формула из прототипа), `TextArea` с GeoJSON read-only, пустое состояние «Территории нет — respawn пропускает зону»; **Мобы** — перенесённый `ZoneEditor` (чекбоксы + уровень + `пак a–b`, предупреждения «N ур. вне min–max», «выключен глобально»); **Арена** — перенесённый `ZoneArenaEditor` без изменений; **Спауны** — таблица `listActiveSpawns({ zoneId })`: моб, пак, координаты, убит
-- [ ] Создание: drawer в режиме «Новая зона», вкладки кроме «Основное» disabled до первого сохранения; после `createZone` — переключить на «Территория»
-- [ ] `App.tsx` роут `zones`, `AdminLayout.tsx` пункт меню «Зоны» (`BorderOuterOutlined`) и `selectedKey`
-- [ ] `SpawnPage.tsx`: убрать блок «Состав зон» и импорты `listZones/updateZoneMonsters/updateZoneArena`; вместо него строка-подсказка со ссылкой на `/zones`
-- [ ] `README.md` админки: структура `pages/zones/`, новая зависимость
+- [x] Проверить `@geoman-io/leaflet-geoman-free` с leaflet 1.9.4 / react-leaflet 5 / React 19 (`npm i --save-exact`, `import '…/dist/leaflet-geoman.css'`, `map.pm.addControls` внутри `useMap()`); при конфликте — свой слой вершин
+- [x] `src/api/spawn.ts`: `SpawnZone` + `geometry | null`, `isActive`, `capacity | null`, `spawnsAlive`; `createZone`, `updateZoneSettings`, `updateZoneGeometry`, `deleteZone`, `listActiveSpawns({ zoneId? })` с `packSize/spawnedAt/kills`
+- [x] `src/pages/zones/zoneTypes.ts` — подпись и цвет на `ZoneType` (PLAINS янтарь, FOREST зелёный, MOUNTAIN фиолетовый, SWAMP бирюза, CITY бордо, RUINS охра)
+- [x] `ZonesPage.tsx`: шапка (заголовок, «Перезапустить спаун» с `Popconfirm`, «Новая зона»), четыре `Statistic` (зон спаунится / спауны недели из лимита / площадь / следующая среда 00:00 UTC), таблица (тип, уровни, мобы + бейдж предупреждений, спауны/лимит с `Progress`, площадь км², арена, статус, «Открыть»), клик по строке подсвечивает полигон
+- [x] `ZonesMap.tsx`: `MapContainer` + `<Polygon>` на зону (цвет типа, выключенная — пунктир) + `CircleMarker` спаунов с бейджем `×N` при `packSize > 1`, тултип (моб, уровень, зона, координаты, убит N)
+- [x] `ZoneDrawer.tsx` (`Drawer` 780px, `Tabs`): **Основное** — форма name / type `Select` / min / max / capacity (плейсхолдер «по умолчанию 8») / `Switch` isActive, блок удаления с `Popconfirm` (текст: сколько спаунов исчезнет); **Территория** — карта с geoman (draw / edit / clear), площадь и периметр (формула из прототипа), `TextArea` с GeoJSON read-only, пустое состояние «Территории нет — respawn пропускает зону»; **Мобы** — перенесённый `ZoneEditor` (чекбоксы + уровень + `пак a–b`, предупреждения «N ур. вне min–max», «выключен глобально»); **Арена** — перенесённый `ZoneArenaEditor` без изменений; **Спауны** — таблица `listActiveSpawns({ zoneId })`: моб, пак, координаты, убит
+- [x] Создание: drawer в режиме «Новая зона», вкладки кроме «Основное» disabled до первого сохранения; после `createZone` — переключить на «Территория»
+- [x] `App.tsx` роут `zones`, `AdminLayout.tsx` пункт меню «Зоны» (`BorderOuterOutlined`) и `selectedKey`
+- [x] `SpawnPage.tsx`: убрать блок «Состав зон» и импорты `listZones/updateZoneMonsters/updateZoneArena`; вместо него строка-подсказка со ссылкой на `/zones`
+- [x] `README.md` админки: структура `pages/zones/`, новая зависимость
 
 **Готово, когда:** `npm run build` и `npm run lint` чистые; на dev: нарисовал полигон → сохранил → «Перезапустить
 спаун» → на вкладке «Спауны» и на карте ровно `capacity` точек внутри полигона; выключил зону → после respawn
@@ -217,6 +218,24 @@ export interface AdminActiveSpawnListPayload { zoneId?: string; }
 - Выключение зоны прячет её из `/map/zones` сразу, но её спауны живут на карте до ближайшего respawn:
   `/map/entities` по `isActive` не фильтруется (так и задумано — мир фиксирован на неделю).
 
+Как это вышло в коде (этап 4, админка):
+
+- Гейтвей валидирует с `forbidNonWhitelisted: true` — форма зоны отправляет ровно поля DTO, а не весь
+  `SpawnZone` из ответа; лишний ключ (`id`, `geometry`, `spawnsAlive`) вернул бы 400.
+- Единой кнопки «Сохранить» у зоны нет: у каждой вкладки свой эндпойнт, поэтому и своя кнопка
+  (Основное → `POST`/`PUT zones/:id`, Территория → `PUT …/geometry`, Мобы → `PUT …/monsters`,
+  Арена → `PUT …/arena`). Ответ мутации кладётся в состояние drawer'а и оказывается свежее списка.
+- Слой полигона на карте пересобирается только по команде (нарисовать / очистить / отменить / после
+  сохранения), а не на каждую правку вершины — иначе `setLatLngs` из React сбивал бы маркеры geoman.
+- Правки вершин уходят в состояние через `pm:edit` на слое; координаты округляются до 6 знаков (~11 см).
+- Площадь и периметр считаются на клиенте равнопромежуточной проекцией вокруг центра полигона —
+  бэк их не отдаёт, а для зон в километрах погрешность меньше точности рисования.
+- Ограничения формы совпадают с DTO: уровни 1–30 и `max ≥ min`, `capacity` 0–64 либо пусто
+  («по умолчанию 8»). Структура GeoJSON проверяется перед отправкой, самопересечение не даёт нарисовать
+  сам geoman (`allowSelfIntersection: false`), `ST_IsValid` остаётся последней линией.
+- `eslint-plugin-react-hooks 7` запрещает `setState` в эффекте, поэтому состояние drawer'а (какая зона,
+  какая вкладка) живёт на `ZonesPage` и меняется в обработчиках, а не синхронизируется эффектом.
+
 ### Геометрия в SQL
 
 ```sql
@@ -249,8 +268,10 @@ UPDATE "SpawnZone" SET geometry = ST_SetSRID(ST_GeomFromGeoJSON(${json}), 4326) 
 - ~~**Бой и удалённый спаун.**~~ Проверено в этапе 2: `active_spawns` читает только `loadAliveSpawn`, и только
   из `battle.start`; дальше сессия живёт в Redis, а `CharacterKill.spawnId` — UUID без FK. Удаление зоны с идущим
   боем безопасно, `ZONE_HAS_SPAWNS` не понадобился.
-- **geoman и React 19.** Плагин императивный; если ломается — в прототипе уже есть свой слой вершин на SVG,
-  переносится на leaflet `L.polygon` + `L.circleMarker` за полдня. Проверяется первым шагом этапа 4.
+- ~~**geoman и React 19.**~~ Проверено в этапе 4: `@geoman-io/leaflet-geoman-free@2.20.0` объявляет peer только
+  `leaflet ^1.2.0`, React ему безразличен, а d.ts вдобавок augment'ит `LeafletEventHandlerFnMap` — `pm:*`
+  типизируются и в react-leaflet. Своего слоя вершин не понадобилось. Цена — отдельный чанк 274 КБ (72 КБ gzip),
+  подтягивается только на роуте `/zones`.
 - ~~**`$queryRaw` и `::json`.**~~ На dev-БД `ST_AsGeoJSON(...)::json` приходит объектом; `JSON.parse`-ветка в
   маппере на случай строки всё равно оставлена и покрыта спекой.
 - **Полигон за пределами тайлов админ-карты** — не риск для бэка; на карте админки OSM-тайлы онлайн, ограничений нет.
