@@ -1,8 +1,8 @@
 # Зоны — раздел управления спаун-зонами в админке
 
-> **Статус: этапы 1–4 сделаны · 10.09.2026.** Схема, контракты, game-core и api-gateway в `troy-backend`,
-> раздел «Зоны» — в `troy-admin`; дальше этап 5 (доки), после того как пользователь пройдёт сценарий
-> «Готово, когда» этапа 4 на dev. Jira-эпик и задачи заводятся при старте (`/troy-task`, по одной на
+> **Статус: этапы 1–4 и 6 сделаны · 10.09.2026.** Схема, контракты, game-core и api-gateway в
+> `troy-backend`, раздел «Зоны» — в `troy-admin`; территория зоны — набор контуров (этап 6). Дальше
+> этап 5 (доки), после того как пользователь пройдёт сценарии «Готово, когда» этапов 4 и 6 на dev. Jira-эпик и задачи заводятся при старте (`/troy-task`, по одной на
 > этап 1–4). Исполнитель отмечает чекбоксы по ходу работы.
 
 Сквозная тема: полноценный CRUD зон в админке — территория рисуется на карте, а не в `seed.ts`
@@ -44,8 +44,9 @@ raw SQL'ом. Прототип (кликабельный, с реальными 
 2. **Два новых поля** — `isActive` (выключенная зона не участвует в respawn и не отдаётся в `/map/zones`) и
    `capacity Int?` (null → env `ZONE_CAPACITY`, default 8). Это закрывает env-часть SCRUM-60; сама плотность —
    отдельно.
-3. **Территория ходит как GeoJSON Polygon** без дырок, один ring, 4–256 позиций, замкнут. На бэке
-   `ST_GeomFromGeoJSON` + `ST_IsValid`; `null` снимает полигон. Клиенту geometry по-прежнему не отдаём.
+3. **Территория ходит как GeoJSON.** Изначально — один `Polygon` без дырок; с этапа 6 это `MultiPolygon`:
+   1–32 контура на зону, у каждого один ring, 4–256 позиций, замкнут. На бэке `ST_GeomFromGeoJSON` +
+   `ST_IsValid`; `null` снимает территорию целиком. Клиенту geometry по-прежнему не отдаём.
 4. **Эндпойнты остаются под `/admin/spawn/zones`** — существующий контроллер и `api/spawn.ts`, меньше churn.
 5. **Уровни остаются описательными.** Бэк проверяет только `1 ≤ min ≤ max ≤ 30`; «моб вне диапазона» и
    «выключен глобально» — предупреждения в админке, сохранение не блокируют.
@@ -143,6 +144,33 @@ game-core и gateway.
 **Готово, когда:** чекбоксы этапов 1–4 закрыты, баннер темы обновлён, пользователь прошёл сценарий из
 этапа 4 на dev.
 
+### 6. Много контуров на одну зону
+
+Доработка после этапа 4: настройки зоны (имя, тип, уровни, пул мобов, лимит) остаются одни, а территория
+становится набором независимых контуров. Причина — «одна зона = один полигон» вынуждало плодить зоны-клоны
+ради нескольких пятен на карте.
+
+- [x] Миграция `0022_zone_multipolygon`: `ALTER COLUMN geometry TYPE geometry(MultiPolygon, 4326) USING ST_Multi(geometry)`
+      (GIST-индекс Postgres перестраивает сам, NULL остаётся NULL)
+- [x] `contracts.ts`: `GeoJsonPolygon` → `GeoJsonMultiPolygon`, константа `ZONE_GEOMETRY_MAX_POLYGONS = 32`
+- [x] `spawn-admin.service.ts`: `serializeMultiPolygon` (1–32 контура, у каждого один ring 4–256 позиций),
+      запись через `ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(...), 4326))`
+- [x] Гейтвей: `GeoJsonMultiPolygonDto`, пример в Swagger — два контура
+- [x] `prisma/seed.ts`: три прямоугольника заворачиваются в `ST_Multi(...)`
+- [x] Спеки: контуры сохраняются целиком, отбой на «ни одного контура», «33 контура», «одиночный Polygon»
+- [x] Админка: `geo.ts` считает площадь/периметр/вершины по всем контурам, вкладка «Территория» — кнопка
+      «Добавить контур», таблица контуров (площадь, вершины, центр, «Показать», удалить), карта зоны
+      рисует все контуры одним слоем
+- [x] `technical/database-schema.md` → SpawnZone: тип колонки, потолки, как respawn делит лимит
+
+**Готово, когда:** `npm run prisma:migrate` на dev проходит, `npx nx run-many -t test` и обе сборки зелёные;
+в админке к зоне добавляются два контура, после «Перезапустить спаун» точки лежат в обоих
+(`SELECT ST_NumGeometries(geometry) FROM "SpawnZone"` > 1, все спауны внутри `ST_Contains`).
+
+Чего в бэке править **не** пришлось: `ST_GeneratePoints(geometry, 1)` в respawn сам работает по
+мультиполигону и распределяет точки пропорционально площади контуров, `ST_DWithin` в `/map/zones` и
+`ST_Contains` в проверках — тоже.
+
 ## Контракт и точки входа
 
 ### Миграция и схема
@@ -167,20 +195,22 @@ export const ZONE_TYPES = ['PLAINS', 'FOREST', 'MOUNTAIN', 'SWAMP', 'CITY', 'RUI
 export type ZoneType = (typeof ZONE_TYPES)[number];
 export const ZONE_GEOMETRY_MAX_VERTICES = 256;
 
-/** GeoJSON Polygon, WGS 84, один ring без дырок, [lng, lat], первая точка = последняя. */
-export interface GeoJsonPolygon { type: 'Polygon'; coordinates: [number, number][][]; }
+export const ZONE_GEOMETRY_MAX_POLYGONS = 32;
+
+/** Территория зоны: контуры, у каждого один ring без дырок, [lng, lat], первая точка = последняя. */
+export interface GeoJsonMultiPolygon { type: 'MultiPolygon'; coordinates: [number, number][][][]; }
 
 export interface AdminSpawnZoneDto {
   id: string; name: string; zoneType: string; minLevel: number; maxLevel: number;
   monsterIds: string[]; arenaBackground: ClassSpriteSheet | null;
   isActive: boolean; capacity: number | null;
-  geometry: GeoJsonPolygon | null;
+  geometry: GeoJsonMultiPolygon | null;
   /** Живых спаунов зоны сейчас (active_spawns.alive). */
   spawnsAlive: number;
 }
 export interface AdminSpawnZoneCreatePayload { name: string; zoneType: ZoneType; minLevel: number; maxLevel: number; capacity?: number | null; isActive?: boolean; }
 export interface AdminSpawnZoneSettingsPayload { id: string; name?: string; zoneType?: ZoneType; minLevel?: number; maxLevel?: number; capacity?: number | null; isActive?: boolean; }
-export interface AdminSpawnZoneGeometryPayload { id: string; geometry: GeoJsonPolygon | null; }
+export interface AdminSpawnZoneGeometryPayload { id: string; geometry: GeoJsonMultiPolygon | null; }
 export interface AdminSpawnZoneDeletePayload { id: string; }
 export interface AdminSpawnZoneDeleteResult { id: string; spawnsRemoved: number; }
 export interface AdminActiveSpawnListPayload { zoneId?: string; }
@@ -197,7 +227,7 @@ export interface AdminActiveSpawnListPayload { zoneId?: string; }
 | GET | `zones` | — | `AdminSpawnZoneDto[]` (теперь с `geometry`, `spawnsAlive`) |
 | POST | `zones` | `CreateZoneDto` | `AdminSpawnZoneDto` |
 | PUT | `zones/:id` | `UpdateZoneSettingsDto` | `AdminSpawnZoneDto` |
-| PUT | `zones/:id/geometry` | `{ geometry: GeoJsonPolygon \| null }` | `AdminSpawnZoneDto` · 400 `GEOMETRY_INVALID` |
+| PUT | `zones/:id/geometry` | `{ geometry: GeoJsonMultiPolygon \| null }` | `AdminSpawnZoneDto` · 400 `GEOMETRY_INVALID` |
 | DELETE | `zones/:id` | — | `{ id, spawnsRemoved }` |
 | GET | `active` | `?zoneId=uuid` | `AdminActiveSpawnDto[]` с `packSize`, `spawnedAt`, `kills` |
 
@@ -222,6 +252,10 @@ export interface AdminActiveSpawnListPayload { zoneId?: string; }
 
 - Гейтвей валидирует с `forbidNonWhitelisted: true` — форма зоны отправляет ровно поля DTO, а не весь
   `SpawnZone` из ответа; лишний ключ (`id`, `geometry`, `spawnsAlive`) вернул бы 400.
+- Территория — набор контуров (этап 6): каждый контур на карте живёт отдельным leaflet-слоем со своим
+  geoman-редактированием, а в состояние собирается один MultiPolygon по всем слоям. Удаление контура — из
+  таблицы под картой, не из geoman. Пересечение контуров между собой отбивает `ST_IsValid`, и админка
+  переводит `GEOMETRY_INVALID` в человеческий текст.
 - Единой кнопки «Сохранить» у зоны нет: у каждой вкладки свой эндпойнт, поэтому и своя кнопка
   (Основное → `POST`/`PUT zones/:id`, Территория → `PUT …/geometry`, Мобы → `PUT …/monsters`,
   Арена → `PUT …/arena`). Ответ мутации кладётся в состояние drawer'а и оказывается свежее списка.
@@ -250,11 +284,12 @@ FROM "SpawnZone" z ORDER BY z.name ASC;
 SELECT ST_IsValid(ST_GeomFromGeoJSON(${json})) AS valid;
 
 -- запись
-UPDATE "SpawnZone" SET geometry = ST_SetSRID(ST_GeomFromGeoJSON(${json}), 4326) WHERE id = ${id}::uuid;
+UPDATE "SpawnZone" SET geometry = ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(${json}), 4326)) WHERE id = ${id}::uuid;
 ```
 
-Структурная проверка в TS: `type === 'Polygon'`, ровно один ring, 4–256 позиций, каждая `[lng, lat]` в
-диапазоне, первая равна последней. Прямоугольники сида этому уже соответствуют.
+Структурная проверка в TS: `type === 'MultiPolygon'`, 1–32 контура, у каждого ровно один ring,
+4–256 позиций, каждая `[lng, lat]` в диапазоне, первая равна последней. Пересечение контуров между
+собой ловит уже `ST_IsValid` — для MultiPolygon он требует, чтобы внутренности частей не пересекались.
 
 ### Что не тащим
 

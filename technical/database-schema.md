@@ -354,10 +354,14 @@ WHERE is_active = true;
 
 ### SpawnZone (зона спавна)
 
-Поле `geometry` (`GEOMETRY(POLYGON, 4326)`, PostGIS) управляется через raw SQL, не в ORM:
+Поле `geometry` (`GEOMETRY(MULTIPOLYGON, 4326)`, PostGIS) управляется через raw SQL, не в ORM:
 читается как `ST_AsGeoJSON(geometry)::json`, пишется как
-`ST_SetSRID(ST_GeomFromGeoJSON(...), 4326)` из админки (`PUT /admin/spawn/zones/:id/geometry`)
-и из сида. Один ring без дырок, 4–256 позиций, `[lng, lat]`, первая точка = последняя.
+`ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(...), 4326))` из админки
+(`PUT /admin/spawn/zones/:id/geometry`) и из сида. Территория зоны — 1–32 независимых
+контура, у каждого один ring без дырок, 4–256 позиций, `[lng, lat]`, первая точка = последняя;
+контуры не должны пересекаться (проверяется `ST_IsValid`). Respawn берёт точки через
+`ST_GeneratePoints` по всей территории, то есть делит лимит между контурами пропорционально
+их площади. До миграции `0022_zone_multipolygon` колонка была `POLYGON` — один контур на зону.
 
 | Поле | Тип | Описание |
 |---|---|---|
