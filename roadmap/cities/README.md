@@ -1,6 +1,7 @@
 # Города, зоны, территории — новая модель мира
 
-> **Статус: тема закрыта 27.09.2026 — этапы 1–5 сделаны.** Сценарий «create city → boundary → split → assign →
+> **Статус: тема закрыта 27.09.2026 — этапы 1–5 сделаны.** Jira: [SCRUM-87](https://fosteev.atlassian.net/browse/SCRUM-87)
+> (в проверке), закрыла SCRUM-60, SCRUM-78/79. Сценарий «create city → boundary → split → assign →
 > spawn run → active?cityId=» и 409 без `confirmResplit` проверены через REST под admin-токеном на dev; сценарий
 > этапа 4 в самой админке — за пользователем.
 > Заменяет геометрическую часть темы [zones/](../zones/README.md) (этапы 6–7: MultiPolygon на зоне и
