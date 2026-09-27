@@ -70,6 +70,8 @@ roadmap/
 | combat-casting — хвосты темы | [SCRUM-53](https://fosteev.atlassian.net/browse/SCRUM-53) |
 | items — предметы и лут | [SCRUM-61](https://fosteev.atlassian.net/browse/SCRUM-61) |
 | vendors — торговцы на карте | [SCRUM-67](https://fosteev.atlassian.net/browse/SCRUM-67) |
+| map — карта: кластеры, маркер игрока, стиль и провайдер | [SCRUM-77](https://fosteev.atlassian.net/browse/SCRUM-77) |
+| telegram — магазин и донаты через бота | [SCRUM-82](https://fosteev.atlassian.net/browse/SCRUM-82) |
 
 ## Статус фаз
 
@@ -97,34 +99,59 @@ roadmap/
 - [ ] **MVP-2 · polish — живость боя.** → [polish/](./mvp-2-battle-loop/polish/README.md)
   - [x] P0 контракт событий · [x] P1 отзывчивость и читаемость · [x] P4 «Арена» · [x] P3 старт/результат/level-up · [x] P5 лента намерений
   - [ ] P2 звук, VFX, спрайты hit/death, фоны арен — **код готов, ждёт файлов ассетов**
+- [ ] **items — предметы и лут «как в WoW».** itemLevel + requiredLevel, редкость как бюджет статов, class restrictions с личным лутом, crit/dodge на шмоте, лимит мешка; зелья в бою — отложены 07.09 (SCRUM-19 в бэклоге, `deferred`). → [items/](./items/README.md)
+  - [x] Бэкенд ilvl/класс сделан (SCRUM-62/17, 05.09) — план [items/item-progression.md](./items/item-progression.md)
+  - [ ] Дальше админка (SCRUM-63) и Flutter (SCRUM-64) — параллельно, контракт ilvl/класс в бэкенде есть; затем лимит мешка (SCRUM-65). Зелья (SCRUM-19) — отложены 07.09
+- [ ] **mobs — доработка мобов** (описания в БД/админке, фон арены на моба, карточки, арт-пилот). → [mobs/](./mobs/README.md)
+  - [ ] D — проверка goblin_warrior на устройстве (маркер, описание, имена скиллов, фон арены — SCRUM-31) — за пользователем
+  - остаток E (превью боя, тултип скилла моба) — заморожен, см. ниже
+- [ ] **assets — конвейер ассетов.** → [assets/](./assets/README.md)
+  - [x] Шаг 0 проба стиля · [x] Шаг 1 инструментарий
+  - [x] Шаг 2 классы (SCRUM-26) · [x] Шаг 3 мобы (SCRUM-27) — закрыты в Jira, сверено 28.09
+  - [ ] Шаги 4–6: предметы (SCRUM-28), hi-res (SCRUM-29), замена старых ассетов (SCRUM-30) — параллельно с MVP-4, разблокируют P2 боя
+
+### Заморожено до конца MVP-4
+
+Решение 28.09: в работе одновременно было 9 тем, за ними перестало быть видно главное. Фокус — items → MVP-4
+(+ assets параллельно) и docs-system. Темы ниже не берутся, пока MVP-4 не закрыт; разморозка — решением пользователя.
+
 - [ ] **MVP-3 — профиль, инвентарь, экипировка.** → [mvp-3-inventory/](./mvp-3-inventory/README.md)
   - [x] Клиент: Hero-экран (профиль + кукла + мешок) на реальном API, тесты зелёные
   - [x] Бэкенд: профиль, инвентарь, equip/unequip, очки атрибутов, computed stats
   - [x] Бэкенд-гэпы [#1, #3 и #7](./mvp-3-inventory/backend-gaps.md) (description, discard, `/character/me` только с надетым) закрыты бэкендом 05.09 ([description-discard.md](./mvp-3-inventory/description-discard.md), сессия 1, SCRUM-15/16); клиентская часть (карточка, кнопка Discard) — SCRUM-75 в сессии 2; consumables (#2), class restrictions (#4) и стак (#5) решены 05.09 и вынесены в [items/](./items/README.md)
   - [x] Клиент: описание/discard (SCRUM-75) и визуальный отклик на смену статов после equip (SCRUM-49) — сессия 2 сделана, ревью 06.09 (описание в маппере дописано ревью); проверено на устройстве и закоммичено 06.09, план [description-discard.md](./mvp-3-inventory/description-discard.md)
   - [ ] [Redesign](./mvp-3-inventory/redesign.md) — мешок отдельным экраном; прототип готов, код не начат; прототип ещё дорабатывается (навигация HERO, углы sharp vs `tokens.radius*`)
-- [ ] **items — предметы и лут «как в WoW».** itemLevel + requiredLevel, редкость как бюджет статов, class restrictions с личным лутом, crit/dodge на шмоте, лимит мешка; зелья в бою — отложены 07.09 (SCRUM-19 в бэклоге, `deferred`). → [items/](./items/README.md)
-  - [x] Бэкенд ilvl/класс сделан (SCRUM-62/17, 05.09) — план [items/item-progression.md](./items/item-progression.md)
-  - [ ] Дальше админка (SCRUM-63) и Flutter (SCRUM-64) — параллельно, контракт ilvl/класс в бэкенде есть; затем лимит мешка (SCRUM-65). Зелья (SCRUM-19) — отложены 07.09
 - [ ] **vendors — торговцы на карте.** Редкий спавн по cron с шансом на зону, стоянка по времени, случайный конечный ассортимент, покупка/продажа за золото (первый sink), раздел в админке, анимации idle/сделка. Спека и решения готовы (05.09), код не начат; после items 2–4, чтобы цены сразу были по ilvl. → [vendors/](./vendors/README.md)
-- [ ] **mobs — доработка мобов** (описания в БД/админке, фон арены на моба, карточки, арт-пилот). → [mobs/](./mobs/README.md)
 - [ ] **group-battle — групповой бой.** → [group-battle/](./group-battle/README.md)
   - [x] Этап 1 — паки (1 игрок × N мобов): контракт v2 (`monsters[]`, `battle:target`), pack-баланс, сцена с N инстансами. Спека — [stage-1-packs.md](./group-battle/stage-1-packs.md)
   - [ ] Этап 2 — кооп: после MVP
 - [ ] **combat-casting · хвосты** — осознанные ограничения темы, отложенные «отдельным шагом». → [combat-casting/](./combat-casting/README.md)
   - [ ] Мобы сбивают касты игрока: условие AI `target_casting` + моб-скилл с `INTERRUPT` в сиде
   - [ ] Pushback от урона — решение «не делаем», пересмотр только в MVP-4
-- [ ] **assets — конвейер ассетов.** → [assets/](./assets/README.md)
-  - [x] Шаг 0 проба стиля · [x] Шаг 1 инструментарий
-  - [ ] Шаг 2 классы — `knight` перегенерирован, ждёт проверки на устройстве; остальные классы дальше
-  - [ ] Шаги 3–6: мобы, предметы, hi-res, замена старых ассетов
+- [ ] **mobs · остаток E:** превью боя — анимация, описание, скиллы, лут с шансами (SCRUM-56); тултип скилла моба (SCRUM-32). → [mobs/](./mobs/README.md)
+- [ ] **map — полировка карты** (эпик [SCRUM-77](https://fosteev.atlassian.net/browse/SCRUM-77), темы в roadmap нет): кластеризация мобов (SCRUM-59),
+  idle-анимация и поворот маркера игрока (SCRUM-76), переключение векторный/растровый стиль (SCRUM-80), провайдер Яндекс/Google (SCRUM-81).
+- [ ] **telegram — магазин и донаты через бота** (эпик [SCRUM-82](https://fosteev.atlassian.net/browse/SCRUM-82), темы в roadmap нет): привязка
+  аккаунта, Stars, RuStore-сборка, раздел «Магазин» в админке (SCRUM-83–86). Монетизация — после играбельного MVP.
 
 ### Не начато
 
 - [ ] **MVP-4 — контент и баланс.** Инфраструктура есть (seed одной командой, админка контента, рендер спрайтов/rarity/level), сам контент 1–10 lvl и баланс — нет. → [mvp-4-content-balance/](./mvp-4-content-balance/README.md)
 - [ ] **MVP-5 — hardening.** Последний шаг фазы — **локализация** (описания классов/скиллов на EN, см. ниже). Из списка уже закрыто: health endpoints, refresh access-токена, docker compose, seed, Swagger-тоггл. Остальное открыто. → [mvp-5-hardening/](./mvp-5-hardening/README.md)
 
-**Следующее по порядку:** MVP-3 — остался redesign мешка (SCRUM-20, прототип дорабатывается); items — бэкенд ilvl/класс сделан, дальше админка и Flutter под новые поля (SCRUM-63/64, параллельно), лимит мешка (SCRUM-65); зелья отложены (07.09). Всё это — до контента MVP-4, чтобы предметы 1–10 lvl сразу заводились с уровнем и бюджетом; параллельно гнать assets (классы → мобы), чтобы разблокировать P2 боя, затем MVP-4.
+**Следующее по порядку (28.09):**
+
+0. Хвосты, которые ждут только пользователя: cities и плотность на живом API (SCRUM-87/60, «В процессе проверки»),
+   mobs D на устройстве (SCRUM-31), пилот docs-system.
+1. items — админка (SCRUM-63) и Flutter (SCRUM-64) параллельно, планы готовы; затем лимит мешка (SCRUM-65).
+2. MVP-4 — сначала решения геймдизайна: `LEVEL_CAP` (30 в коде vs 10 в доках), monsters / loot-and-items /
+   inventory-and-equipment (SCRUM-33/34/35); потом наборы мобов, предметов и drop tables 1–10 (SCRUM-36/50) и баланс
+   XP, TTK, классов (SCRUM-37/58/38). Контент заводится сразу с ilvl — поэтому после items.
+3. assets шаги 4–6 — параллельно с MVP-4, разблокируют P2 боя (SCRUM-9).
+4. MVP-5 — перед внешними тестерами; дешёвое по безопасности можно раньше: `checkSpeed` при timeDelta=0 (SCRUM-42),
+   WS CORS whitelist (SCRUM-40), logout и revocation refresh-токена (SCRUM-39).
+
+docs-system, сессии 2–3 — фоном, после гейта пилота. Всё из «Заморожено» — не раньше закрытия MVP-4.
 
 Старая нумерация (встречается в коммитах и заметках): Шаг 1 → MVP-0, Шаг 1Б → `mvp-0/backend-tests.md`, Шаг 2 → MVP-1, Шаг 3 → MVP-2, Шаг 3Б → `mvp-2/polish/`, Шаг 4 → MVP-3, Шаг 4Б → `mvp-3/redesign.md`, Шаг 5 → MVP-4, Шаг 6 → MVP-5. Файлы `mvp.md` и `execution-plan.md` слиты в этот README, `asset-pipeline.md` → `assets/`.
 

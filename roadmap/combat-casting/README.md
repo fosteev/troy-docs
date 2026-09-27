@@ -1,5 +1,7 @@
 # Касты и сбитие — channel-скиллы и INTERRUPT
 
+> **Хвосты темы заморожены до конца MVP-4 (28.09)** — см. [roadmap](../README.md#заморожено-до-конца-mvp-4).
+>
 > **Статус: сделан (04.09).** Сквозная тема боёвки поверх [battle-session.md](../../technical/battle-session.md)
 > v2 и паков. Решения: channel-скилл — да; INTERRUPT с локаутом — да; мобы игрока **не**
 > сбивают; pushback от урона — **не делаем**. Арт для Counterspell и Arcane Missiles не
