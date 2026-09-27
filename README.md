@@ -50,95 +50,15 @@
 - Каждый уровень: авто-рост статов по классу + **2 свободных очка** атрибутов
 - Скиллы открываются по уровням: 1 → 3 → 6 → 10 (всего 4 скилла). Карточки классов: `classes/`
 
-## Структура репозитория
+## Документация — по назначению
 
-```
-troy-docs/
-├── README.md                                # Общая концепция проекта, навигация
-│
-├── game-design/                             # Игровые механики и баланс
-│   ├── overview.md                          # Концепция, core loop, сущности, принципы дизайна
-│   ├── classes.md                           # Классы: статы, рост, скиллы каждого класса
-│   ├── stats-and-formulas.md                # Атрибуты, производные, формулы урона/защиты
-│   ├── leveling.md                          # XP таблица, авто-рост, свободные очки, разблокировки
-│   ├── combat.md                            # Боевая система, автоатака, каст, эффекты
-│   ├── character-selection.md               # Flow выбора/создания персонажа (0–8 на аккаунт)
-│   ├── pixel-art-design.md                  # Арт-дирекшн: dark fantasy pixel art, палитра
-│   ├── content-generation.md                # Генерация контента ИИ: канон, кривые, промт-шаблоны
-│   ├── character-generation-prompt.md       # Универсальный промт генерации персонажей
-│   ├── monsters.md                          # [TODO, MVP-4] Зоны уровней, распределение мобов (числа — в mobs/)
-│   ├── loot-and-items.md                    # [TODO, MVP-4] Предметы, редкости, дроп-таблицы
-│   └── inventory-and-equipment.md           # [TODO, MVP-4] Слоты экипировки, ограничения
-│
-├── classes/                                 # Карточки классов — источник правды по числам и промтам арта
-├── mobs/                                    # Карточки мобов (10 seed-мобов, эталон — goblin_warrior)
-├── generation/                              # Сквозные гайды генерации: class.md, mob.md (карточка → арт → БД)
-│
-├── technical/                               # Техническая архитектура
-│   ├── architecture.md                      # [TODO] Сервисы, стек, схема взаимодействия
-│   ├── database-schema.md                   # Схема БД, таблицы, связи, PostGIS
-│   ├── api-contracts.md                     # [TODO] REST/WebSocket эндпоинты, форматы
-│   ├── geolocation.md                       # Геолокация, heading, определение движения
-│   ├── battle-session.md                    # Контракт real-time боя: сессия, WS-события, снапшоты
-│   ├── realtime.md                          # [TODO] WebSocket события, формат сообщений
-│   └── auth.md                              # Регистрация, JWT, верификация, восстановление пароля
-│
-├── client/                                  # [TODO] Flutter клиент
-│   ├── screens.md                           # Экраны, навигация
-│   ├── map-ui.md                            # Карта: отображение мобов, игрока
-│   └── battle-ui.md                         # UI боя: панель скиллов, HP + классовый ресурс (Rage/Mana)
-│
-├── roadmap/                                 # План MVP: одна папка на фазу, README внутри
-│   ├── README.md                            # Индекс: цикл, scope, статус фаз, общие правила
-│   ├── mvp-0-current-flow/                  # MVP-0: auth → character → map (+ backend-tests.md)
-│   ├── mvp-1-playable-map/                  # MVP-1: игровая карта
-│   ├── mvp-2-battle-loop/                   # MVP-2: battle loop; polish/ — фазы P0–P5 живости боя
-│   ├── mvp-3-inventory/                     # MVP-3: профиль, инвентарь (+ backend-gaps.md, redesign.md)
-│   ├── mvp-4-content-balance/               # MVP-4: контент и баланс
-│   ├── mvp-5-hardening/                     # MVP-5: стабилизация для тестирования
-│   ├── mobs/                                # Сквозная тема: доработка мобов (описания, арт, фоны арен)
-│   ├── group-battle/                        # Сквозная тема: групповой бой N×N (паки → кооп), дизайн
-│   └── assets/                              # Сквозная тема: конвейер ассетов (README, steps, pitfalls)
-│
-├── design/                                  # Визуальные референсы и прототипы
-│   ├── redesign-prompt.md                   # Промт редизайна UI
-│   ├── image-reference-prompts.md           # Промты под референсные картинки
-│   ├── login-variants-reference.png         # Референс вариантов логин-экрана (dark fantasy pixel art)
-│   └── prototypes/                          # HTML-прототипы экранов (индекс — prototypes/README.md)
-│       ├── battle-screen-current.html       # Реплика текущего боевого экрана
-│       ├── battle-screen-arena.html         # Вариант «Арена» (фазы P4/P5)
-│       ├── battle-screen-pack.html          # Групповой бой: пак ×3, выбор цели (group-battle этап 1)
-│       ├── inventory-redesign.html          # Аудит + интерактивный прототип инвентаря (MVP-3 redesign)
-│       └── admin-cities-territories.html   # Админка «Города»: граница, соты, раздача зон (roadmap/cities)
-│
-└── assets/                                  # Сгенерированный арт: классы (war1, mage1, …), мобы, фоны экранов
-```
-
-> **Правило**: файлы с пометкой `[TODO]` ещё не созданы. При добавлении нового документа — обновить эту структуру и таблицу ниже.
-
-## Документация
-
-Готовые документы:
-
-| Файл | Описание |
-|---|---|
-| [overview.md](game-design/overview.md) | Концепция игры, core loop, основные принципы |
-| [classes.md](game-design/classes.md) | Классы персонажей, стартовые статы, рост за уровень |
-| [stats-and-formulas.md](game-design/stats-and-formulas.md) | Атрибуты, производные характеристики, все формулы |
-| [leveling.md](game-design/leveling.md) | Система уровней, XP, свободные очки, разблокировка скиллов |
-| [combat.md](game-design/combat.md) | Боевая система, автоатака, скиллы, расчёт урона |
-| [character-selection.md](game-design/character-selection.md) | Flow выбора/создания персонажа (0–8 на аккаунт) |
-| [pixel-art-design.md](game-design/pixel-art-design.md) | Арт-дирекшн: dark fantasy pixel art, палитра |
-| [content-generation.md](game-design/content-generation.md) | Генерация контента ИИ: канон, балансовые кривые, промт-шаблоны |
-| [database-schema.md](technical/database-schema.md) | Схема БД: User, Character, Item, Monster, связи |
-| [auth.md](technical/auth.md) | Auth flows: регистрация, авторизация, восстановление пароля |
-| [geolocation.md](technical/geolocation.md) | Геолокация: позиция на User, heading, moving/idle, anti-cheat |
-| [battle-session.md](technical/battle-session.md) | Контракт real-time боя: сессия, WS-события, снапшоты |
-| [classes/](classes/README.md) | Карточки классов — источник правды по числам и промтам арта |
-| [mobs/](mobs/README.md) | Карточки мобов (10 seed-мобов) |
-| [generation/](generation/README.md) | Сквозные гайды генерации: класс/моб от карточки до устройства |
-| [roadmap/README.md](roadmap/README.md) | Roadmap MVP: цикл, scope, статус фаз, правила работы по фазам |
-
-## Статус
-
-Проект перешёл из проектирования в MVP implementation. Документы остаются источником требований, roadmap фиксирует порядок доведения до playable MVP.
+- **Как устроено сейчас** — [system/README.md](system/README.md): карта сервисов, core loop по страницам,
+  подсистемы, сверенные с кодом (источник правды — код, не roadmap).
+- **Контракты** — [technical/](technical/): WS/NATS-протоколы, схема БД — детали, не уместившиеся в `system/`.
+- **Геймдизайн** — [game-design/](game-design/): формулы, прогрессия, замысел; где расходится с кодом —
+  раздел «Отличия от геймдизайна» на соответствующей странице `system/`.
+- **Контент и арт** — [classes/](classes/README.md) (карточки классов), [mobs/](mobs/README.md) (карточки
+  мобов), [generation/](generation/README.md) (гайды генерации класс/моб), [design/](design/) (референсы,
+  прототипы), [assets/](assets/) (сгенерированный арт).
+- **Планы и история** — [roadmap/README.md](roadmap/README.md): цикл MVP, статус фаз, сквозные темы,
+  промты для сессий.

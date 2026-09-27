@@ -49,14 +49,15 @@
   "spawnId": "uuid",
   "packSize": 3,
   "status": "active",
-  "startedAt": "2026-06-29T12:00:00.000Z",
-  "tick": 42,
+  "startedAtIso": "2026-06-29T12:00:00.000Z",
+  "elapsedMs": 10500,
   "player": {
     "hp": 180, "maxHp": 240,
     "resourceType": "RAGE", "resource": 35, "maxResource": 100,
     "attackIntervalSec": 1.05, "nextAutoAtMs": 1380,
     "effects": [{ "type": "SLOW", "value": 30, "expiresAtMs": 4200 }],
     "cast": null,
+    "cooldowns": { "heavy_strike": 2.1, "whirlwind": 0 },
     "targetInstanceId": "m2"
   },
   "monsters": [
@@ -67,12 +68,11 @@
     { "instanceId": "m2", "hp": 41, "maxHp": 64, "alive": true, "…": "…" },
     { "instanceId": "m3", "hp": 64, "maxHp": 64, "alive": true, "…": "…" }
   ],
-  "cooldowns": { "heavy_strike": 2.1, "whirlwind": 0 },
   "flee": null
 }
 ```
 
-> Время внутри сессии — относительное (`...Ms` от `startedAt`), чтобы тик не зависел от системных часов и сериализовался однозначно.
+> Время внутри сессии — относительное (`...Ms` от `startedAtIso`/`elapsedMs`), чтобы тик не зависел от системных часов и сериализовался однозначно. Кулдауны — **per-combatant** (`player.cooldowns`, каждый `monsters[].cooldowns`), не на сессии целиком.
 
 **Про пак:**
 
@@ -101,25 +101,25 @@
 ## Архитектура: gateway ↔ game-core
 
 ```
-┌─────────────┐   WS /battle    ┌──────────────────┐   NATS RPC    ┌──────────────────┐
+┌─────────────┐    WS /game     ┌──────────────────┐   NATS RPC    ┌──────────────────┐
 │   Flutter   │ ◄─────────────► │   api-gateway    │ ◄───────────► │    game-core     │
 │ BattleBloc  │  battle:start   │  BattleGateway   │  battle.start │  BattleService   │
 │             │  battle:action  │  (тонкий транспорт)│ battle.action │  + TickEngine    │
 │             │  battle:flee    │                  │               │   (setInterval)  │
-│             │ ◄─ battle:state │                  │ ◄─ NATS event │  state → Redis   │
-│             │ ◄─ battle:end   │                  │ battle.stream.*│  публикует тики  │
+│             │ ◄─ battle:state │                  │ ◄─Redis pub/sub│  state → Redis   │
+│             │ ◄─ battle:end   │                  │battle:stream:*│  публикует тики  │
 └─────────────┘                 └──────────────────┘               └──────────────────┘
 ```
 
 **Поток управления (клиент → сервер):** запрос-ответ через NATS RPC.
 - `battle:start` / `battle:action` / `battle:flee` приходят на BattleGateway по WS → транслируются в NATS RPC (`battle.start` / `battle.action` / `battle.flee`) → game-core валидирует и **ставит намерение в сессию**, отвечает ack'ом (`{ accepted, reason? }` + актуальный снапшот). Эффект применяется движком на ближайшем тике, не синхронно в ответе.
 
-**Поток состояния (сервер → клиент):** события через NATS pub/sub.
-- TickEngine в game-core на каждом значимом тике пишет снапшот в Redis и **публикует** NATS-событие в субъект `battle.stream.{characterId}`.
-- BattleGateway подписан на субъекты тех боёв, чьи сокеты он держит; получив событие — эмитит клиенту `battle:state` (или `battle:end`).
+**Поток состояния (сервер → клиент):** события через Redis pub/sub, не NATS.
+- TickEngine в game-core на каждом значимом тике пишет снапшот в Redis и **публикует** сообщение в канал `battle:stream:{userId}` (ключ по **userId**, не `characterId` — gateway на момент подписки ещё не знает characterId).
+- BattleGateway подписан на каналы тех боёв, чьи сокеты он держит; получив сообщение — эмитит клиенту `battle:state` (или `battle:end`).
 - Подписка заводится при `battle:start`/`battle:resume`, снимается при `battle:end` или disconnect.
 
-> **Транспорт стрима — Redis Pub/Sub** по каналу `battle:{characterId}`, не NATS. Причина: NestJS NATS не умеет динамические per-battle подписки в рантайме (`@EventPattern` статичен), а канал создаётся на лету при старте боя; Redis уже общий для обоих процессов и ioredis даёт `subscribe/publish` из коробки. NATS остаётся на RPC (start/action/flee/resume). Субъект `battle.stream.{characterId}` на схеме — концептуальный «поток состояния»; в реализации это Redis-канал. At-most-once допустимо: следующий keyframe-тик исправит пропуск.
+> **Транспорт стрима — Redis Pub/Sub**, не NATS. Причина: NestJS NATS не умеет динамические per-battle подписки в рантайме (`@EventPattern` статичен), а канал создаётся на лету при старте боя; Redis уже общий для обоих процессов и ioredis даёт `subscribe/publish` из коробки. NATS остаётся на RPC (start/action/flee/resume). At-most-once допустимо: следующий keyframe-тик исправит пропуск.
 
 ---
 
@@ -184,7 +184,7 @@ i-го сдвигается на `i × PACK_AUTO_STAGGER_MS`.
 
 ---
 
-## WS события (Flutter ↔ api-gateway, namespace `/battle`)
+## WS события (Flutter ↔ api-gateway, namespace `/game`)
 
 ### Клиент → сервер
 
@@ -419,8 +419,6 @@ game-core / BattleService
 **один** (пак это один спавн), `BattleLog` — одна запись. Статы инстанса
 масштабируются при сборке Combatant'ов, строка `Monster` в БД не трогается —
 таблица коэффициентов в [stage-1-packs.md](../roadmap/group-battle/stage-1-packs.md#5-баланс-черновые-числа-финальная-настройка--mvp-4).
-
-> **Несоответствие для правки:** сейчас в коде `MAX_BATTLE_DISTANCE_METERS = 100`, а радиус взаимодействия на карте — 50. В MVP-2 свести к единому `INTERACTION_RADIUS_M` (50), чтобы «вижу кнопку боя» = «могу начать бой».
 
 ---
 
