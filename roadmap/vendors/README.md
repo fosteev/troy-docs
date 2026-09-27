@@ -17,8 +17,8 @@
 | Слой | Как есть | Что берём |
 |---|---|---|
 | Золото | `Character.gold`, начисляется в `BattleService` при победе (`goldDelta` в `battle:end`) | Списание/начисление — те же поля, транзакцией |
-| Предметы | `Item` без цены; ilvl/редкость-как-бюджет — спека [items §1, §3](../items/README.md), миграция `0019_item_progression` (SCRUM-62) не сделана | Формула цены от бюджета; до ilvl — `vendorPrice` руками |
-| Спавн мобов | `active_spawns` raw SQL (PostGIS), `SpawnCronService` (среда 00:00 UTC, 8/зону, `ST_GeneratePoints` по `SpawnZone.geometry`), admin-триггер, `scripts/spawn-run.ts` | Тот же паттерн: своя таблица, свой cron, свой скрипт; цикл **не** привязан к недельному |
+| Предметы | `Item` без цены; ilvl/редкость-как-бюджет — спека [items §1, §3](../items/README.md), миграция `0020_item_progression` (SCRUM-62) в коде | Формула цены от бюджета; до ilvl — `vendorPrice` руками |
+| Спавн мобов | `active_spawns` raw SQL (PostGIS), `SpawnCronService` (среда 00:00 UTC, `capacity` на соту активного города, `ST_GeneratePoints` по `Territory.geometry` — модель [cities](../cities/README.md)), admin-триггер, `scripts/spawn-run.ts` | Тот же паттерн: своя таблица, свой cron, свой скрипт; цикл **не** привязан к недельному |
 | Карта | WS `map:request` → `map:entities` (30 с Redis-кэш на персонажа), сейчас только мобы (`type: 'monster'`) | Добавляем `type: 'vendor'` в тот же поток |
 | Дистанция | `battle:start` считает `haversine` до спавна против `INTERACTION_RADIUS_M` (50 м), escape hatch `IGNORE_BATTLE_DISTANCE` | Тот же чек в buy/sell |
 | Инвентарь | `InventoryService.addItems(userId, entries)` — общий вход лута; discard (SCRUM-16) и лимит мешка (SCRUM-65) не сделаны | Покупка идёт через `addItems`; продажа частично закрывает потребность в discard |
@@ -40,8 +40,8 @@
 
 ## 1. Данные
 
-Миграция `0020_vendors` (`0019` зарезервирован за items). Накатывать **`migrate deploy`, не `migrate dev`** — дропнет
-`active_spawns` / `SpawnZone.geometry` (и `active_vendors` после этой миграции).
+Миграция `0024_vendors` (`0019`–`0023` заняты items/zones/cities). Накатывать **`migrate deploy`, не `migrate dev`** — дропнет
+`active_spawns`, `City.boundary`, `Territory.geometry` (и `active_vendors` после этой миграции).
 
 Prisma:
 
@@ -141,7 +141,7 @@ sellPrice = max(1, floor(buyPrice(без multiplier) × VENDOR_SELL_RATIO))
 `VENDOR_SELL_RATIO = 0.25` — как у WoW-вендоров; инвариант «продать дешевле, чем купить» держится при любом
 `priceMultiplier ≥ 0.25`, проверяется тестом.
 
-- [ ] Prisma-модели, `SpawnZone.vendorIds`, `Item.vendorPrice`, raw SQL `active_vendors` + FK стока — миграция `0020_vendors`
+- [ ] Prisma-модели, `SpawnZone.vendorIds`, `Item.vendorPrice`, raw SQL `active_vendors` + FK стока — миграция `0024_vendors`
 - [ ] `libs/shared/contracts`: NATS-паттерны `vendor.get / vendor.buy / vendor.sell / vendor.visuals`, `admin.vendor.*`
       (list/get/create/update/delete/stock.list/stock.replace/active.list/respawn), интерфейсы DTO
 - [ ] `libs/shared/utils`: `vendorPrice` / `vendorSellPrice` + spec (таблица кейсов, инвариант sell < buy)
@@ -162,8 +162,9 @@ sellPrice = max(1, floor(buyPrice(без multiplier) × VENDOR_SELL_RATIO))
 Цикл: `@Cron(process.env.VENDOR_RESPAWN_CRON ?? '0 */6 * * *', UTC)` → `respawn()`:
 
 1. `DELETE FROM active_vendors` (сток уходит каскадом).
-2. По каждой зоне с `geometry IS NOT NULL` и непустым `vendorIds` (только `spawnable`): `Math.random() < VENDOR_ZONE_CHANCE`
-   → один торговец случайно из списка, точка `ST_GeneratePoints(geometry, 1)`,
+2. По каждой активной зоне с сотами в активных городах и непустым `vendorIds` (только `spawnable`):
+   `Math.random() < VENDOR_ZONE_CHANCE` → один торговец случайно из списка, точка `ST_GeneratePoints(t.geometry, 1)`
+   в случайной соте зоны (`Territory` JOIN `City(isActive)`; у зоны своей геометрии нет с `0023`, см. cities),
    `expires_at = now() + randInt(dwellMinMin, dwellMaxMin) minutes`.
 3. Сток: `n = randInt(stockSlotsMin, stockSlotsMax)` **разных** предметов из пула по весам (без повторов; если пул
    меньше n — весь пул), `quantity = randInt(qtyMin, qtyMax)`, `price = buyPrice(item, vendor)`.
@@ -344,7 +345,7 @@ Buyback и выкуп проданного, ремонт/прочность, р�
 
 | # | Что | Jira | Где |
 |---|---|---|---|
-| 1 | Данные: миграция `0020_vendors`, контракты, формула цены, seed, схема в доках | [SCRUM-68](https://fosteev.atlassian.net/browse/SCRUM-68) | vendors |
+| 1 | Данные: миграция `0024_vendors`, контракты, формула цены, seed, схема в доках | [SCRUM-68](https://fosteev.atlassian.net/browse/SCRUM-68) | vendors |
 | 2 | Спавн-цикл торговцев, скрипт, торговцы в `map:entities` | [SCRUM-69](https://fosteev.atlassian.net/browse/SCRUM-69) | vendors |
 | 3 | Торговля: get/buy/sell, REST, Swagger, `technical/vendor-trade.md` | [SCRUM-73](https://fosteev.atlassian.net/browse/SCRUM-73) | vendors |
 | 4 | Админка: раздел «Торговцы», пул, активные + «Обновить», зона, цена предмета | [SCRUM-74](https://fosteev.atlassian.net/browse/SCRUM-74) | vendors |
@@ -391,7 +392,7 @@ Buyback и выкуп проданного, ремонт/прочность, р�
 - troy/CLAUDE.md (backend, раздел Testing).
 
 Порядок:
-1. Миграция 0020_vendors по §1 (Prisma-модели + raw SQL active_vendors + FK стока); накатывать
+1. Миграция 0024_vendors по §1 (Prisma-модели + raw SQL active_vendors + FK стока); накатывать
    `migrate deploy`, НЕ `migrate dev`. Контракты, env, vendorPrice в libs/shared/utils со spec, seed
    (два торговца, пулы, vendorIds зон, vendorPrice предметов), database-schema.md.
 2. VendorCronService.respawn по §2 + admin.vendor.respawn + scripts/vendors-run.ts (npm vendors:run);

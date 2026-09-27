@@ -354,21 +354,10 @@ WHERE is_active = true;
 
 ### SpawnZone (зона спавна)
 
-> **План (roadmap/cities, миграция `0023_cities_territories`, код не начат):** зона теряет `geometry` и
-> становится справочником; появляются `City` (граница мира `boundary MultiPolygon`, `hexSizeMeters`,
-> `isActive`) и `Territory` (`cityId`, `zoneId?`, `hexI`, `hexJ`, `geometry Polygon` — шестиугольник),
-> `active_spawns` получает `territory_id`. `capacity` меняет смысл на «спаунов на соту в неделю»
-> (`null` → env `TERRITORY_CAPACITY`, 2). DDL и Prisma-модели — в
-> [roadmap/cities/README.md](../roadmap/cities/README.md), сюда переедут после наката. Ниже — как сейчас.
-
-Поле `geometry` (`GEOMETRY(MULTIPOLYGON, 4326)`, PostGIS) управляется через raw SQL, не в ORM:
-читается как `ST_AsGeoJSON(geometry)::json`, пишется как
-`ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(...), 4326))` из админки
-(`PUT /admin/spawn/zones/:id/geometry`) и из сида. Территория зоны — 1–32 независимых
-контура, у каждого один ring без дырок, 4–256 позиций, `[lng, lat]`, первая точка = последняя;
-контуры не должны пересекаться (проверяется `ST_IsValid`). Respawn берёт точки через
-`ST_GeneratePoints` по всей территории, то есть делит лимит между контурами пропорционально
-их площади. До миграции `0022_zone_multipolygon` колонка была `POLYGON` — один контур на зону.
+Справочник без геометрии: тип, уровни, пул мобов, арена, лимит на соту. Где зона на карте —
+решают соты городов, которые на неё ссылаются (`Territory.zoneId`); одна зона может лежать в
+нескольких городах. До миграции `0023_cities_territories` у зоны была колонка
+`geometry MULTIPOLYGON` (`0022_zone_multipolygon`, до неё — `POLYGON`), теперь её нет.
 
 | Поле | Тип | Описание |
 |---|---|---|
@@ -379,8 +368,49 @@ WHERE is_active = true;
 | minLevel | Int | Мин. уровень монстров (описательный, бой не проверяет) |
 | maxLevel | Int | Макс. уровень монстров (описательный) |
 | isActive | Boolean, default true | Выключенная зона не участвует в respawn и не отдаётся в `/map/zones` |
-| capacity | Int? | Сколько спаунов respawn кладёт в зону на неделю; `null` → env `ZONE_CAPACITY` (default 8) |
+| capacity | Int? | Сколько спаунов respawn кладёт **в каждую соту** этой зоны на неделю; `null` → env `TERRITORY_CAPACITY` (default 2) |
 | arenaBackground | Json? | `ClassSpriteSheet \| null` — фон арены боёв в зоне; статичный фон = лист 1x1 |
+
+---
+
+### City (город)
+
+Граница мира: внутри неё есть мобы, снаружи — нет. Режется на соты (`Territory`) через
+`ST_HexagonGrid` в UTM по bbox границы; сота попадает в город, если её центр внутри `boundary`.
+Колонка `boundary` (`GEOMETRY(MULTIPOLYGON, 4326)`, GiST-индекс) — вне ORM, raw SQL:
+читается `ST_AsGeoJSON(boundary)`, пишется из админки (`/admin/cities/:id/boundary`) после
+`ST_IsValid`. Смена границы или `hexSizeMeters` при существующих сотах — перерезка
+(409 без `confirmResplit`).
+
+| Поле | Тип | Описание |
+|---|---|---|
+| id | UUID, PK | |
+| name | String | Название города |
+| isActive | Boolean, default false | Выключенный город не участвует в respawn и не отдаётся клиенту |
+| hexSizeMeters | Int, default 300 | Ребро соты, м (`CITY_HEX_MIN_METERS..MAX_METERS` в контрактах) |
+| assignSeed | Int? | Seed последней раздачи зон: тот же seed и состав зон → та же раскладка |
+| boundary | GEOMETRY(MULTIPOLYGON, 4326) | Вне Prisma, raw SQL |
+| createdAt / updatedAt | DateTime | |
+
+---
+
+### Territory (сота)
+
+Шестиугольник гексагональной сетки города — единственное место, где живут мобы. Рисуется
+только генератором (`splitCity`), зона назначается раздачей (`assignCity`, `hexAssign` из
+`@shared/utils`) или кистью (`paintTerritories`). Колонка `geometry`
+(`GEOMETRY(POLYGON, 4326)`, NOT NULL, GiST-индекс) — вне ORM. Respawn ставит точку спауна
+`ST_GeneratePoints` внутри соты.
+
+| Поле | Тип | Описание |
+|---|---|---|
+| id | UUID, PK | |
+| cityId | UUID, FK → City | onDelete: Cascade |
+| zoneId | UUID?, FK → SpawnZone | onDelete: SetNull; `null` — пустошь: respawn пропускает, клиент ничего не видит |
+| hexI / hexJ | Int | Координаты соты в сетке города |
+| geometry | GEOMETRY(POLYGON, 4326) | Вне Prisma, raw SQL |
+
+Индексы: `@@unique([cityId, hexI, hexJ])`, `@@index([zoneId])`, `@@index([cityId])`
 
 ---
 
@@ -393,7 +423,9 @@ WHERE is_active = true;
 | id | UUID, PK | |
 | monster_id | UUID, FK → Monster | |
 | spawn_zone_id | UUID, FK → SpawnZone | |
+| territory_id | UUID?, FK → Territory | Сота, в которой лежит спаун (`0023`); ON DELETE CASCADE |
 | location | GEOGRAPHY(POINT, 4326) | Координаты на карте |
+| pack_size | SMALLINT, default 1 | Размер пака, ролл `packMin..packMax` монстра при respawn (`0017`) |
 | spawned_at | TIMESTAMPTZ | Время спавна |
 | alive | Boolean, default true | Существует ли спавн в мире (деспавн системой/при недельной регенерации). **Не** отражает «кто-то убил» — убийства персональны, см. `CharacterKill` |
 
@@ -458,4 +490,9 @@ Item 1──N DropTable
 Monster 1──N DropTable
 Monster 1──N BattleLog
 Monster 1──N MonsterSkill
+
+City 1──N Territory
+SpawnZone 1──N Territory   (zoneId nullable — пустошь)
+Territory 1──N active_spawns   (territory_id, raw SQL)
+SpawnZone 1──N active_spawns   (spawn_zone_id, raw SQL)
 ```

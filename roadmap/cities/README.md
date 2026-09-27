@@ -1,14 +1,11 @@
 # Города, зоны, территории — новая модель мира
 
-> **Статус: этапы 1–3 (бэкенд) и 4 (админка) сделаны 10.09.2026; остался этап 5 (доки).**
-> Сценарий «create city → boundary → split → assign → spawn run → active?cityId=» и 409 без
-> `confirmResplit` проверены через REST под admin-токеном на dev; сценарий этапа 4 в самой админке —
-> за пользователем.
+> **Статус: тема закрыта 27.09.2026 — этапы 1–5 сделаны.** Сценарий «create city → boundary → split → assign →
+> spawn run → active?cityId=» и 409 без `confirmResplit` проверены через REST под admin-токеном на dev; сценарий
+> этапа 4 в самой админке — за пользователем.
 > Заменяет геометрическую часть темы [zones/](../zones/README.md) (этапы 6–7: MultiPolygon на зоне и
 > генератор сот). Разделы «Зоны» и «Спаун» в админке остаются, добавляется «Города». Админка собрана
-> строго по разделу «Контракт и точки входа» и против живого API **не проверялась** — сценарий из
-> «Готово, когда» этапа 4 прогоняется после этапов 1–3. Jira-эпик и задачи — при старте (`/troy-task`).
-> Исполнитель отмечает чекбоксы по ходу.
+> по разделу «Контракт и точки входа», расхождения с бэкендом разобраны в этапе 3.
 
 Прототип (кликабельный: граница, разбиение на соты, раздача зон, кисть, drawer зоны):
 <https://claude.ai/code/artifact/b47f545b-531b-4aee-81f4-a5a4316479f9>, исходник —
@@ -236,13 +233,13 @@ City ──1:N── Territory ──N:1── SpawnZone
 
 ### 5. Доки и закрытие
 
-- [ ] `troy/CLAUDE.md`: архитектура `spawn` (город → соты → зоны, `TERRITORY_CAPACITY`), пункты 3–4
+- [x] `troy/CLAUDE.md`: архитектура `spawn` (город → соты → зоны, `TERRITORY_CAPACITY`), пункты 3–4
       «Key design decisions» (raw-геометрия теперь у `City.boundary`, `Territory.geometry`, `active_spawns`;
       `SpawnZone` без geometry), env
-- [ ] `technical/database-schema.md`: секции `City`, `Territory`, `SpawnZone` без geometry, `active_spawns.territory_id`
-- [ ] `roadmap/README.md`: галочка темы; `zones/README.md` — баннер «этапы 6–7 заменены cities»;
+- [x] `technical/database-schema.md`: секции `City`, `Territory`, `SpawnZone` без geometry, `active_spawns.territory_id`
+- [x] `roadmap/README.md`: галочка темы; `zones/README.md` — баннер «этапы 6–7 заменены cities»;
       `mvp-4-content-balance/README.md` — SCRUM-60 закрыт; `vendors/README.md` — номер миграции
-- [ ] Коммиты `cities: …` (backend, admin, docs); Jira — `/troy-continue`
+- [x] Коммиты `cities: …` (backend, admin, docs); Jira — `/troy-continue`
 
 ## Контракт и точки входа
 
